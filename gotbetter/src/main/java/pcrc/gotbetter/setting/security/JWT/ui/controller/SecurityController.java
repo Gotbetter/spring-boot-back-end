@@ -16,7 +16,7 @@ import pcrc.gotbetter.setting.security.JWT.ui.view.AccessTokenView;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/reissue")
+@RequestMapping(value = "/users")
 public class SecurityController {
     private final JwtProvider jwtProvider;
     private final SecurityService securityService;
@@ -27,7 +27,7 @@ public class SecurityController {
         this.securityService = securityService;
     }
 
-    @PostMapping(value = "")
+    @PostMapping(value = "/reissue")
     public ResponseEntity<AccessTokenView> reissue(HttpServletRequest request) {
         log.info("REISSUE");
 
