@@ -33,13 +33,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(GetBetterException.class)
-    public ResponseEntity<?> opMessageException(GetBetterException getBetterException) {
+    @ExceptionHandler(GotBetterException.class)
+    public ResponseEntity<?> opMessageException(GotBetterException gotBetterException) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/json");
-        return new ResponseEntity<>(new ApiErrorView(getBetterException),
+        return new ResponseEntity<>(new ApiErrorView(gotBetterException),
                 headers,
-                getBetterException.getStatus());
+                gotBetterException.getStatus());
     }
 
     @Override

@@ -45,7 +45,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        String[] uri = {"/users/join", "/users", "/users/join/verify"};
+        String[] uri = {"/users/join", "/users", "/users/join/verify", "/reissue"};
 
         http.cors().configurationSource(corsConfigurationSource());
         http.httpBasic().disable()

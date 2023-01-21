@@ -4,12 +4,14 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import pcrc.gotbetter.setting.security.JWT.service.CustomUserDetailService;
 
 import java.security.Key;
@@ -56,6 +58,7 @@ public class JwtProvider {
 
         //Refresh Token 생성
         String refreshToken = Jwts.builder()
+                .setClaims(payloads)
                 .setExpiration(new Date(now.getTime() + refreshExpiredTime))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
@@ -104,5 +107,13 @@ public class JwtProvider {
         } catch (ExpiredJwtException e) {
             return e.getClaims();
         }
+    }
+
+    public String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }

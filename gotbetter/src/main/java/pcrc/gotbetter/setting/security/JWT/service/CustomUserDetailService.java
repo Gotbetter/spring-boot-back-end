@@ -4,8 +4,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import pcrc.gotbetter.setting.http_api.GetBetterException;
-import pcrc.gotbetter.setting.http_api.MessageType;
 import pcrc.gotbetter.user.data_access.repository.UserRepository;
 
 @Service
@@ -21,6 +19,6 @@ public class CustomUserDetailService implements UserDetailsService {
     public UserDetails loadUserByUsername(String auth_id) throws UsernameNotFoundException {
 
         return userRepository.findByAuthId(auth_id).orElseThrow(() ->
-                new GetBetterException(MessageType.UsernameOrPasswordNotFound));
+                new UsernameNotFoundException("Not existed user."));
     }
 }
