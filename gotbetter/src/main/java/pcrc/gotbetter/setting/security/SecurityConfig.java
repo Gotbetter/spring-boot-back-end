@@ -1,0 +1,83 @@
+package pcrc.gotbetter.setting.security;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Value("${external.frontend}")
+    private String frontend;
+    @Value("${external.backend}")
+    private String backend;
+    @Value("${external.localFront}")
+    private String localFront;
+    @Value("${external.localBack}")
+    private String localBack;
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        String[] uri = {"/users/join", "/users", "/users/join/verify"};
+
+        http.cors().configurationSource(corsConfigurationSource());
+        http.httpBasic().disable()
+                .csrf().disable()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        http.authorizeHttpRequests()
+                .requestMatchers(HttpMethod.POST, uri).permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .formLogin().disable()
+                .rememberMe().disable()
+                .logout().disable();
+//                .and();
+//                .exceptionHandling()
+//                .accessDeniedHandler(webAccessDeniedHandler)
+//                .authenticationEntryPoint(authenticationEntryPointHandler)
+//                .and()
+//                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.addAllowedOrigin(frontend);
+        configuration.addAllowedOrigin(backend);
+        configuration.addAllowedOrigin(localFront);
+        configuration.addAllowedOrigin(localBack);
+        configuration.addAllowedHeader(localFront);
+        configuration.addAllowedHeader(frontend);
+        configuration.addAllowedOrigin("http://jxy.me");
+        configuration.addAllowedHeader("http://jxy.me");
+        configuration.addAllowedMethod("POST");
+        configuration.addAllowedMethod("GET");
+        configuration.addAllowedMethod("PUT");
+        configuration.addAllowedMethod("DELETE");
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+}
