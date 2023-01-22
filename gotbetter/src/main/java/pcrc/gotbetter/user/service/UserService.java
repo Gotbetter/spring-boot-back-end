@@ -3,7 +3,7 @@ package pcrc.gotbetter.user.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import pcrc.gotbetter.setting.http_api.GetBetterException;
+import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 import pcrc.gotbetter.setting.security.JWT.JwtProvider;
 import pcrc.gotbetter.setting.security.JWT.TokenInfo;
@@ -60,7 +60,7 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
 
         // profile
         String default_profile = "/home/chaerin/gotbetter/image/profile/default_profile/default_profile.jpg";
-        String bytes = null;
+        String bytes;
         try {
             bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(
                     Paths.get(findUser.getProfile())));
@@ -84,18 +84,18 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
     private void validateDuplicateUser(String auth_id, String email) {
         // 이미 있는 아이디인지 또는 이미 있는 이메일인지 확인
         if (userRepository.existsByAuthidOrEmail(auth_id, email)) {
-            throw new GetBetterException(MessageType.CONFLICT);
+            throw new GotBetterException(MessageType.CONFLICT);
         }
     }
 
     private User validateFindUser(UserFindQuery query) {
         User findUser = userRepository.findByAuthId(query.getAuth_id())
                 .orElseThrow(() -> {
-                    throw new GetBetterException(MessageType.NOT_FOUND);
+                    throw new GotBetterException(MessageType.NOT_FOUND);
                 });
 
         if (!passwordEncoder.matches(query.getPassword(), findUser.getPassword())) {
-            throw new GetBetterException(MessageType.NOT_FOUND);
+            throw new GotBetterException(MessageType.NOT_FOUND);
         }
 
         return findUser;

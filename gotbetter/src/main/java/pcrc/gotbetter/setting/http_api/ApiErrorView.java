@@ -17,7 +17,7 @@ public class ApiErrorView {
         this.errors = messageTypes.stream().map(Error::errorWithMessageType).collect(Collectors.toList());
     }
 
-    public ApiErrorView(GetBetterException exception) {
+    public ApiErrorView(GotBetterException exception) {
         this.errors = Collections.singletonList(Error.errorWithException(exception));
     }
 
@@ -39,8 +39,8 @@ public class ApiErrorView {
             return new Error(messageType.name(), message);
         }
 
-        public static Error errorWithException(GetBetterException getBetterException) {
-            return new Error(getBetterException);
+        public static Error errorWithException(GotBetterException gotBetterException) {
+            return new Error(gotBetterException);
         }
 
         private Error(String errorType, String errorMessage) {
@@ -48,10 +48,10 @@ public class ApiErrorView {
             this.errorMessage = errorMessage;
         }
 
-        private Error(GetBetterException getBetterException) {
-            this.errorType = ObjectUtils.isEmpty(getBetterException.getType()) ? getBetterException.getStatus().getReasonPhrase() :
-                    getBetterException.getType();
-            this.errorMessage = getBetterException.getMessage();
+        private Error(GotBetterException gotBetterException) {
+            this.errorType = ObjectUtils.isEmpty(gotBetterException.getType()) ? gotBetterException.getStatus().getReasonPhrase() :
+                    gotBetterException.getType();
+            this.errorMessage = gotBetterException.getMessage();
         }
     }
 }

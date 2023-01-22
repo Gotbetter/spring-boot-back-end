@@ -1,5 +1,6 @@
 package pcrc.gotbetter.setting.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,10 +14,18 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import pcrc.gotbetter.setting.security.JWT.JwtProvider;
+import pcrc.gotbetter.setting.security.JWT.JwtSecurityConfig;
+import pcrc.gotbetter.setting.security.JWT.handler.JwtAccessDeniedHandler;
+import pcrc.gotbetter.setting.security.JWT.handler.JwtAuthenticationEntryPointHandler;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private final JwtProvider jwtProvider;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final JwtAuthenticationEntryPointHandler jwtAuthenticationEntryPointHandler;
 
     @Value("${external.frontend}")
     private String frontend;
@@ -27,9 +36,16 @@ public class SecurityConfig {
     @Value("${external.localBack}")
     private String localBack;
 
+    @Autowired
+    public SecurityConfig(JwtProvider jwtProvider, JwtAccessDeniedHandler jwtAccessDeniedHandler, JwtAuthenticationEntryPointHandler jwtAuthenticationEntryPointHandler) {
+        this.jwtProvider = jwtProvider;
+        this.jwtAccessDeniedHandler = jwtAccessDeniedHandler;
+        this.jwtAuthenticationEntryPointHandler = jwtAuthenticationEntryPointHandler;
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        String[] uri = {"/users/join", "/users", "/users/join/verify"};
+        String[] uri = {"/users/join", "/users", "/users/join/verify", "/reissue"};
 
         http.cors().configurationSource(corsConfigurationSource());
         http.httpBasic().disable()
@@ -42,12 +58,11 @@ public class SecurityConfig {
                 .formLogin().disable()
                 .rememberMe().disable()
                 .logout().disable();
-//                .and();
-//                .exceptionHandling()
-//                .accessDeniedHandler(webAccessDeniedHandler)
-//                .authenticationEntryPoint(authenticationEntryPointHandler)
-//                .and()
-//                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
+        http.exceptionHandling()
+                .authenticationEntryPoint(jwtAuthenticationEntryPointHandler)
+                .accessDeniedHandler(jwtAccessDeniedHandler)
+                .and()
+                .apply(new JwtSecurityConfig(jwtProvider));
         return http.build();
     }
 
