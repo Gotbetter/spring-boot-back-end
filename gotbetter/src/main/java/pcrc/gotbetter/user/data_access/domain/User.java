@@ -47,7 +47,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return usernameNick;
+        return authId;
     }
 
     @Override
