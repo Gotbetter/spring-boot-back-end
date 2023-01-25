@@ -23,16 +23,17 @@ public class User implements UserDetails {
     @Column(name = "auth_id")
     private String authId;
     private String password;
-    private String username;
+    @Column(name = "username")
+    private String usernameNick;
     private String email;
     private String profile;
     private String refresh_token;
 
     @Builder
-    public User(String authId, String password, String username, String email, String profile) {
+    public User(String authId, String password, String usernameNick, String email, String profile) {
         this.authId = authId;
         this.password = password;
-        this.username = username;
+        this.usernameNick = usernameNick;
         this.email = email;
         this.profile = profile;
     }
@@ -46,7 +47,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return authId;
+        return usernameNick;
     }
 
     @Override

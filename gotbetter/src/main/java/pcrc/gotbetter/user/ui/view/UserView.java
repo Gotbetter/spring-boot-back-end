@@ -9,7 +9,8 @@ import pcrc.gotbetter.user.service.UserReadUseCase;
 @Getter
 @ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserLoginView {
+public class UserView {
+    private final Long id;
     private final String auth_id;
     private final String username;
     private final String email;
@@ -18,7 +19,8 @@ public class UserLoginView {
     private final String refresh_token;
 
     @Builder
-    public UserLoginView(UserReadUseCase.FindUserResult userResult) {
+    public UserView(UserReadUseCase.FindUserResult userResult) {
+        this.id = userResult.getId();
         this.auth_id = userResult.getAuth_id();
         this.username = userResult.getUsername();
         this.email = userResult.getEmail();

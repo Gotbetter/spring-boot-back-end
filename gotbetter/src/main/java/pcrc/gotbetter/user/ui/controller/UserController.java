@@ -10,9 +10,7 @@ import pcrc.gotbetter.user.ui.requestBody.UserJoinRequest;
 import pcrc.gotbetter.user.service.UserOperationUseCase;
 import pcrc.gotbetter.user.ui.requestBody.UserLoginRequest;
 import pcrc.gotbetter.user.ui.requestBody.UserVerifyIdRequest;
-import pcrc.gotbetter.user.ui.view.UserJoinView;
-import pcrc.gotbetter.user.ui.view.UserLoginView;
-import pcrc.gotbetter.user.ui.view.UserVerifyIdView;
+import pcrc.gotbetter.user.ui.view.UserView;
 
 import java.io.IOException;
 
@@ -32,7 +30,7 @@ public class UserController {
     }
 
     @PostMapping(value = "/join")
-    public ResponseEntity<UserJoinView> newUserJoin(@Valid @RequestBody UserJoinRequest request) {
+    public ResponseEntity<UserView> newUserJoin(@Valid @RequestBody UserJoinRequest request) {
 
         log.info("\"JOIN\"");
 
@@ -44,21 +42,21 @@ public class UserController {
                 .build();
         UserReadUseCase.FindUserResult result = userOperationUseCase.createUser(command);
 
-        return ResponseEntity.created(null).body(UserJoinView.builder().userResult(result).build());
+        return ResponseEntity.created(null).body(UserView.builder().userResult(result).build());
     }
 
     @PostMapping(value = "/join/verify")
-    public ResponseEntity<UserVerifyIdView> verifyId(@Valid @RequestBody UserVerifyIdRequest request) {
+    public ResponseEntity<UserView> verifyId(@Valid @RequestBody UserVerifyIdRequest request) {
 
         log.info("\"VERIFY ID\"");
 
         UserReadUseCase.FindUserResult result = userReadUseCase.verifyId(request.getAuth_id());
 
-        return ResponseEntity.ok(UserVerifyIdView.builder().userResult(result).build());
+        return ResponseEntity.ok(UserView.builder().userResult(result).build());
     }
 
     @PostMapping(value = "")
-    public ResponseEntity<UserLoginView> login(@Valid @RequestBody UserLoginRequest request) throws IOException {
+    public ResponseEntity<UserView> login(@Valid @RequestBody UserLoginRequest request) throws IOException {
 
         log.info("\"LOGIN\"");
 
@@ -68,9 +66,6 @@ public class UserController {
                 .build();
         UserReadUseCase.FindUserResult result = userReadUseCase.loginUser(query);
 
-        return ResponseEntity.ok(UserLoginView.builder().userResult(result).build());
+        return ResponseEntity.ok(UserView.builder().userResult(result).build());
     }
-
-    @PostMapping(value = "/refresh")
-    public void refreshToken() {}
 }
