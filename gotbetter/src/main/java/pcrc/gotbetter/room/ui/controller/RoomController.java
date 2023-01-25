@@ -10,15 +10,44 @@ import pcrc.gotbetter.room.service.RoomReadUseCase;
 import pcrc.gotbetter.room.ui.requestBody.RoomCreateRequest;
 import pcrc.gotbetter.room.ui.view.RoomView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping(value = "/rooms")
 public class RoomController {
     private final RoomOperationUseCase roomOperationUseCase;
+    private final RoomReadUseCase roomReadUseCase;
 
     @Autowired
-    public RoomController(RoomOperationUseCase roomOperationUseCase) {
+    public RoomController(RoomOperationUseCase roomOperationUseCase, RoomReadUseCase roomReadUseCase) {
         this.roomOperationUseCase = roomOperationUseCase;
+        this.roomReadUseCase = roomReadUseCase;
+    }
+
+    @GetMapping(value = "")
+    public ResponseEntity<List<RoomView>> showIncludedRooms() {
+
+        log.info("\"GET USER'S ROOMS\"");
+
+        List<RoomReadUseCase.FindRoomResult> result = roomReadUseCase.getUserRooms();
+
+        List<RoomView> roomViews = new ArrayList<>();
+        for (RoomReadUseCase.FindRoomResult r : result) {
+            roomViews.add(RoomView.builder().roomResult(r).build());
+        }
+        return ResponseEntity.ok(roomViews);
+    }
+
+    @GetMapping(value = "/{room_id}")
+    public ResponseEntity<RoomView> showOneRoom(@PathVariable Long room_id) {
+
+        log.info("\"GET A ROOM INFO\"");
+
+        RoomReadUseCase.FindRoomResult result = roomReadUseCase.getOneRoomInfo(room_id);
+
+        return ResponseEntity.ok(RoomView.builder().roomResult(result).build());
     }
 
     @PostMapping(value = "")

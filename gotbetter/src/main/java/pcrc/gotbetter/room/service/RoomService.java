@@ -14,6 +14,9 @@ import pcrc.gotbetter.setting.http_api.MessageType;
 import pcrc.gotbetter.user.data_access.domain.User;
 import pcrc.gotbetter.user.data_access.repository.UserRepository;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     private final RoomRepository roomRepository;
@@ -25,6 +28,30 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
         this.roomRepository = roomRepository;
         this.userRoomRepository = userRoomRepository;
         this.userRepository = userRepository;
+    }
+
+    @Override
+    public List<FindRoomResult> getUserRooms() {
+        Long user_id = validateUser();
+        List<Room> rooms = roomRepository.findUserRooms(user_id);
+        List<FindRoomResult> result = new ArrayList<>();
+        for (Room r : rooms) {
+            result.add(FindRoomResult.builder()
+                    .room_id(r.getRoomId())
+                    .title(r.getTitle())
+                    .build());
+        }
+        return result;
+    }
+
+    @Override
+    public FindRoomResult getOneRoomInfo(Long room_id) {
+        validateUserInRoom(room_id);
+        Room room = roomRepository.findByRoomId(room_id)
+                .orElseThrow(() -> {
+                    throw new GotBetterException(MessageType.NOT_FOUND);
+                });
+        return FindRoomResult.findByRoom(room);
     }
 
     @Override
@@ -73,6 +100,13 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
                     throw new GotBetterException(MessageType.NOT_FOUND);
                 });
         return user.getId();
+    }
+
+    private void validateUserInRoom(Long room_id) {
+        Long user_id = validateUser();
+        if (!roomRepository.existsByUserIdAndRoomId(user_id, room_id)) {
+            throw new GotBetterException(MessageType.NOT_FOUND);
+        }
     }
 
     private String getRandomCode() {
