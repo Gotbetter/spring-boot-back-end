@@ -2,8 +2,6 @@ package pcrc.gotbetter.room.service;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import pcrc.gotbetter.room.data_access.entity.Room;
 import pcrc.gotbetter.room.data_access.entity.UserRoom;
@@ -12,29 +10,28 @@ import pcrc.gotbetter.room.data_access.repository.UserRoomRepository;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 import pcrc.gotbetter.user.data_access.domain.User;
-import pcrc.gotbetter.user.data_access.repository.UserRepository;
 import pcrc.gotbetter.user.service.UserReadUseCase;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
+
 @Service
 public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     private final RoomRepository roomRepository;
     private final UserRoomRepository userRoomRepository;
-    private final UserRepository userRepository;
 
     @Autowired
-    public RoomService(RoomRepository roomRepository, UserRoomRepository userRoomRepository, UserRepository userRepository) {
+    public RoomService(RoomRepository roomRepository, UserRoomRepository userRoomRepository) {
         this.roomRepository = roomRepository;
         this.userRoomRepository = userRoomRepository;
-        this.userRepository = userRepository;
     }
 
     @Override
     public List<FindRoomResult> getUserRooms() {
-        Long user_id = validateUser();
+        Long user_id = getCurrentUserId();
         List<Room> rooms = roomRepository.findUserRooms(user_id);
         List<FindRoomResult> result = new ArrayList<>();
 
@@ -49,7 +46,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 
     @Override
     public FindRoomResult getOneRoomInfo(Long room_id) {
-        Long user_id = validateUser();
+        Long user_id = getCurrentUserId();
         Room room = roomRepository.findRoomWithUserIdAndRoomId(user_id, room_id);
 
         if (room == null) {
@@ -60,7 +57,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 
     @Override
     public FindRoomResult createRoom(RoomCreateCommand command) {
-        Long user_id = validateUser();
+        Long user_id = getCurrentUserId();
 
         if (command.getStart_date().compareTo(command.getTarget_date()) >= 0) {
             throw new GotBetterException(MessageType.BAD_REQUEST);
@@ -143,24 +140,8 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     /**
      * validate section
      */
-    private Long validateUser() {
-
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (principal.equals("anonymousUser")) {
-            throw new GotBetterException(MessageType.ReLogin);
-        }
-
-        UserDetails userDetails = (UserDetails) principal;
-        User user = userRepository.findByAuthId(userDetails.getUsername())
-                .orElseThrow(() -> {
-                    throw new GotBetterException(MessageType.NOT_FOUND);
-                });
-        return user.getId();
-    }
-
     private void validateLeaderIdOfRoom(Long room_id) {
-        Long user_id = validateUser();
+        Long user_id = getCurrentUserId();
         if (!roomRepository.existsRoomMatchLeaderId(user_id, room_id)) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
@@ -168,7 +149,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 
     private Long validateJoinRoomRequest(Room room) {
         List<UserRoom> userRoomList = userRoomRepository.findByRoomId(room.getRoomId());
-        Long user_id = validateUser();
+        Long user_id = getCurrentUserId();
         long count = 0L;
 
         for (UserRoom ur : userRoomList) {
