@@ -86,7 +86,7 @@ public class RoomController {
 
         RoomReadUseCase.FindRoomResult result = roomOperationUseCase.requestJoinRoom(request.getRoom_code());
 
-        return ResponseEntity.created(null).body(RoomView.builder().roomResult(result).build());//ok?created?
+        return ResponseEntity.created(null).body(RoomView.builder().roomResult(result).build());
     }
 
     private ResponseEntity<List<UserView>> waitListForApprove(Long room_id, Boolean accepted) {
