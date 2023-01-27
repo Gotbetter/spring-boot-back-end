@@ -1,5 +1,6 @@
 package pcrc.gotbetter.setting.security.JWT.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
@@ -8,6 +9,8 @@ import pcrc.gotbetter.setting.security.JWT.JwtProvider;
 import pcrc.gotbetter.setting.security.JWT.TokenInfo;
 import pcrc.gotbetter.user.data_access.domain.User;
 import pcrc.gotbetter.user.data_access.repository.UserRepository;
+
+import java.util.Date;
 
 @Service
 public class SecurityService {
@@ -20,22 +23,43 @@ public class SecurityService {
         this.userRepository = userRepository;
     }
 
-    public boolean validateRefreshToken(String requestToken) {
+    public String reissueNewAccessToken(HttpServletRequest request) {
 
-        String auth_id = (String) jwtProvider.parseClaims(requestToken).get("id");
+        String refreshToken = jwtProvider.resolveToken(request);
 
+        if (!jwtProvider.validateJwtToken(request, refreshToken)) {
+            throw new GotBetterException(MessageType.ReLogin);
+        }
+
+        User user = validateRefreshToken(refreshToken);
+        long diffDays = compareDate(jwtProvider.parseClaims(refreshToken).getExpiration());
+        TokenInfo tokenInfo = jwtProvider.generateToken(user.getAuthId());
+
+        if (diffDays < 30) {
+            userRepository.updateRefreshToken(user.getAuthId(), tokenInfo.getRefreshToken());
+        }
+        return tokenInfo.getAccessToken();
+    }
+
+    /**
+     * validate section
+     */
+    private User validateRefreshToken(String refreshToken) {
+        String auth_id = (String) jwtProvider.parseClaims(refreshToken).get("id");
         User user = userRepository.findByAuthId(auth_id)
                 .orElseThrow(() -> {
                     throw new GotBetterException(MessageType.ReLogin);
                 });
-
-        return user.getRefresh_token().equals(requestToken);
+        if (!user.getRefresh_token().equals(refreshToken)) {
+            throw new GotBetterException(MessageType.ReLogin);
+        }
+        return user;
     }
 
-    public TokenInfo reissueNewAccessToken(String refreshToken) {
-
-        String auth_id = (String) jwtProvider.parseClaims(refreshToken).get("id");
-
-        return jwtProvider.generateToken(auth_id);
+    private Long compareDate(Date expired) {
+        Date today = new Date();
+        long diffSec = (expired.getTime() - today.getTime()) / 1000;
+        return diffSec / (24 * 60 * 60);
     }
+
 }
