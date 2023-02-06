@@ -4,18 +4,15 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pcrc.gotbetter.room.data_access.entity.Room;
-import pcrc.gotbetter.room.data_access.entity.UserRoom;
+import pcrc.gotbetter.user_room.data_access.entity.UserRoom;
 import pcrc.gotbetter.room.data_access.repository.RoomRepository;
-import pcrc.gotbetter.room.data_access.repository.UserRoomRepository;
+import pcrc.gotbetter.user_room.data_access.repository.UserRoomRepository;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
-import pcrc.gotbetter.user.data_access.entity.User;
-import pcrc.gotbetter.user.service.UserReadUseCase;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Objects;
 
 import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
 
@@ -92,46 +89,6 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
         return FindRoomResult.findByRoom(room);
     }
 
-    @Override
-    public FindRoomResult requestJoinRoom(String room_code) {
-        Room room = roomRepository.findByRoomCode(room_code)
-                .orElseThrow(() -> {
-                    throw new GotBetterException(MessageType.NOT_FOUND);
-                });
-
-        Long user_id = validateJoinRoomRequest(room);
-        UserRoom savedUserRoom = UserRoom.builder()
-                .userId(user_id)
-                .roomId(room.getRoomId())
-                .accepted(false)
-                .build();
-        userRoomRepository.save(savedUserRoom);
-
-        return FindRoomResult.builder()
-                .room_id(room.getRoomId())
-                .entry_fee(room.getEntryFee())
-                .account(room.getAccount())
-                .build();
-    }
-
-    @Override
-    public List<UserReadUseCase.FindUserResult> getWaitListForApprove(Long room_id) {
-        validateLeaderIdOfRoom(room_id);
-
-        List<User> users = roomRepository.findWaitUsersByRoomId(room_id);
-        List<UserReadUseCase.FindUserResult> result = new ArrayList<>();
-        for (User u : users) {
-            result.add(UserReadUseCase.FindUserResult.builder()
-                    .id(u.getId())
-                    .auth_id(u.getAuthId())
-                    .username(u.getUsernameNick())
-                    .email(u.getEmail())
-                    .profile(u.getProfile())
-                    .build());
-        }
-        return result;
-    }
-
     /**
      * other
      */
@@ -140,36 +97,5 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
         boolean useNumbers = true;
         int randomStrLen = 8;
         return RandomStringUtils.random(randomStrLen, useLetters, useNumbers);
-    }
-
-    /**
-     * validate section
-     */
-    private void validateLeaderIdOfRoom(Long room_id) {
-        Long user_id = getCurrentUserId();
-        if (!roomRepository.existsRoomMatchLeaderId(user_id, room_id)) {
-            throw new GotBetterException(MessageType.FORBIDDEN);
-        }
-    }
-
-    private Long validateJoinRoomRequest(Room room) {
-        List<UserRoom> userRoomList = userRoomRepository.findByRoomId(room.getRoomId());
-        Long user_id = getCurrentUserId();
-        long count = 0L;
-
-        for (UserRoom ur : userRoomList) {
-            if (ur.getAccepted()) {
-                count++;
-            }
-        }
-        if (count >= room.getMaxUserNum()) {
-            throw new GotBetterException(MessageType.CONFLICT);
-        }
-        for (UserRoom ur : userRoomList) {
-            if (Objects.equals(ur.getUserId(), user_id)) {
-                throw new GotBetterException(MessageType.CONFLICT);
-            }
-        }
-        return user_id;
     }
 }

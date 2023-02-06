@@ -1,4 +1,4 @@
-package pcrc.gotbetter.room.ui.requestBody;
+package pcrc.gotbetter.user_room.ui.requestBody;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,7 +9,7 @@ import lombok.ToString;
 @Getter
 @ToString
 @NoArgsConstructor
-public class RoomJoinRequest {
+public class UserRoomJoinRequest {
     @NotNull
     @NotBlank
     private String room_code;

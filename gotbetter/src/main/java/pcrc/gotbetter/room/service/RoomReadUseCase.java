@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 import pcrc.gotbetter.room.data_access.entity.Room;
-import pcrc.gotbetter.user.service.UserReadUseCase;
 
 import java.util.Date;
 import java.util.List;
@@ -13,7 +12,6 @@ public interface RoomReadUseCase {
 
     List<FindRoomResult> getUserRooms();
     FindRoomResult getOneRoomInfo(Long room_id);
-    List<UserReadUseCase.FindUserResult> getWaitListForApprove(Long room_id);
 
     @Getter
     @ToString
