@@ -13,6 +13,7 @@ import pcrc.gotbetter.user.data_access.entity.User;
 import pcrc.gotbetter.user.service.UserReadUseCase;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
 
@@ -59,20 +60,23 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     public FindRoomResult createRoom(RoomCreateCommand command) {
         Long user_id = getCurrentUserId();
 
-        if (command.getStart_date().compareTo(command.getTarget_date()) >= 0) {
-            throw new GotBetterException(MessageType.BAD_REQUEST);
-        }
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(command.getStart_date());
+        cal.add(Calendar.DATE, command.getWeek() * 7 - 1);
 
         Room room = Room.builder()
                 .title(command.getTitle())
                 .maxUserNum(command.getMax_user_num())
+                .currentUserNum(1)
                 .startDate(command.getStart_date())
-                .targetDate(command.getTarget_date())
+                .targetDate(cal.getTime())
+                .week(command.getWeek())
+                .currentWeek(command.getCurrent_week())
                 .entryFee(command.getEntry_fee())
                 .roomCode(getRandomCode())
                 .leaderId(user_id)
                 .account(command.getAccount())
-                .totalEntryFee(0)
+                .totalEntryFee(command.getEntry_fee())
                 .ruleId(command.getRule_id())
                 .build();
         roomRepository.save(room);
@@ -80,6 +84,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
         UserRoom userRoom = UserRoom.builder()
                 .userId(user_id)
                 .roomId(room.getRoomId())
+                .refund(room.getEntryFee())
                 .accepted(true)
                 .build();
         userRoomRepository.save(userRoom);

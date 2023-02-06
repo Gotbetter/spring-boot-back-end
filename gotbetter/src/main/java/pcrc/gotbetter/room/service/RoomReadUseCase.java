@@ -22,8 +22,11 @@ public interface RoomReadUseCase {
         private final Long room_id;
         private final String title;
         private final Integer max_user_num;
+        private final Integer current_user_num;
         private final Date start_date;
         private final Date target_date;
+        private final Integer week;
+        private final Integer current_week;
         private final Integer entry_fee;
         private final String room_code;
         private final Long leader_id;
@@ -36,8 +39,11 @@ public interface RoomReadUseCase {
                     .room_id(room.getRoomId())
                     .title(room.getTitle())
                     .max_user_num(room.getMaxUserNum())
+                    .current_user_num(room.getCurrentUserNum())
                     .start_date(room.getStartDate())
                     .target_date(room.getTargetDate())
+                    .week(room.getWeek())
+                    .current_week(room.getCurrentWeek())
                     .entry_fee(room.getEntryFee())
                     .room_code(room.getRoomCode())
                     .leader_id(room.getLeaderId())

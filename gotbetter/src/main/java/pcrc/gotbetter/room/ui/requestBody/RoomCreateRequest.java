@@ -19,7 +19,9 @@ public class RoomCreateRequest {
     @NotNull
     private Date start_date;
     @NotNull
-    private Date target_date;
+    private Integer week;
+    @NotNull
+    private Integer current_week;
     @NotNull
     private Integer entry_fee;
     @NotNull
