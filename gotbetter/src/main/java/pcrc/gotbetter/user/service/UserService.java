@@ -1,6 +1,7 @@
 package pcrc.gotbetter.user.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
@@ -21,6 +22,10 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
+    @Value("${local.default.profile.path}")
+    String default_profile_local_path;
+    @Value("${server.default.profile.path}")
+    String default_profile_server_path;
 
     @Autowired
     public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository,
@@ -33,15 +38,22 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
     @Override
     public FindUserResult createUser(UserCreateCommand command) {
         validateDuplicateUser(command.getAuth_id(), command.getEmail());
+
         String encodePassword = passwordEncoder.encode(command.getPassword());
         User saveUser = User.builder()
                 .authId(command.getAuth_id())
                 .password(encodePassword)
-                .username(command.getUsername())
+                .usernameNick(command.getUsername())
                 .email(command.getEmail())
                 .build();
         userRepository.save(saveUser);
-        return FindUserResult.findByUser(saveUser, TokenInfo.builder().build());
+
+        User returnUser = User.builder()
+                .authId(command.getAuth_id())
+                .usernameNick(command.getUsername())
+                .email(command.getEmail())
+                .build();
+        return FindUserResult.findByUser(returnUser, TokenInfo.builder().build());
     }
 
     @Override
@@ -58,14 +70,14 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
         // 아이디와 비번이 매치되는 유저가 있는지 확인
         User findUser = validateFindUser(query);
 
-        // profile
-        String default_profile = "/home/chaerin/gotbetter/image/profile/default_profile/default_profile.jpg";
         String bytes;
         try {
             bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(
                     Paths.get(findUser.getProfile())));
         } catch (Exception e) {
-            bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(default_profile)));
+            String os = System.getProperty("os.name").toLowerCase();
+            String dir = os.contains("win") ? default_profile_local_path : default_profile_server_path;
+            bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
         }
 
         // jwt
@@ -74,7 +86,7 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
 
         User user = User.builder()
                 .authId(findUser.getAuthId())
-                .username(findUser.getUsername())
+                .usernameNick(findUser.getUsernameNick())
                 .email(findUser.getEmail())
                 .profile(bytes)
                 .build();
