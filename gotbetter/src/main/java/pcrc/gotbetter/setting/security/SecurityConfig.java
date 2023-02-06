@@ -45,14 +45,16 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        String[] uri = {"/users/join", "/users", "/users/join/verify", "/reissue"};
+        String[] uriPost = {"/users/join", "/users", "/users/join/verify", "/users/reissue"};
+        String[] uriGet = {"/rules"};
 
         http.cors().configurationSource(corsConfigurationSource());
         http.httpBasic().disable()
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.authorizeHttpRequests()
-                .requestMatchers(HttpMethod.POST, uri).permitAll()
+                .requestMatchers(HttpMethod.POST, uriPost).permitAll()
+                .requestMatchers(HttpMethod.GET, uriGet).permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .formLogin().disable()
