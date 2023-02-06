@@ -6,8 +6,12 @@ import lombok.ToString;
 import pcrc.gotbetter.room.data_access.entity.Room;
 
 import java.util.Date;
+import java.util.List;
 
 public interface RoomReadUseCase {
+
+    List<FindRoomResult> getUserRooms();
+    FindRoomResult getOneRoomInfo(Long room_id);
 
     @Getter
     @ToString
