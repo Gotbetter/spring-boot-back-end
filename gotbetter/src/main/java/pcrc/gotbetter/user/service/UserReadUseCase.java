@@ -2,7 +2,7 @@ package pcrc.gotbetter.user.service;
 
 import lombok.*;
 import pcrc.gotbetter.setting.security.JWT.TokenInfo;
-import pcrc.gotbetter.user.data_access.domain.User;
+import pcrc.gotbetter.user.data_access.entity.User;
 
 import java.io.IOException;
 

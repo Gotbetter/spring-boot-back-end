@@ -9,7 +9,7 @@ import pcrc.gotbetter.room.data_access.repository.RoomRepository;
 import pcrc.gotbetter.room.data_access.repository.UserRoomRepository;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
-import pcrc.gotbetter.user.data_access.domain.User;
+import pcrc.gotbetter.user.data_access.entity.User;
 import pcrc.gotbetter.user.service.UserReadUseCase;
 
 import java.util.ArrayList;

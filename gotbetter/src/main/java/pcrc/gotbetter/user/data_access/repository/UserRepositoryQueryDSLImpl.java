@@ -7,7 +7,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-import static pcrc.gotbetter.user.data_access.domain.QUser.user;
+import static pcrc.gotbetter.user.data_access.entity.QUser.user;
 
 public class UserRepositoryQueryDSLImpl implements UserRepositoryQueryDSL {
 
