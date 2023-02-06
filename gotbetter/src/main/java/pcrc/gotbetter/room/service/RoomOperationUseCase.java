@@ -10,6 +10,7 @@ import java.util.Date;
 public interface RoomOperationUseCase {
 
     RoomReadUseCase.FindRoomResult createRoom(RoomCreateCommand command);
+    RoomReadUseCase.FindRoomResult requestJoinRoom(String room_code);
 
     @EqualsAndHashCode(callSuper = false)
     @Builder

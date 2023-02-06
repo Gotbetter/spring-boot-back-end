@@ -2,14 +2,17 @@ package pcrc.gotbetter.room.data_access.repository;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.util.StringUtils;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import pcrc.gotbetter.room.data_access.entity.Room;
+import pcrc.gotbetter.user.data_access.domain.User;
 
 import java.util.List;
 
 import static pcrc.gotbetter.room.data_access.entity.QRoom.room;
 import static pcrc.gotbetter.room.data_access.entity.QUserRoom.userRoom;
+import static pcrc.gotbetter.user.data_access.domain.QUser.user;
 
 public class RoomRepositoryQueryDSLImpl implements RoomRepositoryQueryDSL{
 
@@ -25,21 +28,51 @@ public class RoomRepositoryQueryDSLImpl implements RoomRepositoryQueryDSL{
         return queryFactory
                 .select(room)
                 .from(userRoom)
-                .rightJoin(room)
-                .where(userRoom.roomId.eq(room.roomId), userRoom.userId.eq(user_id))
+                .leftJoin(room)
+                .where(userRoom.roomId.eq(room.roomId), eqUserId(user_id), eqAccepted(true))
                 .fetch();
     }
 
     @Override
-    public Boolean existsByUserIdAndRoomId(Long user_id, Long room_id) {
-        Integer exists = queryFactory
+    public Room findRoomWithUserIdAndRoomId(Long user_id, Long room_id) {
+        return queryFactory
+                .select(room)
+                .from(room)
+                .where(room.roomId.eq(JPAExpressions
+                        .select(userRoom.roomId)
+                        .from(userRoom)
+                        .where(eqRoomId(room_id), eqUserId(user_id), eqAccepted(true))))
+                .fetchFirst();
+    }
+
+    @Override
+    public Boolean existsRoomMatchLeaderId(Long leader_id, Long room_id) {
+        Integer exists =  queryFactory
                 .selectOne()
-                .from(userRoom)
-                .where(eqUserId(user_id), eqRoomId(room_id))
+                .from(room)
+                .where(room.roomId.eq(room_id), room.leaderId.eq(leader_id))
                 .fetchFirst();
         return exists != null;
     }
 
+    @Override
+    public List<User> findWaitUsersByRoomId(Long room_id) {
+
+        return queryFactory
+                .select(user)
+                .from(user)
+                .where(user.id.in(
+                        JPAExpressions
+                                .select(userRoom.userId)
+                                .from(userRoom)
+                                .where(eqRoomId(room_id), eqAccepted(false))
+                ))
+                .fetch();
+    }
+
+    /**
+     * user room eq
+     */
     private BooleanExpression eqUserId(Long user_id) {
         if (StringUtils.isNullOrEmpty(String.valueOf(user_id))) {
             return null;
@@ -54,5 +87,10 @@ public class RoomRepositoryQueryDSLImpl implements RoomRepositoryQueryDSL{
         return userRoom.roomId.eq(room_id);
     }
 
-
+    private BooleanExpression eqAccepted(Boolean accepted) {
+        if (StringUtils.isNullOrEmpty(String.valueOf(accepted))) {
+            return null;
+        }
+        return userRoom.accepted.eq(accepted);
+    }
 }
