@@ -30,7 +30,9 @@ public class User implements UserDetails {
     private String refresh_token;
 
     @Builder
-    public User(String authId, String password, String usernameNick, String email, String profile) {
+    public User(Long id, String authId, String password,
+                String usernameNick, String email, String profile) {
+        this.id = id;
         this.authId = authId;
         this.password = password;
         this.usernameNick = usernameNick;
