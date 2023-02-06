@@ -1,4 +1,4 @@
-package pcrc.gotbetter.user.data_access.domain;
+package pcrc.gotbetter.user.data_access.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

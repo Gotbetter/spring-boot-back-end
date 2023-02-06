@@ -1,13 +1,11 @@
 package pcrc.gotbetter.user;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
-import pcrc.gotbetter.user.data_access.domain.User;
 import pcrc.gotbetter.user.data_access.repository.UserRepositoryQueryDSLImpl;
 
 @ExtendWith(SpringExtension.class)

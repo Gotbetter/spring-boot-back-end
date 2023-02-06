@@ -29,7 +29,7 @@ public class UserController {
         this.userReadUseCase = userReadUseCase;
     }
 
-    @PostMapping(value = "/join")
+    @PostMapping(value = "")
     public ResponseEntity<UserView> newUserJoin(@Valid @RequestBody UserJoinRequest request) {
 
         log.info("\"JOIN\"");
@@ -45,7 +45,7 @@ public class UserController {
         return ResponseEntity.created(null).body(UserView.builder().userResult(result).build());
     }
 
-    @PostMapping(value = "/join/verify")
+    @PostMapping(value = "/verify")
     public ResponseEntity<UserView> verifyId(@Valid @RequestBody UserVerifyIdRequest request) {
 
         log.info("\"VERIFY ID\"");
@@ -55,7 +55,7 @@ public class UserController {
         return ResponseEntity.ok(UserView.builder().userResult(result).build());
     }
 
-    @PostMapping(value = "")
+    @PostMapping(value = "/login")
     public ResponseEntity<UserView> login(@Valid @RequestBody UserLoginRequest request) throws IOException {
 
         log.info("\"LOGIN\"");

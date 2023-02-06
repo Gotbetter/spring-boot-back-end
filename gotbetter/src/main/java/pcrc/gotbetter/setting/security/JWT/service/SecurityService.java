@@ -7,7 +7,7 @@ import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 import pcrc.gotbetter.setting.security.JWT.JwtProvider;
 import pcrc.gotbetter.setting.security.JWT.TokenInfo;
-import pcrc.gotbetter.user.data_access.domain.User;
+import pcrc.gotbetter.user.data_access.entity.User;
 import pcrc.gotbetter.user.data_access.repository.UserRepository;
 
 import java.util.Date;

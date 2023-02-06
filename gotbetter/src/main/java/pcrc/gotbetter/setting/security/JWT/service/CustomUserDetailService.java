@@ -5,7 +5,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import pcrc.gotbetter.user.data_access.domain.User;
+import pcrc.gotbetter.user.data_access.entity.User;
 import pcrc.gotbetter.user.data_access.repository.UserRepository;
 
 @Service

@@ -6,13 +6,13 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import pcrc.gotbetter.room.data_access.entity.Room;
-import pcrc.gotbetter.user.data_access.domain.User;
+import pcrc.gotbetter.user.data_access.entity.User;
 
 import java.util.List;
 
 import static pcrc.gotbetter.room.data_access.entity.QRoom.room;
 import static pcrc.gotbetter.room.data_access.entity.QUserRoom.userRoom;
-import static pcrc.gotbetter.user.data_access.domain.QUser.user;
+import static pcrc.gotbetter.user.data_access.entity.QUser.user;
 
 public class RoomRepositoryQueryDSLImpl implements RoomRepositoryQueryDSL{
 

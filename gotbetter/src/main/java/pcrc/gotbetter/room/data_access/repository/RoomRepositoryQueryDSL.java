@@ -1,7 +1,7 @@
 package pcrc.gotbetter.room.data_access.repository;
 
 import pcrc.gotbetter.room.data_access.entity.Room;
-import pcrc.gotbetter.user.data_access.domain.User;
+import pcrc.gotbetter.user.data_access.entity.User;
 
 import java.util.List;
 
