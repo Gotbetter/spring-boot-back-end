@@ -57,16 +57,11 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     public FindRoomResult createRoom(RoomCreateCommand command) {
         Long user_id = getCurrentUserId();
 
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(command.getStart_date());
-        cal.add(Calendar.DATE, command.getWeek() * 7 - 1);
-
         Room room = Room.builder()
                 .title(command.getTitle())
                 .maxUserNum(command.getMax_user_num())
                 .currentUserNum(1)
                 .startDate(command.getStart_date())
-                .targetDate(cal.getTime())
                 .week(command.getWeek())
                 .currentWeek(command.getCurrent_week())
                 .entryFee(command.getEntry_fee())

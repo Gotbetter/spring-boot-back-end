@@ -17,7 +17,6 @@ public class RoomView {
     private final Integer max_user_num;
     private final Integer current_user_num;
     private final Date start_date;
-    private final Date target_date;
     private final Integer week;
     private final Integer current_week;
     private final Integer entry_fee;
@@ -34,7 +33,6 @@ public class RoomView {
         this.max_user_num = roomResult.getMax_user_num();
         this.current_user_num = roomResult.getCurrent_user_num();
         this.start_date = roomResult.getStart_date();
-        this.target_date = roomResult.getTarget_date();
         this.week = roomResult.getWeek();
         this.current_week = roomResult.getCurrent_week();
         this.entry_fee = roomResult.getEntry_fee();

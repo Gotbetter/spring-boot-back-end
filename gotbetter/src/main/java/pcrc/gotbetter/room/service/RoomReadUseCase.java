@@ -22,7 +22,6 @@ public interface RoomReadUseCase {
         private final Integer max_user_num;
         private final Integer current_user_num;
         private final Date start_date;
-        private final Date target_date;
         private final Integer week;
         private final Integer current_week;
         private final Integer entry_fee;
@@ -39,7 +38,6 @@ public interface RoomReadUseCase {
                     .max_user_num(room.getMaxUserNum())
                     .current_user_num(room.getCurrentUserNum())
                     .start_date(room.getStartDate())
-                    .target_date(room.getTargetDate())
                     .week(room.getWeek())
                     .current_week(room.getCurrentWeek())
                     .entry_fee(room.getEntryFee())

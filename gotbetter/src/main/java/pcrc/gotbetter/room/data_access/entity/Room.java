@@ -26,8 +26,6 @@ public class Room {
     private Integer currentUserNum;
     @Column(name = "start_date")
     private Date startDate;
-    @Column(name = "target_date")
-    private Date targetDate;
     private Integer week;
     @Column(name = "current_week")
     private Integer currentWeek;
@@ -45,7 +43,7 @@ public class Room {
 
     @Builder
     public Room(Long roomId, String title, Integer maxUserNum, Integer currentUserNum,
-                Date startDate, Date targetDate, Integer week, Integer currentWeek,
+                Date startDate, Integer week, Integer currentWeek,
                 Integer entryFee, String roomCode, Long leaderId, String account,
                 Integer totalEntryFee, Integer ruleId) {
         this.roomId = roomId;
@@ -53,7 +51,6 @@ public class Room {
         this.maxUserNum = maxUserNum;
         this.currentUserNum = currentUserNum;
         this.startDate = startDate;
-        this.targetDate = targetDate;
         this.week = week;
         this.currentWeek = currentWeek;
         this.entryFee = entryFee;
