@@ -15,7 +15,8 @@ public enum MessageType {
     UsernameOrPasswordNotFound ("Not existed user.", HttpStatus.BAD_REQUEST),
     ReLogin ("Access Token and Refresh Token are expired.", HttpStatus.UNAUTHORIZED),
     MalformedJwtException ("Access token is malformed.", HttpStatus.BAD_REQUEST),
-    IllegalArgumentJwtException("Access token is illegal.", HttpStatus.BAD_REQUEST)
+    IllegalArgumentJwtException("Access token is illegal.", HttpStatus.BAD_REQUEST),
+    NotAcceptable("If the request is normal, but the request cannot be received by the server.", HttpStatus.NOT_ACCEPTABLE)
     ;
 
     private final String message;

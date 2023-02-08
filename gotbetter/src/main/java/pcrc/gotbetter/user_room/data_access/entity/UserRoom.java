@@ -1,4 +1,4 @@
-package pcrc.gotbetter.room.data_access.entity;
+package pcrc.gotbetter.user_room.data_access.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

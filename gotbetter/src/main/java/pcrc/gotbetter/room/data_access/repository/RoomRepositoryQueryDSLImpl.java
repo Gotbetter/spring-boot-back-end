@@ -6,13 +6,11 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import pcrc.gotbetter.room.data_access.entity.Room;
-import pcrc.gotbetter.user.data_access.entity.User;
 
 import java.util.List;
 
 import static pcrc.gotbetter.room.data_access.entity.QRoom.room;
-import static pcrc.gotbetter.room.data_access.entity.QUserRoom.userRoom;
-import static pcrc.gotbetter.user.data_access.entity.QUser.user;
+import static pcrc.gotbetter.user_room.data_access.entity.QUserRoom.userRoom;
 
 public class RoomRepositoryQueryDSLImpl implements RoomRepositoryQueryDSL{
 
@@ -43,31 +41,6 @@ public class RoomRepositoryQueryDSLImpl implements RoomRepositoryQueryDSL{
                         .from(userRoom)
                         .where(eqRoomId(room_id), eqUserId(user_id), eqAccepted(true))))
                 .fetchFirst();
-    }
-
-    @Override
-    public Boolean existsRoomMatchLeaderId(Long leader_id, Long room_id) {
-        Integer exists =  queryFactory
-                .selectOne()
-                .from(room)
-                .where(room.roomId.eq(room_id), room.leaderId.eq(leader_id))
-                .fetchFirst();
-        return exists != null;
-    }
-
-    @Override
-    public List<User> findWaitUsersByRoomId(Long room_id) {
-
-        return queryFactory
-                .select(user)
-                .from(user)
-                .where(user.id.in(
-                        JPAExpressions
-                                .select(userRoom.userId)
-                                .from(userRoom)
-                                .where(eqRoomId(room_id), eqAccepted(false))
-                ))
-                .fetch();
     }
 
     /**
