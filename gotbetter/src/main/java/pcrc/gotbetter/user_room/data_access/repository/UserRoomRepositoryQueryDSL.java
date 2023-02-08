@@ -7,5 +7,6 @@ import java.util.List;
 public interface UserRoomRepositoryQueryDSL {
     List<User> findMembersInARoom(Long room_id, Boolean accepted);
     Boolean existsRoomMatchLeaderId(Long leader_id, Long room_id);
-    Boolean existsActiveMemberInARoom(Long room_id, Long user_id);
+    Boolean existsMemberInARoom(Long room_id, Long user_id, Boolean active);
+    void updateUserRoomAccepted(Long room_id, Long user_id);
 }

@@ -1,5 +1,6 @@
 package pcrc.gotbetter.user_room.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pcrc.gotbetter.room.data_access.entity.Room;
 import pcrc.gotbetter.room.data_access.repository.RoomRepository;
@@ -22,6 +23,7 @@ public class UserRoomService implements UserRoomOperationUseCase, UserRoomReadUs
     private final UserRoomRepository userRoomRepository;
     private final RoomRepository roomRepository;
 
+    @Autowired
     public UserRoomService(UserRoomRepository userRoomRepository, RoomRepository roomRepository) {
         this.userRoomRepository = userRoomRepository;
         this.roomRepository = roomRepository;
@@ -71,6 +73,30 @@ public class UserRoomService implements UserRoomOperationUseCase, UserRoomReadUs
         return result;
     }
 
+    @Override
+    public UserReadUseCase.FindUserResult approveJoinRoom(UserRoomAcceptedUpdateCommand command) {
+        validateLeaderIdOfRoom(command.getRoom_id(), false);
+        validateRequestUser(command);
+
+        userRoomRepository.updateUserRoomAccepted(command.getRoom_id(), command.getId());
+
+        List<User> users = userRoomRepository.findMembersInARoom(command.getRoom_id(), true);
+        UserReadUseCase.FindUserResult result = null;
+
+        for (User u : users) {
+            if (Objects.equals(u.getId(), command.getId())) {
+                result = UserReadUseCase.FindUserResult.builder()
+                        .id(u.getId())
+                        .auth_id(u.getAuthId())
+                        .username(u.getUsername())
+                        .email(u.getEmail())
+                        .build();
+                break;
+            }
+        }
+        return result;
+    }
+
     /**
      * validate section
      */
@@ -91,12 +117,18 @@ public class UserRoomService implements UserRoomOperationUseCase, UserRoomReadUs
 
     private Long validateLeaderIdOfRoom(Long room_id, Boolean accepted) {
         long user_id = getCurrentUserId();
-        if (accepted && !userRoomRepository.existsActiveMemberInARoom(room_id, user_id)) {
+        if (accepted && !userRoomRepository.existsMemberInARoom(room_id, user_id, true)) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
         if (!accepted && !userRoomRepository.existsRoomMatchLeaderId(user_id, room_id)) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
         return user_id;
+    }
+
+    private void validateRequestUser(UserRoomAcceptedUpdateCommand command) {
+        if (!userRoomRepository.existsMemberInARoom(command.getRoom_id(), command.getId(), false)) {
+            throw new GotBetterException(MessageType.NOT_FOUND);
+        }
     }
 }
