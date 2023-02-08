@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public interface RoomOperationUseCase {
 
@@ -18,7 +18,7 @@ public interface RoomOperationUseCase {
     class RoomCreateCommand {
         private final String title;
         private final Integer max_user_num;
-        private final Date start_date;
+        private final LocalDate start_date;
         private final Integer week;
         private final Integer current_week;
         private final Integer entry_fee;
