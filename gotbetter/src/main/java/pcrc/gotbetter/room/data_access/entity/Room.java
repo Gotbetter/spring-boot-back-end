@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "Room")
@@ -25,7 +25,7 @@ public class Room {
     @Column(name = "current_user_num")
     private Integer currentUserNum;
     @Column(name = "start_date")
-    private Date startDate;
+    private LocalDate startDate;
     private Integer week;
     @Column(name = "current_week")
     private Integer currentWeek;
@@ -43,7 +43,7 @@ public class Room {
 
     @Builder
     public Room(Long roomId, String title, Integer maxUserNum, Integer currentUserNum,
-                Date startDate, Integer week, Integer currentWeek,
+                LocalDate startDate, Integer week, Integer currentWeek,
                 Integer entryFee, String roomCode, Long leaderId, String account,
                 Integer totalEntryFee, Integer ruleId) {
         this.roomId = roomId;

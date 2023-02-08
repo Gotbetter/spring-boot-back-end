@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.ToString;
 import pcrc.gotbetter.room.data_access.entity.Room;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface RoomReadUseCase {
@@ -21,7 +21,7 @@ public interface RoomReadUseCase {
         private final String title;
         private final Integer max_user_num;
         private final Integer current_user_num;
-        private final Date start_date;
+        private final LocalDate start_date;
         private final Integer week;
         private final Integer current_week;
         private final Integer entry_fee;

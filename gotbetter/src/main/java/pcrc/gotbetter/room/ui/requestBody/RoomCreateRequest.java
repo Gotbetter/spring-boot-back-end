@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Getter
 @ToString
@@ -17,7 +17,7 @@ public class RoomCreateRequest {
     @NotNull
     private Integer max_user_num;
     @NotNull
-    private Date start_date;
+    private LocalDate start_date;
     @NotNull
     private Integer week;
     @NotNull

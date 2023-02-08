@@ -1,9 +1,11 @@
 package pcrc.gotbetter.user_room.data_access.repository;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.util.StringUtils;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.springframework.transaction.annotation.Transactional;
 import pcrc.gotbetter.user.data_access.entity.User;
 
 import java.util.List;
@@ -31,11 +33,19 @@ public class UserRoomRepositoryQueryDSLImpl implements UserRoomRepositoryQueryDS
     }
 
     @Override
-    public Boolean existsActiveMemberInARoom(Long room_id, Long user_id) {
+    public Boolean existsMemberInARoom(Long room_id, Long user_id, Boolean active) {
+        BooleanBuilder builder = new BooleanBuilder();
+        builder.and(eqRoomId(room_id))
+                .and(eqUserId(user_id));
+        if (active) {
+            builder.and(eqAccepted(true));
+        } else {
+            builder.and(eqAccepted(false));
+        }
         Integer exists =  queryFactory
                 .selectOne()
                 .from(userRoom)
-                .where(eqRoomId(room_id), eqUserId(user_id), eqAccepted(true))
+                .where(builder)
                 .fetchFirst();
         return exists != null;
     }
@@ -52,6 +62,21 @@ public class UserRoomRepositoryQueryDSLImpl implements UserRoomRepositoryQueryDS
                                 .where(eqRoomId(room_id), eqAccepted(accepted))
                 ))
                 .fetch();
+    }
+
+    @Override
+    @Transactional
+    public void updateUserRoomAccepted(Long room_id, Long user_id) {
+        queryFactory
+                .update(userRoom)
+                .where(eqRoomId(room_id), eqUserId(user_id))
+                .set(userRoom.accepted, true)
+                .set(userRoom.refund, queryFactory
+                        .select(room.entryFee)
+                        .from(room)
+                        .where(room.roomId.eq(room_id))
+                )
+                .execute();
     }
 
     /**

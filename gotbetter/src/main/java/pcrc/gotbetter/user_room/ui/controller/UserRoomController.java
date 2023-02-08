@@ -2,11 +2,13 @@ package pcrc.gotbetter.user_room.ui.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pcrc.gotbetter.room.service.RoomReadUseCase;
 import pcrc.gotbetter.user_room.service.UserRoomOperationUseCase;
 import pcrc.gotbetter.user_room.service.UserRoomReadUseCase;
+import pcrc.gotbetter.user_room.ui.requestBody.UserRoomJoinApproveRequest;
 import pcrc.gotbetter.user_room.ui.requestBody.UserRoomJoinRequest;
 import pcrc.gotbetter.room.ui.view.RoomView;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
@@ -24,6 +26,7 @@ public class UserRoomController {
     private final UserRoomOperationUseCase userRoomOperationUseCase;
     private final UserRoomReadUseCase userRoomReadUseCase;
 
+    @Autowired
     public UserRoomController(UserRoomOperationUseCase userRoomOperationUseCase,
                               UserRoomReadUseCase userRoomReadUseCase) {
         this.userRoomOperationUseCase = userRoomOperationUseCase;
@@ -59,5 +62,19 @@ public class UserRoomController {
         }
 
         return ResponseEntity.ok(userViews);
+    }
+
+    @PatchMapping(value = "")
+    public ResponseEntity<UserView> approveJoinRoom(@Valid @RequestBody UserRoomJoinApproveRequest request) {
+
+        log.info("\"APPROVE JOIN ROOM\"");
+
+        var command = UserRoomOperationUseCase.UserRoomAcceptedUpdateCommand.builder()
+                .id(request.getId())
+                .room_id(request.getRoom_id())
+                .build();
+        UserReadUseCase.FindUserResult result = userRoomOperationUseCase.approveJoinRoom(command);
+
+        return ResponseEntity.ok(UserView.builder().userResult(result).build());
     }
 }
