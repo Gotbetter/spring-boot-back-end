@@ -23,7 +23,7 @@ public class SecurityService {
         this.userRepository = userRepository;
     }
 
-    public String reissueNewAccessToken(HttpServletRequest request) {
+    public TokenInfo reissueNewAccessToken(HttpServletRequest request) {
 
         String refreshToken = jwtProvider.resolveToken(request);
 
@@ -34,11 +34,12 @@ public class SecurityService {
         User user = validateRefreshToken(refreshToken);
         long diffDays = compareDate(jwtProvider.parseClaims(refreshToken).getExpiration());
         TokenInfo tokenInfo = jwtProvider.generateToken(user.getAuthId());
-
         if (diffDays < 30) {
             userRepository.updateRefreshToken(user.getAuthId(), tokenInfo.getRefreshToken());
+        } else {
+            tokenInfo.setRefreshToken(refreshToken);
         }
-        return tokenInfo.getAccessToken();
+        return tokenInfo;
     }
 
     /**
