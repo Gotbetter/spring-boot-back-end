@@ -7,8 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import pcrc.gotbetter.setting.security.JWT.TokenInfo;
 import pcrc.gotbetter.setting.security.JWT.service.SecurityService;
-import pcrc.gotbetter.setting.security.JWT.ui.view.AccessTokenView;
+import pcrc.gotbetter.setting.security.JWT.ui.view.TokenView;
 
 @Slf4j
 @RestController
@@ -22,11 +23,11 @@ public class SecurityController {
     }
 
     @PostMapping(value = "/reissue")
-    public ResponseEntity<AccessTokenView> reissue(HttpServletRequest request) {
+    public ResponseEntity<TokenView> reissue(HttpServletRequest request) {
         log.info("REISSUE");
 
-        String accessToken = securityService.reissueNewAccessToken(request);
+        TokenInfo tokenInfo = securityService.reissueNewAccessToken(request);
 
-        return ResponseEntity.ok(AccessTokenView.builder().accessToken(accessToken).build());
+        return ResponseEntity.ok(TokenView.builder().tokenInfo(tokenInfo).build());
     }
 }

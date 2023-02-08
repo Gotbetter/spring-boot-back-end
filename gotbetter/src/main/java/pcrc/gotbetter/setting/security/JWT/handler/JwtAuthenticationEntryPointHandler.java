@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import pcrc.gotbetter.setting.http_api.MessageType;
 
 import java.io.IOException;
+import java.util.Date;
 
 @Component
 public class JwtAuthenticationEntryPointHandler implements AuthenticationEntryPoint {
@@ -17,7 +18,7 @@ public class JwtAuthenticationEntryPointHandler implements AuthenticationEntryPo
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         String exception = (String)request.getAttribute("exception");
 
-        System.out.println("exception:" + exception);
+        System.out.println("[" + new Date().getTime() + "] exception:" + exception);
 
         //토큰이 없는 경우 예외처리
         if (exception == null) {
