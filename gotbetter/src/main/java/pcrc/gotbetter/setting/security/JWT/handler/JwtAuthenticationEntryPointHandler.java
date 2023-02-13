@@ -10,7 +10,8 @@ import org.springframework.stereotype.Component;
 import pcrc.gotbetter.setting.http_api.MessageType;
 
 import java.io.IOException;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Component
 public class JwtAuthenticationEntryPointHandler implements AuthenticationEntryPoint {
@@ -18,7 +19,10 @@ public class JwtAuthenticationEntryPointHandler implements AuthenticationEntryPo
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         String exception = (String)request.getAttribute("exception");
 
-        System.out.println("[" + new Date().getTime() + "] exception:" + exception);
+        LocalDateTime now = LocalDateTime.now();
+        String formatedNow = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+        System.out.println("[" + formatedNow + "] exception: " + exception);
 
         //토큰이 없는 경우 예외처리
         if (exception == null) {
