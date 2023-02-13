@@ -21,10 +21,10 @@ public class RoomView {
     private final Integer current_week;
     private final Integer entry_fee;
     private final String room_code;
-    private final Long leader_id;
     private final String account;
     private final Integer total_entry_fee;
     private final Integer rule_id;
+    private final Long participant_id;
 
     @Builder
     public RoomView(RoomReadUseCase.FindRoomResult roomResult) {
@@ -37,9 +37,9 @@ public class RoomView {
         this.current_week = roomResult.getCurrent_week();
         this.entry_fee = roomResult.getEntry_fee();
         this.room_code = roomResult.getRoom_code();
-        this.leader_id = roomResult.getLeader_id();
         this.account = roomResult.getAccount();
         this.total_entry_fee = roomResult.getTotal_entry_fee();
         this.rule_id = roomResult.getRule_id();
+        this.participant_id = roomResult.getParticipant_id();
     }
 }

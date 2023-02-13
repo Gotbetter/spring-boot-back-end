@@ -26,12 +26,12 @@ public interface RoomReadUseCase {
         private final Integer current_week;
         private final Integer entry_fee;
         private final String room_code;
-        private final Long leader_id;
         private final String account;
         private final Integer total_entry_fee;
         private final Integer rule_id;
+        private final Long participant_id;
 
-        public static FindRoomResult findByRoom(Room room) {
+        public static FindRoomResult findByRoom(Room room, Long participant_id) {
             return FindRoomResult.builder()
                     .room_id(room.getRoomId())
                     .title(room.getTitle())
@@ -42,10 +42,10 @@ public interface RoomReadUseCase {
                     .current_week(room.getCurrentWeek())
                     .entry_fee(room.getEntryFee())
                     .room_code(room.getRoomCode())
-                    .leader_id(room.getLeaderId())
                     .account(room.getAccount())
                     .total_entry_fee(room.getTotalEntryFee())
                     .rule_id(room.getRuleId())
+                    .participant_id(participant_id)
                     .build();
         }
     }

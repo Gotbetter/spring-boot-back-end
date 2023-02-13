@@ -3,15 +3,16 @@ package pcrc.gotbetter.room.service;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pcrc.gotbetter.participant.data_access.entity.Participant;
+import pcrc.gotbetter.participant.data_access.entity.Participate;
 import pcrc.gotbetter.room.data_access.entity.Room;
-import pcrc.gotbetter.user_room.data_access.entity.UserRoom;
+import pcrc.gotbetter.participant.data_access.repository.ParticipateRepository;
 import pcrc.gotbetter.room.data_access.repository.RoomRepository;
-import pcrc.gotbetter.user_room.data_access.repository.UserRoomRepository;
+import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
@@ -19,12 +20,14 @@ import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
 @Service
 public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     private final RoomRepository roomRepository;
-    private final UserRoomRepository userRoomRepository;
+    private final ParticipateRepository participateRepository;
+    private final ParticipantRepository participantRepository;
 
     @Autowired
-    public RoomService(RoomRepository roomRepository, UserRoomRepository userRoomRepository) {
+    public RoomService(RoomRepository roomRepository, ParticipateRepository participateRepository, ParticipantRepository participantRepository) {
         this.roomRepository = roomRepository;
-        this.userRoomRepository = userRoomRepository;
+        this.participateRepository = participateRepository;
+        this.participantRepository = participantRepository;
     }
 
     @Override
@@ -50,7 +53,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
         if (room == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
-        return FindRoomResult.findByRoom(room);
+        return FindRoomResult.findByRoom(room, null);
     }
 
     @Override
@@ -66,22 +69,28 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
                 .currentWeek(command.getCurrent_week())
                 .entryFee(command.getEntry_fee())
                 .roomCode(getRandomCode())
-                .leaderId(user_id)
                 .account(command.getAccount())
                 .totalEntryFee(command.getEntry_fee())
                 .ruleId(command.getRule_id())
                 .build();
         roomRepository.save(room);
 
-        UserRoom userRoom = UserRoom.builder()
+        Participate participate = Participate.builder()
                 .userId(user_id)
                 .roomId(room.getRoomId())
-                .refund(room.getEntryFee())
                 .accepted(true)
                 .build();
-        userRoomRepository.save(userRoom);
+        participateRepository.save(participate);
 
-        return FindRoomResult.findByRoom(room);
+        Participant participant = Participant.builder()
+                .userId(user_id)
+                .roomId(room.getRoomId())
+                .authority(true)
+                .refund(room.getEntryFee())
+                .build();
+        participantRepository.save(participant);
+
+        return FindRoomResult.findByRoom(room, participant.getParticipantId());
     }
 
     /**

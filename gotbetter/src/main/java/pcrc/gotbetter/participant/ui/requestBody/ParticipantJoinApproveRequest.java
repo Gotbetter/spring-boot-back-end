@@ -1,4 +1,4 @@
-package pcrc.gotbetter.user_room.ui.requestBody;
+package pcrc.gotbetter.participant.ui.requestBody;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -8,9 +8,9 @@ import lombok.ToString;
 @Getter
 @ToString
 @NoArgsConstructor
-public class UserRoomJoinApproveRequest {
+public class ParticipantJoinApproveRequest {
     @NotNull
-    private Long id;
+    private Long user_id;
     @NotNull
     private Long room_id;
 }
