@@ -15,6 +15,6 @@ public class SecurityUtil {
             throw new GotBetterException(MessageType.ReLogin);
         }
         User user = (User) authentication.getPrincipal();
-        return user.getId();
+        return user.getUserId();
     }
 }

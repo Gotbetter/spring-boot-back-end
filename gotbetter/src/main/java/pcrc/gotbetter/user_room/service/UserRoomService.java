@@ -59,11 +59,11 @@ public class UserRoomService implements UserRoomOperationUseCase, UserRoomReadUs
         List<UserReadUseCase.FindUserResult> result = new ArrayList<>();
 
         for (User u : users) {
-            if (accepted && (u.getId() == user_id)) {
+            if (accepted && (u.getUserId() == user_id)) {
                 continue;
             }
             result.add(UserReadUseCase.FindUserResult.builder()
-                    .id(u.getId())
+                    .user_id(u.getUserId())
                     .auth_id(u.getAuthId())
                     .username(u.getUsernameNick())
                     .email(u.getEmail())
@@ -84,9 +84,9 @@ public class UserRoomService implements UserRoomOperationUseCase, UserRoomReadUs
         UserReadUseCase.FindUserResult result = null;
 
         for (User u : users) {
-            if (Objects.equals(u.getId(), command.getId())) {
+            if (Objects.equals(u.getUserId(), command.getId())) {
                 result = UserReadUseCase.FindUserResult.builder()
-                        .id(u.getId())
+                        .user_id(u.getUserId())
                         .auth_id(u.getAuthId())
                         .username(u.getUsername())
                         .email(u.getEmail())

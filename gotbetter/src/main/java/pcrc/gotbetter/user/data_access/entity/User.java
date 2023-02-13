@@ -19,7 +19,8 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "user_id")
+    private Long userId;
     @Column(name = "auth_id")
     private String authId;
     private String password;
@@ -30,9 +31,9 @@ public class User implements UserDetails {
     private String refresh_token;
 
     @Builder
-    public User(Long id, String authId, String password,
+    public User(Long userId, String authId, String password,
                 String usernameNick, String email, String profile) {
-        this.id = id;
+        this.userId = userId;
         this.authId = authId;
         this.password = password;
         this.usernameNick = usernameNick;
