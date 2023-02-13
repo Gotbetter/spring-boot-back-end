@@ -5,12 +5,13 @@ import com.querydsl.core.util.StringUtils;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import pcrc.gotbetter.room.data_access.entity.Room;
 
 import java.util.List;
 
+import static pcrc.gotbetter.participant.data_access.entity.QParticipant.participant;
 import static pcrc.gotbetter.room.data_access.entity.QRoom.room;
-import static pcrc.gotbetter.user_room.data_access.entity.QUserRoom.userRoom;
 
 public class RoomRepositoryQueryDSLImpl implements RoomRepositoryQueryDSL{
 
@@ -25,9 +26,9 @@ public class RoomRepositoryQueryDSLImpl implements RoomRepositoryQueryDSL{
     public List<Room> findUserRooms(Long user_id) {
         return queryFactory
                 .select(room)
-                .from(userRoom)
+                .from(participant)
                 .leftJoin(room)
-                .where(userRoom.roomId.eq(room.roomId), eqUserId(user_id), eqAccepted(true))
+                .where(participant.roomId.eq(room.roomId), participantEqUserId(user_id))
                 .fetch();
     }
 
@@ -37,33 +38,46 @@ public class RoomRepositoryQueryDSLImpl implements RoomRepositoryQueryDSL{
                 .select(room)
                 .from(room)
                 .where(room.roomId.eq(JPAExpressions
-                        .select(userRoom.roomId)
-                        .from(userRoom)
-                        .where(eqRoomId(room_id), eqUserId(user_id), eqAccepted(true))))
+                        .select(participant.roomId)
+                        .from(participant)
+                        .where(participantEqRoomId(room_id), participantEqUserId(user_id))))
                 .fetchFirst();
     }
 
-    /**
-     * user room eq
-     */
-    private BooleanExpression eqUserId(Long user_id) {
-        if (StringUtils.isNullOrEmpty(String.valueOf(user_id))) {
-            return null;
-        }
-        return userRoom.userId.eq(user_id);
+    @Override
+    @Transactional
+    public void updatePlusTotalEntryFeeAndCurrentNum(Long room_id, Integer fee) {
+        queryFactory
+                .update(room)
+                .set(room.totalEntryFee, room.totalEntryFee.add(fee))
+                .set(room.currentUserNum, room.currentUserNum.add(1))
+                .where(roomEqRoomId(room_id))
+                .execute();
     }
 
-    private BooleanExpression eqRoomId(Long room_id) {
+    /**
+     * room eq
+     */
+    private BooleanExpression roomEqRoomId(Long room_id) {
         if (StringUtils.isNullOrEmpty(String.valueOf(room_id))) {
             return null;
         }
-        return userRoom.roomId.eq(room_id);
+        return room.roomId.eq(room_id);
     }
-
-    private BooleanExpression eqAccepted(Boolean accepted) {
-        if (StringUtils.isNullOrEmpty(String.valueOf(accepted))) {
+    /**
+     * participant eq
+     */
+    private BooleanExpression participantEqUserId(Long user_id) {
+        if (StringUtils.isNullOrEmpty(String.valueOf(user_id))) {
             return null;
         }
-        return userRoom.accepted.eq(accepted);
+        return participant.userId.eq(user_id);
+    }
+
+    private BooleanExpression participantEqRoomId(Long room_id) {
+        if (StringUtils.isNullOrEmpty(String.valueOf(room_id))) {
+            return null;
+        }
+        return participant.roomId.eq(room_id);
     }
 }
