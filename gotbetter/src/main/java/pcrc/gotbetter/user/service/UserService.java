@@ -85,10 +85,10 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
         userRepository.updateRefreshToken(findUser.getAuthId(), tokenInfo.getRefreshToken());
 
         User user = User.builder()
-                .authId(findUser.getAuthId())
-                .usernameNick(findUser.getUsernameNick())
-                .email(findUser.getEmail())
-                .profile(bytes)
+//                .authId(findUser.getAuthId())
+//                .usernameNick(findUser.getUsernameNick())
+//                .email(findUser.getEmail())
+//                .profile(bytes)
                 .build();
         return FindUserResult.findByUser(user, tokenInfo);
     }

@@ -24,7 +24,7 @@ public interface UserReadUseCase {
     @ToString
     @Builder
     class FindUserResult {
-        private final Long id;
+        private final Long user_id;
         private final String auth_id;
         private final String username;
         private final String email;
@@ -34,7 +34,7 @@ public interface UserReadUseCase {
 
         public static FindUserResult findByUser(User user, TokenInfo tokenInfo) {
             return FindUserResult.builder()
-                    .id(user.getId())
+                    .user_id(user.getUserId())
                     .auth_id(user.getAuthId())
                     .username(user.getUsernameNick())
                     .email(user.getEmail())

@@ -55,7 +55,7 @@ public class UserRoomRepositoryQueryDSLImpl implements UserRoomRepositoryQueryDS
         return queryFactory
                 .select(user)
                 .from(user)
-                .where(user.id.in(
+                .where(user.userId.in(
                         JPAExpressions
                                 .select(userRoom.userId)
                                 .from(userRoom)

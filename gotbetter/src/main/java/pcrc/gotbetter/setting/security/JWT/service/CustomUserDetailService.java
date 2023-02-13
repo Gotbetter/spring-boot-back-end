@@ -28,7 +28,7 @@ public class CustomUserDetailService implements UserDetailsService {
 
     private UserDetails createUserDetails(User user) {
         return User.builder()
-                .id(user.getId())
+                .userId(user.getUserId())
                 .authId(user.getAuthId())
                 .email(user.getEmail())
                 .profile(user.getProfile())
