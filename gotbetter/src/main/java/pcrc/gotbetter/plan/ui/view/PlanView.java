@@ -19,7 +19,7 @@ public class PlanView {
     private final Integer week;
     private final Boolean three_days_passed;
     private final Boolean rejected;
-    private final Long id;
+    private final Long user_id;
     private final Long room_id;
 
     @Builder
@@ -31,7 +31,7 @@ public class PlanView {
         this.week = planResult.getWeek();
         this.three_days_passed = planResult.getThree_days_passed();
         this.rejected = planResult.getRejected();
-        this.id = planResult.getUser_id();
+        this.user_id = planResult.getUser_id();
         this.room_id = planResult.getRoom_id();
     }
 }

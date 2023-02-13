@@ -16,7 +16,6 @@ public interface PlanOperationUseCase {
     @Getter
     @ToString
     class PlanCreateCommand {
-        private final Long user_id;
-        private final Long room_id;
+        private final Long participant_id;
     }
 }

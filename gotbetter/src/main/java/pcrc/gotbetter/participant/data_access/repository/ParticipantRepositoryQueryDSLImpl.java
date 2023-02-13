@@ -82,6 +82,27 @@ public class ParticipantRepositoryQueryDSLImpl implements ParticipantRepositoryQ
                 .fetch();
     }
 
+    @Override
+    public Boolean isMatchedLeader(Long user_id, Long room_id) {
+        Integer exists =  queryFactory
+                .selectOne()
+                .from(participant)
+                .where(participantEqUserId(user_id), participantEqRoomId(room_id),
+                        participant.authority.eq(true))
+                .fetchFirst();
+        return exists != null;
+    }
+
+    @Override
+    public Boolean existsMemberInRoom(Long user_id, Long room_id) {
+        Integer exists =  queryFactory
+                .selectOne()
+                .from(participant)
+                .where(participantEqUserId(user_id), participantEqRoomId(room_id))
+                .fetchFirst();
+        return exists != null;
+    }
+
     /**
      * participant eq
      */
@@ -123,60 +144,3 @@ public class ParticipantRepositoryQueryDSLImpl implements ParticipantRepositoryQ
         return participate.accepted.eq(accepted);
     }
 }
-
-
-//    @Override
-//    public Boolean existsRoomMatchLeaderId(Long leader_id, Long room_id) {
-//        Integer exists =  queryFactory
-//                .selectOne()
-//                .from(room)
-//                .where(room.roomId.eq(room_id), room.leaderId.eq(leader_id))
-//                .fetchFirst();
-//        return exists != null;
-//    }
-
-//    @Override
-//    public Boolean existsMemberInARoom(Long room_id, Long user_id, Boolean active) {
-//        BooleanBuilder builder = new BooleanBuilder();
-//        builder.and(eqRoomId(room_id))
-//                .and(eqUserId(user_id));
-//        if (active) {
-//            builder.and(eqAccepted(true));
-//        } else {
-//            builder.and(eqAccepted(false));
-//        }
-//        Integer exists =  queryFactory
-//                .selectOne()
-//                .from(participant)
-//                .where(builder)
-//                .fetchFirst();
-//        return exists != null;
-//    }
-//    @Override
-//    public List<User> findMembersInARoom(Long room_id, Boolean accepted) {
-//        return queryFactory
-//                .select(user)
-//                .from(user)
-//                .where(user.userId.in(
-//                        JPAExpressions
-//                                .select(participant.userId)
-//                                .from(participant)
-//                                .where(eqRoomId(room_id), eqAccepted(accepted))
-//                ))
-//                .fetch();
-//    }
-
-//    @Override
-//    @Transactional
-//    public void updateUserRoomAccepted(Long room_id, Long user_id) {
-//        queryFactory
-//                .update(participant)
-//                .where(eqRoomId(room_id), eqUserId(user_id))
-//                .set(participant.accepted, true)
-//                .set(participant.refund, queryFactory
-//                        .select(room.entryFee)
-//                        .from(room)
-//                        .where(room.roomId.eq(room_id))
-//                )
-//                .execute();
-//    }

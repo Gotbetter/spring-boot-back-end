@@ -4,7 +4,6 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.util.StringUtils;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
-import pcrc.gotbetter.plan.service.PlanReadUseCase;
 
 import java.util.Optional;
 
@@ -18,40 +17,32 @@ public class PlanRepositoryQueryDSLImpl implements PlanRepositoryQueryDSL{
     }
 
     @Override
-    public Boolean existsByRoomidAndUserid(Long room_id, Long user_id) {
+    public Boolean existsByParticipantId(Long participant_id) {
         Integer exists =  queryFactory
                 .selectOne()
                 .from(plan)
-                .where(eqRoomId(room_id), eqUserId(user_id))
+                .where(eqParticipantId(participant_id))
                 .fetchFirst();
         return exists != null;
     }
 
     @Override
-    public Optional<Plan> findWeekPlanOfUser(PlanReadUseCase.PlanFindQuery query) {
+    public Optional<Plan> findWeekPlanOfUser(Long participant_id, Integer week) {
         return Optional.ofNullable(queryFactory
                 .select(plan)
                 .from(plan)
-                .where(eqRoomId(query.getRoom_id()), eqUserId(query.getUser_id())
-                        , eqWeek(query.getWeek()))
+                .where(eqParticipantId(participant_id), eqWeek(week))
                 .fetchFirst());
     }
 
     /**
      * plan eq
      */
-    private BooleanExpression eqUserId(Long user_id) {
-        if (StringUtils.isNullOrEmpty(String.valueOf(user_id))) {
+    private BooleanExpression eqParticipantId(Long participant_id) {
+        if (StringUtils.isNullOrEmpty(String.valueOf(participant_id))) {
             return null;
         }
-        return plan.userId.eq(user_id);
-    }
-
-    private BooleanExpression eqRoomId(Long room_id) {
-        if (StringUtils.isNullOrEmpty(String.valueOf(room_id))) {
-            return null;
-        }
-        return plan.roomId.eq(room_id);
+        return plan.participantId.eq(participant_id);
     }
 
     private BooleanExpression eqWeek(Integer week) {

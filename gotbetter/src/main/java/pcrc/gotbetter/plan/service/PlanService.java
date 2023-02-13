@@ -2,13 +2,14 @@ package pcrc.gotbetter.plan.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pcrc.gotbetter.participant.data_access.entity.Participant;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
 import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
 import pcrc.gotbetter.room.data_access.entity.Room;
 import pcrc.gotbetter.room.data_access.repository.RoomRepository;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
-import pcrc.gotbetter.user_room.data_access.repository.UserRoomRepository;
+import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,38 +20,41 @@ import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
 public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
     private final PlanRepository planRepository;
     private final RoomRepository roomRepository;
-    private final UserRoomRepository userRoomRepository;
+    private final ParticipantRepository participantRepository;
 
     @Autowired
     public PlanService(PlanRepository planRepository,
-                       RoomRepository roomRepository, UserRoomRepository userRoomRepository) {
+                       RoomRepository roomRepository, ParticipantRepository participantRepository) {
         this.planRepository = planRepository;
         this.roomRepository = roomRepository;
-        this.userRoomRepository = userRoomRepository;
+        this.participantRepository = participantRepository;
     }
 
     @Override
     public List<FindPlanResult> createPlans(PlanCreateCommand command) {
-        validateLeaderIdOfRoom(command.getRoom_id());
-        validateActiveUserInRoom(command.getRoom_id(), command.getUser_id());
-        validateDuplicateCreatePlans(command);
-
-        Room room = roomRepository.findByRoomId(command.getRoom_id())
+        Participant participant = participantRepository.findByParticipantId(command.getParticipant_id())
                 .orElseThrow(() -> {
                     throw new GotBetterException(MessageType.NOT_FOUND);
                 });
-        List<FindPlanResult> results = new ArrayList<>();
+        Room room = roomRepository.findByRoomId(participant.getRoomId())
+                .orElseThrow(() -> {
+                    throw new GotBetterException(MessageType.NOT_FOUND);
+                });
+        validateLeaderIdOfRoom(participant.getRoomId());
+        validateDuplicateCreatePlans(command.getParticipant_id());
 
+        List<FindPlanResult> results = new ArrayList<>();
         for (int i = 1;i <= room.getWeek();i++) {
             Plan plan = Plan.builder()
+                    .participantId(command.getParticipant_id())
+                    .userId(participant.getParticipantId())
+                    .roomId(participant.getRoomId())
                     .startDate(room.getStartDate().plusDays((i - 1) * 7L))
                     .targetDate(room.getStartDate().plusDays(i * 7L - 1))
                     .score(0.0F)
                     .week(i)
                     .threeDaysPassed(false)
                     .rejected(false)
-                    .userId(command.getUser_id())
-                    .roomId(command.getRoom_id())
                     .build();
             planRepository.save(plan);
             results.add(FindPlanResult.findByPlan(plan));
@@ -60,9 +64,13 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
 
     @Override
     public FindPlanResult getWeekPlan(PlanFindQuery query) {
-        validateActiveUserInRoom(query.getRoom_id(), getCurrentUserId());
+        Participant participant = participantRepository.findByParticipantId(query.getParticipant_id())
+                .orElseThrow(() -> {
+                    throw new GotBetterException(MessageType.NOT_FOUND);
+                });
+        validateActiveUserInRoom(getCurrentUserId(), participant.getRoomId());
 
-        Plan plan = planRepository.findWeekPlanOfUser(query).orElseThrow(() -> {
+        Plan plan = planRepository.findWeekPlanOfUser(query.getParticipant_id(), query.getWeek()).orElseThrow(() -> {
             throw new GotBetterException(MessageType.NOT_FOUND);
         });
         return FindPlanResult.findByPlan(plan);
@@ -73,18 +81,19 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
      */
     private void validateLeaderIdOfRoom(Long room_id) {
         long user_id = getCurrentUserId();
-        if (!userRoomRepository.existsRoomMatchLeaderId(user_id, room_id)) {
+        if (!participantRepository.isMatchedLeader(user_id, room_id)) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
     }
-    private void validateActiveUserInRoom(Long room_id, Long user_id) {
-        if (!userRoomRepository.existsMemberInARoom(room_id, user_id, true)) {
+
+    private void validateActiveUserInRoom(Long user_id, Long room_id) {
+        if (!participantRepository.existsMemberInRoom(user_id, room_id)) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
     }
 
-    private void validateDuplicateCreatePlans(PlanCreateCommand command) {
-        if (planRepository.existsByRoomidAndUserid(command.getRoom_id(), command.getUser_id())) {
+    private void validateDuplicateCreatePlans(Long participant_id) {
+        if (planRepository.existsByParticipantId(participant_id)) {
             throw new GotBetterException(MessageType.CONFLICT);
         }
     }
