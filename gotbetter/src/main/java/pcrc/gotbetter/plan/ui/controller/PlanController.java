@@ -32,8 +32,7 @@ public class PlanController {
         log.info("\"CREATE PLANS\"");
 
         var command = PlanOperationUseCase.PlanCreateCommand.builder()
-                .user_id(request.getId())
-                .room_id(request.getRoom_id())
+                .participant_id(request.getParticipant_id())
                 .build();
 
         List<PlanView> planViews = new ArrayList<>();
@@ -45,16 +44,14 @@ public class PlanController {
         return ResponseEntity.created(null).body(planViews);
     }
 
-    @GetMapping("/{room_id}/{id}")
-    public ResponseEntity<PlanView> getWeekPlan(@PathVariable("room_id") Long room_id,
-                                                @PathVariable("id") Long user_id,
+    @GetMapping("/{participant_id}")
+    public ResponseEntity<PlanView> getWeekPlan(@PathVariable("participant_id") Long participant_id,
                                                 @RequestParam(value = "week") Integer week) {
 
         log.info("\"GET A WEEK PLAN\"");
 
         var query = PlanReadUseCase.PlanFindQuery.builder()
-                .room_id(room_id)
-                .user_id(user_id)
+                .participant_id(participant_id)
                 .week(week)
                 .build();
 

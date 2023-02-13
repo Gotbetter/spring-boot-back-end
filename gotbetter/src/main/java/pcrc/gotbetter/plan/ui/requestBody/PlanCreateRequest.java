@@ -10,7 +10,5 @@ import lombok.ToString;
 @NoArgsConstructor
 public class PlanCreateRequest {
     @NotNull
-    private Long id;
-    @NotNull
-    private Long room_id;
+    private Long participant_id;
 }

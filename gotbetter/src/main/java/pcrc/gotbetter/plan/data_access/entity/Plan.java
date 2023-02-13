@@ -19,6 +19,12 @@ public class Plan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "plan_id")
     private Long planId;
+    @Column(name = "participant_id")
+    private Long participantId;
+    @Column(name = "user_id")
+    private Long userId;
+    @Column(name = "room_id")
+    private Long roomId;
     @Column(name = "start_date")
     private LocalDate startDate;
     @Column(name = "target_date")
@@ -29,23 +35,20 @@ public class Plan {
     @Column(name = "three_days_passed")
     private Boolean threeDaysPassed;
     private Boolean rejected;
-    @Column(name = "id")
-    private Long userId;
-    @Column(name = "room_id")
-    private Long roomId;
 
     @Builder
-    public Plan(Long planId, LocalDate startDate, LocalDate targetDate,
-                Float score, Integer week, Boolean threeDaysPassed,
-                Boolean rejected, Long userId, Long roomId) {
+    public Plan(Long planId, Long participantId, Long userId, Long roomId,
+                LocalDate startDate, LocalDate targetDate, Float score,
+                Integer week, Boolean threeDaysPassed, Boolean rejected) {
         this.planId = planId;
+        this.participantId = participantId;
+        this.userId = userId;
+        this.roomId = roomId;
         this.startDate = startDate;
         this.targetDate = targetDate;
         this.score = score;
         this.week = week;
         this.threeDaysPassed = threeDaysPassed;
         this.rejected = rejected;
-        this.userId = userId;
-        this.roomId = roomId;
     }
 }

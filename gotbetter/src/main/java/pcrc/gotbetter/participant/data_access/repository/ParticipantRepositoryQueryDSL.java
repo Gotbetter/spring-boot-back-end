@@ -12,11 +12,6 @@ public interface ParticipantRepositoryQueryDSL {
     List<Tuple> findActiveMembers(Long room_id);
     Boolean existsWaitMemberInARoom(Long user_id, Long room_id, Boolean active);
     void updateParticipateAccepted(Long user_id, Long room_id);
+    Boolean isMatchedLeader(Long user_id, Long room_id);
+    Boolean existsMemberInRoom(Long user_id, Long room_id);
 }
-/*
-    Boolean existsRoomMatchLeaderId(Long leader_id, Long room_id);
-    List<User> findMembersInARoom(Long room_id, Boolean accepted);
-    void updateUserRoomAccepted(Long user_id, Long room_id);
-
-
-* */

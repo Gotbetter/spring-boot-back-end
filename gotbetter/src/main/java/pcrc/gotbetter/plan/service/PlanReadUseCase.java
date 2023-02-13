@@ -17,8 +17,7 @@ public interface PlanReadUseCase {
     @ToString
     @Builder
     class PlanFindQuery {
-        private final Long room_id;
-        private final Long user_id;
+        private final Long participant_id;
         private final Integer week;
     }
 
