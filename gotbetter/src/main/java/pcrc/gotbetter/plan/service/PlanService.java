@@ -47,7 +47,7 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
         for (int i = 1;i <= room.getWeek();i++) {
             Plan plan = Plan.builder()
                     .participantId(command.getParticipant_id())
-                    .userId(participant.getParticipantId())
+                    .userId(participant.getUserId())
                     .roomId(participant.getRoomId())
                     .startDate(room.getStartDate().plusDays((i - 1) * 7L))
                     .targetDate(room.getStartDate().plusDays(i * 7L - 1))
