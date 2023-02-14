@@ -32,6 +32,9 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
     public FindDetailPlanResult createDetailPlan(DetailPlanCreateCommand command) {
         // plan_id을 가지는 plan 인스턴스 가져와서 요청을 보낸 유저가 맞는지 확인
         Plan plan = validatePlan(command.getPlan_id());
+        if (plan.getRejected()) {
+            planRepository.updateRejected(plan.getPlanId(), false);
+        }
         Long user_id = getCurrentUserId();
         if (!Objects.equals(user_id, plan.getUserId())) {
             throw new GotBetterException(MessageType.FORBIDDEN);

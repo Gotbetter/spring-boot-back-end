@@ -42,12 +42,14 @@ public class DetailPlanRepositoryQueryDSLImpl implements DetailPlanRepositoryQue
         }
         return detailPlan.userId.eq(user_id);
     }
+
     private BooleanExpression detailPlanEqRoomId(Long room_id) {
         if (StringUtils.isNullOrEmpty(String.valueOf(room_id))) {
             return null;
         }
         return detailPlan.roomId.eq(room_id);
     }
+
     private BooleanExpression detailPlanEqDetailPlanId(Long detail_plan_id) {
         if (StringUtils.isNullOrEmpty(String.valueOf(detail_plan_id))) {
             return null;

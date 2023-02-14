@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface DetailPlanRepository extends JpaRepository<DetailPlan, Long>, DetailPlanRepositoryQueryDSL {
     List<DetailPlan> findByPlanId(Long plan_id);
     Optional<DetailPlan> findByDetailPlanId(Long detail_plan_id);
+    void deleteByPlanId(Long plan_id);
 }
