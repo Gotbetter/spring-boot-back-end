@@ -7,4 +7,5 @@ import java.util.Optional;
 public interface PlanRepositoryQueryDSL {
     Boolean existsByParticipantId(Long participant_id);
     Optional<Plan> findWeekPlanOfUser(Long participant_id, Integer week);
+    void updateRejected(Long plan_id, Boolean change);
 }
