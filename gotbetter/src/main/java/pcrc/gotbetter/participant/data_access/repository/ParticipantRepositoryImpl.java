@@ -64,7 +64,7 @@ public class ParticipantRepositoryImpl implements ParticipantRepositoryQueryDSL 
                 .from(user)
                 .where(user.userId.in(
                         JPAExpressions
-                                .select(participate.userId)
+                                .select(participate.participateId.userId)
                                 .from(participate)
                                 .where(participateEqRoomId(room_id), participateEqAccepted(false))
                 ))
@@ -127,14 +127,14 @@ public class ParticipantRepositoryImpl implements ParticipantRepositoryQueryDSL 
         if (StringUtils.isNullOrEmpty(String.valueOf(user_id))) {
             return null;
         }
-        return participate.userId.eq(user_id);
+        return participate.participateId.userId.eq(user_id);
     }
 
     private BooleanExpression participateEqRoomId(Long room_id) {
         if (StringUtils.isNullOrEmpty(String.valueOf(room_id))) {
             return null;
         }
-        return participate.roomId.eq(room_id);
+        return participate.participateId.roomId.eq(room_id);
     }
 
     private BooleanExpression participateEqAccepted(Boolean accepted) {

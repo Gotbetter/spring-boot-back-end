@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pcrc.gotbetter.participant.data_access.entity.Participant;
 import pcrc.gotbetter.participant.data_access.entity.Participate;
+import pcrc.gotbetter.participant.data_access.entity.ParticipateId;
 import pcrc.gotbetter.room.data_access.entity.Room;
 import pcrc.gotbetter.participant.data_access.repository.ParticipateRepository;
 import pcrc.gotbetter.room.data_access.repository.RoomRepository;
@@ -60,6 +61,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     public FindRoomResult createRoom(RoomCreateCommand command) {
         Long user_id = getCurrentUserId();
 
+        String room_code = getRandomCode();
         Room room = Room.builder()
                 .title(command.getTitle())
                 .maxUserNum(command.getMax_user_num())
@@ -68,7 +70,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
                 .week(command.getWeek())
                 .currentWeek(command.getCurrent_week())
                 .entryFee(command.getEntry_fee())
-                .roomCode(getRandomCode())
+                .roomCode(room_code)
                 .account(command.getAccount())
                 .totalEntryFee(command.getEntry_fee())
                 .ruleId(command.getRule_id())
@@ -76,8 +78,10 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
         roomRepository.save(room);
 
         Participate participate = Participate.builder()
-                .userId(user_id)
-                .roomId(room.getRoomId())
+                .participateId(ParticipateId.builder()
+                        .userId(user_id)
+                        .roomId(room.getRoomId())
+                        .build())
                 .accepted(true)
                 .build();
         participateRepository.save(participate);
@@ -100,6 +104,11 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
         boolean useLetters = true;
         boolean useNumbers = true;
         int randomStrLen = 8;
-        return RandomStringUtils.random(randomStrLen, useLetters, useNumbers);
+
+        String room_code;
+        do {
+            room_code = RandomStringUtils.random(randomStrLen, useLetters, useNumbers);
+        } while (roomRepository.existByRoomCode(room_code));
+        return room_code;
     }
 }
