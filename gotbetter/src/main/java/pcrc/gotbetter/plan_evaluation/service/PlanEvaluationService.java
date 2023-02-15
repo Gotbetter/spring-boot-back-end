@@ -1,5 +1,6 @@
 package pcrc.gotbetter.plan_evaluation.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pcrc.gotbetter.detail_plan.data_access.repository.DetailPlanRepository;
@@ -27,6 +28,7 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
     private final RoomRepository roomRepository;
     private final DetailPlanRepository detailPlanRepository;
 
+    @Autowired
     public PlanEvaluationService(PlanEvaluationRepository planEvaluationRepository, PlanRepository planRepository,
                                  ParticipantRepository participantRepository, RoomRepository roomRepository,
                                  DetailPlanRepository detailPlanRepository) {

@@ -10,10 +10,10 @@ import java.util.Optional;
 
 import static pcrc.gotbetter.plan.data_access.entity.QPlan.plan;
 
-public class PlanRepositoryQueryDSLImpl implements PlanRepositoryQueryDSL{
+public class PlanRepositoryImpl implements PlanRepositoryQueryDSL{
     private final JPAQueryFactory queryFactory;
 
-    public PlanRepositoryQueryDSLImpl(JPAQueryFactory queryFactory) {
+    public PlanRepositoryImpl(JPAQueryFactory queryFactory) {
         this.queryFactory = queryFactory;
     }
 

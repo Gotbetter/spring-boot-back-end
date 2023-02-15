@@ -13,12 +13,12 @@ import java.util.List;
 import static pcrc.gotbetter.participant.data_access.entity.QParticipant.participant;
 import static pcrc.gotbetter.room.data_access.entity.QRoom.room;
 
-public class RoomRepositoryQueryDSLImpl implements RoomRepositoryQueryDSL{
+public class RoomRepositoryImpl implements RoomRepositoryQueryDSL{
 
     private final JPAQueryFactory queryFactory;
 
     @Autowired
-    public RoomRepositoryQueryDSLImpl(JPAQueryFactory queryFactory) {
+    public RoomRepositoryImpl(JPAQueryFactory queryFactory) {
         this.queryFactory = queryFactory;
     }
 

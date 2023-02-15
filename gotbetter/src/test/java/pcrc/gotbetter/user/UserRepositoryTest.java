@@ -6,14 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
-import pcrc.gotbetter.user.data_access.repository.UserRepositoryQueryDSLImpl;
+import pcrc.gotbetter.user.data_access.repository.UserRepositoryImpl;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class UserRepositoryTest {
 
     @Autowired
-    UserRepositoryQueryDSLImpl userRepositoryQueryDSLImpl;
+    UserRepositoryImpl userRepositoryImpl;
 
     @Test
     @Transactional // 테스트 끝나고 바로 롤백해버림

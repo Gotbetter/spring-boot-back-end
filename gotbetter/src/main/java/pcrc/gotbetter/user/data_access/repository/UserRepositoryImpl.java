@@ -9,12 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static pcrc.gotbetter.user.data_access.entity.QUser.user;
 
-public class UserRepositoryQueryDSLImpl implements UserRepositoryQueryDSL {
+public class UserRepositoryImpl implements UserRepositoryQueryDSL {
 
     private final JPAQueryFactory queryFactory;
 
     @Autowired
-    public UserRepositoryQueryDSLImpl(JPAQueryFactory queryFactory) {
+    public UserRepositoryImpl(JPAQueryFactory queryFactory) {
         this.queryFactory = queryFactory;
     }
 

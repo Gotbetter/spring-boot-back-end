@@ -7,10 +7,10 @@ import jakarta.transaction.Transactional;
 
 import static pcrc.gotbetter.detail_plan.data_access.entity.QDetailPlan.detailPlan;
 
-public class DetailPlanRepositoryQueryDSLImpl implements DetailPlanRepositoryQueryDSL {
+public class DetailPlanRepositoryImpl implements DetailPlanRepositoryQueryDSL {
     private final JPAQueryFactory queryFactory;
 
-    public DetailPlanRepositoryQueryDSLImpl(JPAQueryFactory queryFactory) {
+    public DetailPlanRepositoryImpl(JPAQueryFactory queryFactory) {
         this.queryFactory = queryFactory;
     }
 

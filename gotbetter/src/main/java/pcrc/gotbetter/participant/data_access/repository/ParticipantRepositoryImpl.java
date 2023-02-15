@@ -16,11 +16,11 @@ import static pcrc.gotbetter.participant.data_access.entity.QParticipant.partici
 import static pcrc.gotbetter.participant.data_access.entity.QParticipate.participate;
 import static pcrc.gotbetter.user.data_access.entity.QUser.user;
 
-public class ParticipantRepositoryQueryDSLImpl implements ParticipantRepositoryQueryDSL {
+public class ParticipantRepositoryImpl implements ParticipantRepositoryQueryDSL {
 
     private final JPAQueryFactory queryFactory;
 
-    public ParticipantRepositoryQueryDSLImpl(JPAQueryFactory queryFactory) {
+    public ParticipantRepositoryImpl(JPAQueryFactory queryFactory) {
         this.queryFactory = queryFactory;
     }
 
