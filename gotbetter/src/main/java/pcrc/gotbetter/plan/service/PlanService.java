@@ -43,7 +43,7 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
         validateLeaderIdOfRoom(participant.getRoomId());
         validateDuplicateCreatePlans(command.getParticipant_id());
 
-        List<FindPlanResult> results = new ArrayList<>();
+        List<Plan> plans = new ArrayList<>();
         for (int i = 1;i <= room.getWeek();i++) {
             Plan plan = Plan.builder()
                     .participantId(command.getParticipant_id())
@@ -56,7 +56,11 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
                     .threeDaysPassed(false)
                     .rejected(false)
                     .build();
-            planRepository.save(plan);
+            plans.add(plan);
+        }
+        List<Plan> planList = planRepository.saveAll(plans);
+        List<FindPlanResult> results = new ArrayList<>();
+        for (Plan plan : planList) {
             results.add(FindPlanResult.findByPlan(plan));
         }
         return results;

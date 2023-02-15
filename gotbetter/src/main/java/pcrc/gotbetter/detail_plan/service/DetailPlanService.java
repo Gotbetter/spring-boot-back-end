@@ -30,16 +30,15 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 
     @Override
     public FindDetailPlanResult createDetailPlan(DetailPlanCreateCommand command) {
-        // plan_id을 가지는 plan 인스턴스 가져와서 요청을 보낸 유저가 맞는지 확인
         Plan plan = validatePlan(command.getPlan_id());
-        if (plan.getRejected()) {
-            planRepository.updateRejected(plan.getPlanId(), false);
-        }
         Long user_id = getCurrentUserId();
+
         if (!Objects.equals(user_id, plan.getUserId())) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
-        // detail_plan 생성
+        if (plan.getRejected()) {
+            planRepository.updateRejected(plan.getPlanId(), false);
+        }
         DetailPlan detailPlan = DetailPlan.builder()
                 .planId(plan.getPlanId())
                 .participantId(plan.getParticipantId())
@@ -49,21 +48,21 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
                 .complete(false)
                 .build();
         detailPlanRepository.save(detailPlan);
-        // 반환
         return FindDetailPlanResult.findByDetailPlan(detailPlan);
     }
 
     @Override
     public List<FindDetailPlanResult> getDetailPlans(Long plan_id) {
-        // 유저가 방에 속한 사람인지 확인
         Plan plan = validatePlan(plan_id);
         Long user_id = getCurrentUserId();
+
         if (!participantRepository.existsMemberInRoom(user_id, plan.getRoomId())) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
-        // get
+
         List<DetailPlan> detailPlans = detailPlanRepository.findByPlanId(plan_id);
         List<FindDetailPlanResult> findDetailPlanResults = new ArrayList<>();
+
         for (DetailPlan d : detailPlans) {
             findDetailPlanResults.add(FindDetailPlanResult.findByDetailPlan(d));
         }
