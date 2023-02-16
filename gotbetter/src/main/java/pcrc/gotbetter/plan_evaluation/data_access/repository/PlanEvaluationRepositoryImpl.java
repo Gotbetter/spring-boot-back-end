@@ -42,13 +42,13 @@ public class PlanEvaluationRepositoryImpl implements PlanEvaluationRepositoryQue
         if (StringUtils.isNullOrEmpty(String.valueOf(plan_id))) {
             return null;
         }
-        return planEvaluation.planId.eq(plan_id);
+        return planEvaluation.planEvaluationId.planId.eq(plan_id);
     }
 
     private BooleanExpression planEvaluationEqParticipantId(Long participant_id) {
         if (StringUtils.isNullOrEmpty(String.valueOf(participant_id))) {
             return null;
         }
-        return planEvaluation.participantId.eq(participant_id);
+        return planEvaluation.planEvaluationId.participantId.eq(participant_id);
     }
 }
