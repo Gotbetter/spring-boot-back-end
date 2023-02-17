@@ -44,8 +44,8 @@ public interface PlanReadUseCase {
                     .week(plan.getWeek())
                     .three_days_passed(plan.getThreeDaysPassed())
                     .rejected(plan.getRejected())
-                    .user_id(plan.getUserId())
-                    .room_id(plan.getRoomId())
+                    .user_id(plan.getParticipantInfo().getUserId())
+                    .room_id(plan.getParticipantInfo().getRoomId())
                     .build();
         }
     }

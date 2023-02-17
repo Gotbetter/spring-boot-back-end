@@ -3,6 +3,7 @@ package pcrc.gotbetter.detail_plan.service;
 import org.springframework.stereotype.Service;
 import pcrc.gotbetter.detail_plan.data_access.entity.DetailPlan;
 import pcrc.gotbetter.detail_plan.data_access.repository.DetailPlanRepository;
+import pcrc.gotbetter.participant.data_access.entity.ParticipantInfo;
 import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
 import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
@@ -33,7 +34,10 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
         Plan plan = validatePlan(command.getPlan_id());
         Long user_id = getCurrentUserId();
 
-        if (!Objects.equals(user_id, plan.getUserId())) {
+        if (!Objects.equals(user_id, plan.getParticipantInfo().getUserId())) {
+            throw new GotBetterException(MessageType.FORBIDDEN);
+        }
+        if (plan.getThreeDaysPassed()) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
         if (plan.getRejected()) {
@@ -41,9 +45,11 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
         }
         DetailPlan detailPlan = DetailPlan.builder()
                 .planId(plan.getPlanId())
-                .participantId(plan.getParticipantId())
-                .userId(plan.getUserId())
-                .roomId(plan.getRoomId())
+                .participantInfo(ParticipantInfo.builder()
+                        .participantId(plan.getParticipantInfo().getParticipantId())
+                        .userId(plan.getParticipantInfo().getUserId())
+                        .roomId(plan.getParticipantInfo().getRoomId())
+                        .build())
                 .content(command.getContent())
                 .complete(false)
                 .build();
@@ -56,7 +62,7 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
         Plan plan = validatePlan(plan_id);
         Long user_id = getCurrentUserId();
 
-        if (!participantRepository.existsMemberInRoom(user_id, plan.getRoomId())) {
+        if (!participantRepository.existsMemberInRoom(user_id, plan.getParticipantInfo().getRoomId())) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
 
@@ -72,9 +78,7 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
     @Override
     public FindDetailPlanResult updateDetailPlan(DetailPlanUpdateCommand command) {
         DetailPlan detailPlan = validateDetailPlan(command.getDetail_plan_id(), command.getPlan_id());
-        if (detailPlan.getComplete()) {
-            throw new GotBetterException(MessageType.FORBIDDEN);
-        }
+        validateThreeDaysPassed(command.getPlan_id());
         detailPlanRepository.updateDetailContent(command.getDetail_plan_id(), command.getContent());
         return FindDetailPlanResult.builder()
                 .detail_plan_id(command.getDetail_plan_id())
@@ -87,6 +91,7 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
     @Override
     public void deleteDetailPlan(DetailPlanDeleteCommand command) {
         validateDetailPlan(command.getDetail_plan_id(), command.getPlan_id());
+        validateThreeDaysPassed(command.getPlan_id());
         detailPlanRepository.deleteDetailPlan(command.getDetail_plan_id());
     }
 
@@ -107,9 +112,15 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
                 });
         Long user_id = getCurrentUserId();
         if (!(Objects.equals(detailPlan.getPlanId(), plan_id)
-                && Objects.equals(detailPlan.getUserId(), user_id))) {
+                && Objects.equals(detailPlan.getParticipantInfo().getUserId(), user_id))) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
         return detailPlan;
+    }
+
+    private void validateThreeDaysPassed(Long plan_id) {
+        if (planRepository.existsByThreeDaysPassed(plan_id)) {
+            throw new GotBetterException(MessageType.FORBIDDEN);
+        }
     }
 }

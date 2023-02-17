@@ -43,18 +43,16 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
     @Override
     @Transactional
     public void createPlanEvaluation(PlanEvaluationCommand command) {
-        // 사용자가 방에 있는지 확인 후 이미 평가를 한 사람인지 확인
-        // dislike data 추가
-        // dislike 개수가 50% 이상인지 확인
-        // true이면 plan의 rejected = true
-        // 해당 plan의 dislike, detailplan 초기화
-
         Plan plan = validatePlan(command.getPlan_id());
-        if (plan.getRejected()) {
-            throw new GotBetterException(MessageType.CONFLICT);
-        }
         Long user_id = getCurrentUserId();
-        Participant participant = validateMemberInRoom(user_id, plan.getRoomId());
+        Participant participant = validateMemberInRoom(user_id, plan.getParticipantInfo().getRoomId());
+
+        if (plan.getThreeDaysPassed()) {
+            throw new GotBetterException(MessageType.FORBIDDEN);
+        }
+        if (plan.getRejected()) {
+            throw new GotBetterException(MessageType.FORBIDDEN);
+        }
         if (planEvaluationRepository.existsEval(plan.getPlanId(), participant.getParticipantId())) {
             throw new GotBetterException(MessageType.CONFLICT);
         }
@@ -81,7 +79,7 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
     @Override
     public FindPlanEvaluationResult getPlanDislike(PlanEvaluationFindQuery query) {
         Plan plan = validatePlan(query.getPlan_id());
-        Participant participant = validateMemberInRoom(getCurrentUserId(), plan.getRoomId());
+        Participant participant = validateMemberInRoom(getCurrentUserId(), plan.getParticipantInfo().getRoomId());
         List<PlanEvaluation> planEvaluations = planEvaluationRepository.findByPlanEvaluationIdPlanId(query.getPlan_id());
         boolean checked = false;
 
@@ -101,6 +99,7 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
         if (planEvaluations.size() == 0) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
+        validateThreeDaysPassed(command.getPlan_id());
         Long user_id = getCurrentUserId();
         for (PlanEvaluation p : planEvaluations) {
             if (Objects.equals(p.getPlanEvaluationId().getUserId(), user_id)) {
@@ -109,7 +108,7 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
                 return;
             }
         }
-        throw new GotBetterException(MessageType.FORBIDDEN);
+        throw new GotBetterException(MessageType.NOT_FOUND);
     }
 
     /**
@@ -133,5 +132,11 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
         return participant;
+    }
+
+    private void validateThreeDaysPassed(Long plan_id) {
+        if (planRepository.existsByThreeDaysPassed(plan_id)) {
+            throw new GotBetterException(MessageType.FORBIDDEN);
+        }
     }
 }

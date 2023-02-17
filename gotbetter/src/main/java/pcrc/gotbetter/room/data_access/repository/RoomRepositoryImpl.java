@@ -26,9 +26,9 @@ public class RoomRepositoryImpl implements RoomRepositoryQueryDSL{
     public List<Room> findUserRooms(Long user_id) {
         return queryFactory
                 .select(room)
-                .from(participant)
-                .leftJoin(room)
-                .where(participant.roomId.eq(room.roomId), participantEqUserId(user_id))
+                .from(room)
+                .leftJoin(participant)
+                .where(room.roomId.eq(participant.roomId), participantEqUserId(user_id))
                 .fetch();
     }
 
