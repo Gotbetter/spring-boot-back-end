@@ -11,4 +11,5 @@ import java.util.List;
 public interface PlanEvaluationRepository extends JpaRepository<PlanEvaluation, PlanEvaluationId>, PlanEvaluationRepositoryQueryDSL {
     List<PlanEvaluation> findByPlanEvaluationIdPlanId(Long plan_id);
     void deleteByPlanEvaluationIdPlanId(Long plan_id);
+    void deleteByPlanEvaluationId(PlanEvaluationId planEvaluationId);
 }

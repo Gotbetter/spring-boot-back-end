@@ -14,15 +14,15 @@ public class PlanEvaluationRepositoryImpl implements PlanEvaluationRepositoryQue
         this.queryFactory = queryFactory;
     }
 
-    @Override
-    @Transactional
-    public void deleteDislike(Long plan_id, Long participant_id) {
-        queryFactory
-                .delete(planEvaluation)
-                .where(planEvaluationEqPlanId(plan_id),
-                        planEvaluationEqParticipantId(participant_id))
-                .execute();
-    }
+//    @Override
+//    @Transactional
+//    public void deleteDislike(Long plan_id, Long participant_id) {
+//        queryFactory
+//                .delete(planEvaluation)
+//                .where(planEvaluationEqPlanId(plan_id),
+//                        planEvaluationEqParticipantId(participant_id))
+//                .execute();
+//    }
 
     @Override
     public Boolean existsEval(Long plan_id, Long participant_id) {

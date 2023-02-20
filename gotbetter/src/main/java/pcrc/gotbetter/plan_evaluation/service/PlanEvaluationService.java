@@ -94,6 +94,7 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
     }
 
     @Override
+    @Transactional
     public void deletePlanEvaluation(PlanEvaluationCommand command) {
         List<PlanEvaluation> planEvaluations = planEvaluationRepository.findByPlanEvaluationIdPlanId(command.getPlan_id());
         if (planEvaluations.size() == 0) {
@@ -103,8 +104,9 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
         Long user_id = getCurrentUserId();
         for (PlanEvaluation p : planEvaluations) {
             if (Objects.equals(p.getPlanEvaluationId().getUserId(), user_id)) {
-                planEvaluationRepository.deleteDislike(p.getPlanEvaluationId().getPlanId(),
-                        p.getPlanEvaluationId().getParticipantId());
+                planEvaluationRepository.deleteByPlanEvaluationId(p.getPlanEvaluationId());
+//                planEvaluationRepository.deleteDislike(p.getPlanEvaluationId().getPlanId(),
+//                        p.getPlanEvaluationId().getParticipantId());
                 return;
             }
         }
