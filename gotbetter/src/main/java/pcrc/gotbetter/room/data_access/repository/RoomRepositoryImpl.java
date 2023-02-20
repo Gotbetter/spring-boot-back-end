@@ -55,6 +55,16 @@ public class RoomRepositoryImpl implements RoomRepositoryQueryDSL{
                 .execute();
     }
 
+    @Override
+    public Boolean existByRoomCode(String room_code) {
+        Integer exists =  queryFactory
+                .selectOne()
+                .from(room)
+                .where(roomEqRoomCode(room_code))
+                .fetchFirst();
+        return exists != null;
+    }
+
     /**
      * room eq
      */
@@ -63,6 +73,13 @@ public class RoomRepositoryImpl implements RoomRepositoryQueryDSL{
             return null;
         }
         return room.roomId.eq(room_id);
+    }
+
+    private BooleanExpression roomEqRoomCode(String room_code) {
+        if (StringUtils.isNullOrEmpty(String.valueOf(room_code))) {
+            return null;
+        }
+        return room.roomCode.eq(room_code);
     }
     /**
      * participant eq

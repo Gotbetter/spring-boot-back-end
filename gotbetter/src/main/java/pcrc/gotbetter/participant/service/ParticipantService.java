@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pcrc.gotbetter.participant.data_access.entity.Participant;
 import pcrc.gotbetter.participant.data_access.entity.Participate;
+import pcrc.gotbetter.participant.data_access.entity.ParticipateId;
 import pcrc.gotbetter.room.data_access.entity.Room;
 import pcrc.gotbetter.participant.data_access.repository.ParticipateRepository;
 import pcrc.gotbetter.room.data_access.repository.RoomRepository;
@@ -17,7 +18,7 @@ import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 
 import static pcrc.gotbetter.participant.data_access.entity.QParticipant.participant;
 import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
@@ -48,8 +49,10 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
         Long user_id = validateAbleJoinRoom(room);
 
         Participate participate = Participate.builder()
-                .userId(user_id)
-                .roomId(room.getRoomId())
+                .participateId(ParticipateId.builder()
+                        .userId(user_id)
+                        .roomId(room.getRoomId())
+                        .build())
                 .accepted(false)
                 .build();
         participateRepository.save(participate);
@@ -132,13 +135,15 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
      * validate section
      */
     private Long validateAbleJoinRoom(Room room) {
-        List<Participate> participantList = participateRepository.findByRoomId(room.getRoomId());
         Long user_id = getCurrentUserId();
+        Optional<Participate> participate = participateRepository.findByParticipateId(
+                ParticipateId.builder()
+                        .userId(user_id)
+                        .roomId(room.getRoomId()).build()
+        );
 
-        for (Participate p : participantList) {
-            if (Objects.equals(p.getUserId(), user_id)) {
-                throw new GotBetterException(MessageType.CONFLICT);
-            }
+        if (participate.isPresent()) {
+            throw new GotBetterException(MessageType.CONFLICT);
         }
         if (room.getCurrentUserNum() >= room.getMaxUserNum()) {
             throw new GotBetterException(MessageType.NotAcceptable);

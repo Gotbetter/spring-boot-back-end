@@ -13,17 +13,13 @@ import org.hibernate.annotations.DynamicInsert;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
 public class Participate {
-    @Id
-    @Column(name = "user_id")
-    private Long userId;
-    @Column(name = "room_id")
-    private Long roomId;
+    @EmbeddedId
+    private ParticipateId participateId;
     private Boolean accepted;
 
     @Builder
-    public Participate(Long userId, Long roomId, Boolean accepted) {
-        this.userId = userId;
-        this.roomId = roomId;
+    public Participate(ParticipateId participateId, Boolean accepted) {
+        this.participateId = participateId;
         this.accepted = accepted;
     }
 }
