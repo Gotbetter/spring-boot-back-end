@@ -46,6 +46,16 @@ public class PlanRepositoryImpl implements PlanRepositoryQueryDSL{
                 .execute();
     }
 
+    @Override
+    public Boolean existsByThreeDaysPassed(Long plan_id) {
+        Integer exists =  queryFactory
+                .selectOne()
+                .from(plan)
+                .where(eqPlanId(plan_id), eqThreeDaysPassed(true))
+                .fetchFirst();
+        return exists != null;
+    }
+
     /**
      * plan eq
      */
@@ -60,7 +70,7 @@ public class PlanRepositoryImpl implements PlanRepositoryQueryDSL{
         if (StringUtils.isNullOrEmpty(String.valueOf(participant_id))) {
             return null;
         }
-        return plan.participantId.eq(participant_id);
+        return plan.participantInfo.participantId.eq(participant_id);
     }
 
     private BooleanExpression eqWeek(Integer week) {
@@ -68,5 +78,12 @@ public class PlanRepositoryImpl implements PlanRepositoryQueryDSL{
             return null;
         }
         return plan.week.eq(week);
+    }
+
+    private BooleanExpression eqThreeDaysPassed(Boolean threeDaysPassed) {
+        if (StringUtils.isNullOrEmpty(String.valueOf(threeDaysPassed))) {
+            return null;
+        }
+        return plan.threeDaysPassed.eq(threeDaysPassed);
     }
 }

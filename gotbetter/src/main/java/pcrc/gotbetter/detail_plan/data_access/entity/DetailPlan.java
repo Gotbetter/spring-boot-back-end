@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
+import pcrc.gotbetter.participant.data_access.entity.ParticipantInfo;
 
 @Entity
 @Table(name = "DetailPlan")
@@ -19,23 +20,18 @@ public class DetailPlan {
     private Long detailPlanId;
     @Column(name = "plan_id")
     private Long planId;
-    @Column(name = "participant_id")
-    private Long participantId;
-    @Column(name = "user_id")
-    private Long userId;
-    @Column(name = "room_id")
-    private Long roomId;
+    @Embedded
+    private ParticipantInfo participantInfo;
     private String content;
     private Boolean complete;
 
     @Builder
-    public DetailPlan(Long detailPlanId, Long planId, Long participantId,
-                      Long userId, Long roomId, String content, Boolean complete) {
+    public DetailPlan(Long detailPlanId, Long planId,
+                      ParticipantInfo participantInfo,
+                      String content, Boolean complete) {
         this.detailPlanId = detailPlanId;
         this.planId = planId;
-        this.participantId = participantId;
-        this.userId = userId;
-        this.roomId = roomId;
+        this.participantInfo = participantInfo;
         this.content = content;
         this.complete = complete;
     }

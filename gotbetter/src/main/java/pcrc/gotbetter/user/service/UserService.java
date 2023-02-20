@@ -93,6 +93,9 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
         return FindUserResult.findByUser(user, tokenInfo);
     }
 
+    /**
+     * validate
+     */
     private void validateDuplicateUser(String auth_id, String email) {
         // 이미 있는 아이디인지 또는 이미 있는 이메일인지 확인
         if (userRepository.existsByAuthidOrEmail(auth_id, email)) {

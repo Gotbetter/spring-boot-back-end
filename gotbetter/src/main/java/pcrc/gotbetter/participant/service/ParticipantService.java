@@ -42,10 +42,7 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 
     @Override
     public RoomReadUseCase.FindRoomResult requestJoinRoom(String room_code) {
-        Room room = roomRepository.findByRoomCode(room_code)
-                .orElseThrow(() -> {
-                    throw new GotBetterException(MessageType.NOT_FOUND);
-                });
+        Room room = validateRoomWithRoomCode(room_code);
         Long user_id = validateAbleJoinRoom(room);
 
         Participate participate = Participate.builder()
@@ -99,14 +96,8 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 
     @Override
     public FindParticipantResult approveJoinRoom(UserRoomAcceptedUpdateCommand command) {
-        Room room = roomRepository.findByRoomId(command.getRoom_id())
-                .orElseThrow(() -> {
-                    throw new GotBetterException(MessageType.NOT_FOUND);
-                });
-        User user = userRepository.findByUserId(command.getUser_id())
-                .orElseThrow(() -> {
-                    throw new GotBetterException(MessageType.NOT_FOUND);
-                });
+        Room room = validateRoomWithRoomId(command.getRoom_id());
+        User user = validateUser(command.getUser_id());
 
         validateLeaderIdOfRoom(room.getRoomId(), false);
         validateRequestUser(command);
@@ -134,6 +125,24 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
     /**
      * validate section
      */
+    private Room validateRoomWithRoomId(Long room_id) {
+        return roomRepository.findByRoomId(room_id).orElseThrow(() -> {
+            throw new GotBetterException(MessageType.NOT_FOUND);
+        });
+    }
+
+    private Room validateRoomWithRoomCode(String room_code) {
+        return roomRepository.findByRoomCode(room_code).orElseThrow(() -> {
+            throw new GotBetterException(MessageType.NOT_FOUND);
+        });
+    }
+
+    private User validateUser(Long user_id) {
+        return userRepository.findByUserId(user_id).orElseThrow(() -> {
+            throw new GotBetterException(MessageType.NOT_FOUND);
+        });
+    }
+
     private Long validateAbleJoinRoom(Room room) {
         Long user_id = getCurrentUserId();
         Optional<Participate> participate = participateRepository.findByParticipateId(
