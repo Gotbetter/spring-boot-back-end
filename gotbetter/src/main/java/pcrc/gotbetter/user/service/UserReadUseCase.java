@@ -10,6 +10,7 @@ public interface UserReadUseCase {
 
     FindUserResult loginUser(UserFindQuery query) throws IOException;
     FindUserResult verifyId(String auth_id);
+    FindUserResult getUserInfo() throws IOException;
 
     @EqualsAndHashCode(callSuper = false)
     @Getter

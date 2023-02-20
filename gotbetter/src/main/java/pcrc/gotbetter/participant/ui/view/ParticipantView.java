@@ -16,6 +16,7 @@ public class ParticipantView {
     private final String username;
     private final String email;
     private final String profile;
+    private final Boolean authority;
 
     @Builder
     public ParticipantView(ParticipantReadUseCase.FindParticipantResult participantResult) {
@@ -25,5 +26,6 @@ public class ParticipantView {
         this.username = participantResult.getUsername();
         this.email = participantResult.getEmail();
         this.profile = participantResult.getProfile();
+        this.authority = participantResult.getAuthority();
     }
 }

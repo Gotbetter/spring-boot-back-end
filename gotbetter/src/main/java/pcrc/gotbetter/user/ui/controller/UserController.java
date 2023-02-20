@@ -68,4 +68,14 @@ public class UserController {
 
         return ResponseEntity.ok(UserView.builder().userResult(result).build());
     }
+
+    @GetMapping(value = "")
+    public ResponseEntity<UserView> getUserInfo() throws IOException {
+
+        log.info("\"GET USER'S INFO\"");
+
+        UserReadUseCase.FindUserResult result = userReadUseCase.getUserInfo();
+
+        return ResponseEntity.ok(UserView.builder().userResult(result).build());
+    }
 }

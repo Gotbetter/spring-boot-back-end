@@ -16,6 +16,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
+
 @Service
 public class UserService implements UserOperationUseCase, UserReadUseCase {
 
@@ -93,6 +95,30 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
         return FindUserResult.findByUser(user, tokenInfo);
     }
 
+    @Override
+    public FindUserResult getUserInfo() throws IOException {
+        User findUser = validateUser();
+
+        String bytes;
+        try {
+            bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(
+                    Paths.get(findUser.getProfile())));
+        } catch (Exception e) {
+            String os = System.getProperty("os.name").toLowerCase();
+            String dir = os.contains("win") ? default_profile_local_path : default_profile_server_path;
+            bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
+        }
+
+        User user = User.builder()
+                .userId(findUser.getUserId())
+                .authId(findUser.getAuthId())
+                .usernameNick(findUser.getUsernameNick())
+                .email(findUser.getEmail())
+                .profile(bytes)
+                .build();
+        return FindUserResult.findByUser(user, TokenInfo.builder().build());
+    }
+
     /**
      * validate
      */
@@ -114,5 +140,12 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
         }
 
         return findUser;
+    }
+
+    private User validateUser() {
+        Long user_id = getCurrentUserId();
+        return userRepository.findByUserId(user_id).orElseThrow(() -> {
+            throw new GotBetterException(MessageType.NOT_FOUND);
+        });
     }
 }
