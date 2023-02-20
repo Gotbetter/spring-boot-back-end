@@ -3,6 +3,8 @@ package pcrc.gotbetter.detail_plan.service;
 import org.springframework.stereotype.Service;
 import pcrc.gotbetter.detail_plan.data_access.entity.DetailPlan;
 import pcrc.gotbetter.detail_plan.data_access.repository.DetailPlanRepository;
+import pcrc.gotbetter.detail_plan_evaluation.data_access.entity.DetailPlanEval;
+import pcrc.gotbetter.detail_plan_evaluation.data_access.repository.DetailPlanEvalRepository;
 import pcrc.gotbetter.participant.data_access.entity.ParticipantInfo;
 import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
@@ -21,12 +23,14 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
     private final DetailPlanRepository detailPlanRepository;
     private final PlanRepository planRepository;
     private final ParticipantRepository participantRepository;
+    private final DetailPlanEvalRepository detailPlanEvalRepository;
 
     public DetailPlanService(DetailPlanRepository detailPlanRepository, PlanRepository planRepository,
-                             ParticipantRepository participantRepository) {
+                             ParticipantRepository participantRepository, DetailPlanEvalRepository detailPlanEvalRepository) {
         this.detailPlanRepository = detailPlanRepository;
         this.planRepository = planRepository;
         this.participantRepository = participantRepository;
+        this.detailPlanEvalRepository = detailPlanEvalRepository;
     }
 
     @Override
@@ -71,11 +75,17 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
         List<DetailPlan> detailPlans = detailPlanRepository.findByPlanId(plan_id);
         List<FindDetailPlanResult> findDetailPlanResults = new ArrayList<>();
 
-        // 우선 세부 계획 만들고 수정해야할듯
-        // dislike_cnt;
-        // checked;
         for (DetailPlan d : detailPlans) {
-            findDetailPlanResults.add(FindDetailPlanResult.findByDetailPlan(d, null, null));
+            List<DetailPlanEval> detailPlanEvals = detailPlanEvalRepository.findByDetailPlanEvalIdDetailPlanId(d.getDetailPlanId());
+            Integer dislike_cnt = detailPlanEvals.size();
+            boolean checked = false;
+            for (DetailPlanEval de : detailPlanEvals) {
+                if (Objects.equals(de.getDetailPlanEvalId().getUserId(), user_id)) {
+                    checked = true;
+                    break;
+                }
+            }
+            findDetailPlanResults.add(FindDetailPlanResult.findByDetailPlan(d, dislike_cnt, checked));
         }
         return findDetailPlanResults;
     }
