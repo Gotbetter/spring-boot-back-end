@@ -57,7 +57,7 @@ public class DetailPlanController {
         return ResponseEntity.ok(detailPlanViews);
     }
 
-    @PutMapping(value = "/{detail_plan_id}")
+    @PatchMapping(value = "/{detail_plan_id}")
     public ResponseEntity<DetailPlanView> updateDetailPlan(@PathVariable(value = "plan_id") Long plan_id,
                                                            @PathVariable(value = "detail_plan_id") Long detail_plan_id,
                                                            @Valid @RequestBody DetailPlanRequest request) {

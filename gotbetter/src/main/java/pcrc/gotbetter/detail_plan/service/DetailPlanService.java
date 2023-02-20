@@ -51,10 +51,12 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
                         .roomId(plan.getParticipantInfo().getRoomId())
                         .build())
                 .content(command.getContent())
+                .approve_comment(null)
                 .complete(false)
+                .rejected(false)
                 .build();
         detailPlanRepository.save(detailPlan);
-        return FindDetailPlanResult.findByDetailPlan(detailPlan);
+        return FindDetailPlanResult.findByDetailPlan(detailPlan, null, null);
     }
 
     @Override
@@ -69,8 +71,11 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
         List<DetailPlan> detailPlans = detailPlanRepository.findByPlanId(plan_id);
         List<FindDetailPlanResult> findDetailPlanResults = new ArrayList<>();
 
+        // 우선 세부 계획 만들고 수정해야할듯
+        // dislike_cnt;
+        // checked;
         for (DetailPlan d : detailPlans) {
-            findDetailPlanResults.add(FindDetailPlanResult.findByDetailPlan(d));
+            findDetailPlanResults.add(FindDetailPlanResult.findByDetailPlan(d, null, null));
         }
         return findDetailPlanResults;
     }
@@ -84,6 +89,8 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
                 .detail_plan_id(command.getDetail_plan_id())
                 .content(command.getContent())
                 .complete(detailPlan.getComplete())
+                .approve_comment(detailPlan.getApprove_comment() == null ? "" : detailPlan.getApprove_comment())
+                .rejected(detailPlan.getRejected())
                 .plan_id(detailPlan.getPlanId())
                 .build();
     }

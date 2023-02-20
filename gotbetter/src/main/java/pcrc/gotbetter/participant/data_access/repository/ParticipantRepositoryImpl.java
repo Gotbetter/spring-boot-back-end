@@ -75,7 +75,7 @@ public class ParticipantRepositoryImpl implements ParticipantRepositoryQueryDSL 
     public List<Tuple> findActiveMembers(Long room_id) {
         return queryFactory
                 .select(participant.participantId, user.userId, user.authId,
-                        user.usernameNick, user.email, user.profile)
+                        user.usernameNick, user.email, user.profile, participant.authority)
                 .from(participant)
                 .leftJoin(user)
                 .where(participant.userId.eq(user.userId), participantEqRoomId(room_id))

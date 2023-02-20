@@ -20,6 +20,7 @@ public interface ParticipantReadUseCase {
         private final String username;
         private final String email;
         private final String profile;
+        private final Boolean authority;
 
         public static FindParticipantResult findByParticipant(User user, Long participant_id) {
             return FindParticipantResult.builder()

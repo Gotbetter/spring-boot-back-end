@@ -24,15 +24,20 @@ public class DetailPlan {
     private ParticipantInfo participantInfo;
     private String content;
     private Boolean complete;
+    private String approve_comment;
+    private Boolean rejected;
 
     @Builder
     public DetailPlan(Long detailPlanId, Long planId,
                       ParticipantInfo participantInfo,
-                      String content, Boolean complete) {
+                      String content, Boolean complete,
+                      String approve_comment, Boolean rejected) {
         this.detailPlanId = detailPlanId;
         this.planId = planId;
         this.participantInfo = participantInfo;
         this.content = content;
         this.complete = complete;
+        this.approve_comment = approve_comment;
+        this.rejected = rejected;
     }
 }

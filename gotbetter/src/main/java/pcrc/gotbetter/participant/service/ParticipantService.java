@@ -76,6 +76,7 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
                         .username(t.get(user.usernameNick))
                         .email(t.get(user.email))
                         .profile(t.get(user.profile))
+                        .authority(t.get(participant.authority))
                         .build());
             }
         } else {
@@ -88,6 +89,7 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
                         .username(u.getUsernameNick())
                         .email(u.getEmail())
                         .profile(u.getProfile())
+                        .authority(false)
                         .build());
             }
         }
