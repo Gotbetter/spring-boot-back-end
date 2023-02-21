@@ -33,6 +33,39 @@ public class DetailPlanRepositoryImpl implements DetailPlanRepositoryQueryDSL {
                 .execute();
     }
 
+    @Override
+    @Transactional
+    public void updateRejected(Long detail_plan_id, Boolean rejected) {
+        queryFactory
+                .update(detailPlan)
+                .set(detailPlan.rejected, rejected)
+                .where(detailPlanEqDetailPlanId(detail_plan_id))
+                .execute();
+    }
+
+    @Override
+    @Transactional
+    public void updateDetailPlanCompleted(Long detail_plan_id, String approve_comment) {
+        queryFactory
+                .update(detailPlan)
+                .set(detailPlan.complete, true)
+                .set(detailPlan.approve_comment, approve_comment)
+                .where(detailPlanEqDetailPlanId(detail_plan_id))
+                .execute();
+    }
+
+    @Override
+    @Transactional
+    public void updateDetailPlanUndo(Long detail_plan_id, Boolean rejected) {
+        queryFactory
+                .update(detailPlan)
+                .set(detailPlan.complete, false)
+                .setNull(detailPlan.approve_comment)
+                .set(detailPlan.rejected, rejected)
+                .where(detailPlanEqDetailPlanId(detail_plan_id))
+                .execute();
+    }
+
     /**
      * participant eq
      */

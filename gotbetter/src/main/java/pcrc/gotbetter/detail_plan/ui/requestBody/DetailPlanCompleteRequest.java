@@ -9,8 +9,8 @@ import lombok.ToString;
 @Getter
 @ToString
 @NoArgsConstructor
-public class DetailPlanRequest {
+public class DetailPlanCompleteRequest {
     @NotNull
     @NotBlank
-    private String content;
+    private String approve_comment;
 }
