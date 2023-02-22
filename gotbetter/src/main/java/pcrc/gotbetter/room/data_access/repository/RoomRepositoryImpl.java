@@ -65,6 +65,24 @@ public class RoomRepositoryImpl implements RoomRepositoryQueryDSL{
         return exists != null;
     }
 
+    @Override
+    public List<Room> findListUnderWeek() {
+        return queryFactory
+                .selectFrom(room)
+                .where(room.week.gt(room.currentWeek))
+                .fetch();
+    }
+
+    @Override
+    @Transactional
+    public void updateCurrentWeek(Long room_id, Integer plusWeek) {
+        queryFactory
+                .update(room)
+                .set(room.currentWeek, room.currentWeek.add(plusWeek))
+                .where(roomEqRoomId(room_id))
+                .execute();
+    }
+
     /**
      * room eq
      */

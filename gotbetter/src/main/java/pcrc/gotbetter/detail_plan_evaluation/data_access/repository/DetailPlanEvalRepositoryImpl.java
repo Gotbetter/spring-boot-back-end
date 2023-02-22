@@ -3,6 +3,8 @@ package pcrc.gotbetter.detail_plan_evaluation.data_access.repository;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.util.StringUtils;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.springframework.transaction.annotation.Transactional;
+
 import static pcrc.gotbetter.detail_plan_evaluation.data_access.entity.QDetailPlanEval.detailPlanEval;
 
 public class DetailPlanEvalRepositoryImpl implements DetailPlanEvalRepositoryQueryDSL {
@@ -21,6 +23,15 @@ public class DetailPlanEvalRepositoryImpl implements DetailPlanEvalRepositoryQue
                         detailPlanEvalEqParticipantId(participant_id))
                 .fetchFirst();
         return exists != null;
+    }
+
+    @Override
+    @Transactional
+    public void deleteDetailPlanEval(Long detail_plan_id, Long participant_id) {
+        queryFactory.delete(detailPlanEval)
+                .where(detailPlanEvalEqDetailPlanId(detail_plan_id),
+                        detailPlanEvalEqParticipantId(participant_id))
+                .execute();
     }
 
     /**

@@ -46,8 +46,10 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
         Plan plan = validatePlan(command.getPlan_id());
         Long user_id = getCurrentUserId();
         Participant participant = validateMemberInRoom(user_id, plan.getParticipantInfo().getRoomId());
+        Room room = validateRoom(participant.getRoomId());
 
-        if (plan.getThreeDaysPassed()) {
+        if (!Objects.equals(room.getCurrentWeek(), plan.getWeek())
+                || plan.getThreeDaysPassed()) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
         if (plan.getRejected()) {
@@ -57,7 +59,6 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
             throw new GotBetterException(MessageType.CONFLICT);
         }
 
-        Room room = validateRoom(participant.getRoomId());
         List<PlanEvaluation> planEvaluations = planEvaluationRepository.findByPlanEvaluationIdPlanId(command.getPlan_id());
         if (Math.ceil(room.getCurrentUserNum()) / 2 <= planEvaluations.size() + 1) {
             planRepository.updateRejected(plan.getPlanId(), true);
@@ -94,21 +95,19 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
     }
 
     @Override
-    @Transactional
     public void deletePlanEvaluation(PlanEvaluationCommand command) {
-        List<PlanEvaluation> planEvaluations = planEvaluationRepository.findByPlanEvaluationIdPlanId(command.getPlan_id());
-        if (planEvaluations.size() == 0) {
-            throw new GotBetterException(MessageType.NOT_FOUND);
-        }
-        validateThreeDaysPassed(command.getPlan_id());
+        Plan plan = validatePlan(command.getPlan_id());
+        Room room = validateRoom(plan.getParticipantInfo().getRoomId());
         Long user_id = getCurrentUserId();
-        for (PlanEvaluation p : planEvaluations) {
-            if (Objects.equals(p.getPlanEvaluationId().getUserId(), user_id)) {
-                planEvaluationRepository.deleteByPlanEvaluationId(p.getPlanEvaluationId());
-//                planEvaluationRepository.deleteDislike(p.getPlanEvaluationId().getPlanId(),
-//                        p.getPlanEvaluationId().getParticipantId());
-                return;
-            }
+        Participant participant = validateMemberInRoom(user_id, plan.getParticipantInfo().getRoomId());
+
+        if (!Objects.equals(room.getCurrentWeek(), plan.getWeek())
+                || plan.getThreeDaysPassed()) {
+            throw new GotBetterException(MessageType.FORBIDDEN);
+        }
+        if (planEvaluationRepository.existsEval(plan.getPlanId(), participant.getParticipantId())) {
+            planEvaluationRepository.deletePlanEvaluation(plan.getPlanId(), participant.getParticipantId());
+            return;
         }
         throw new GotBetterException(MessageType.NOT_FOUND);
     }
@@ -134,11 +133,5 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
         return participant;
-    }
-
-    private void validateThreeDaysPassed(Long plan_id) {
-        if (planRepository.existsByThreeDaysPassed(plan_id)) {
-            throw new GotBetterException(MessageType.FORBIDDEN);
-        }
     }
 }

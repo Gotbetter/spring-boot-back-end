@@ -14,16 +14,6 @@ public class PlanEvaluationRepositoryImpl implements PlanEvaluationRepositoryQue
         this.queryFactory = queryFactory;
     }
 
-//    @Override
-//    @Transactional
-//    public void deleteDislike(Long plan_id, Long participant_id) {
-//        queryFactory
-//                .delete(planEvaluation)
-//                .where(planEvaluationEqPlanId(plan_id),
-//                        planEvaluationEqParticipantId(participant_id))
-//                .execute();
-//    }
-
     @Override
     public Boolean existsEval(Long plan_id, Long participant_id) {
         Integer exists =  queryFactory
@@ -33,6 +23,16 @@ public class PlanEvaluationRepositoryImpl implements PlanEvaluationRepositoryQue
                         planEvaluationEqParticipantId(participant_id))
                 .fetchFirst();
         return exists != null;
+    }
+
+    @Override
+    @Transactional
+    public void deletePlanEvaluation(Long plan_id, Long participant_id) {
+        queryFactory
+                .delete(planEvaluation)
+                .where(planEvaluationEqPlanId(plan_id),
+                        planEvaluationEqParticipantId(participant_id))
+                .execute();
     }
 
     /**

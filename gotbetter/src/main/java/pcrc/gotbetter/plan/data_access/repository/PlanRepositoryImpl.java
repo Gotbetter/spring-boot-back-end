@@ -56,6 +56,16 @@ public class PlanRepositoryImpl implements PlanRepositoryQueryDSL{
         return exists != null;
     }
 
+    @Override
+    @Transactional
+    public void updateThreeDaysPassed(Long plan_id) {
+        queryFactory
+                .update(plan)
+                .set(plan.threeDaysPassed, true)
+                .where(eqPlanId(plan_id))
+                .execute();
+    }
+
     /**
      * plan eq
      */

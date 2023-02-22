@@ -9,4 +9,6 @@ public interface RoomRepositoryQueryDSL {
     Room findRoomWithUserIdAndRoomId(Long user_id, Long room_id);
     void updatePlusTotalEntryFeeAndCurrentNum(Long room_id, Integer fee);
     Boolean existByRoomCode(String room_code);
+    List<Room> findListUnderWeek();
+    void updateCurrentWeek(Long room_id, Integer plusWeek);
 }
