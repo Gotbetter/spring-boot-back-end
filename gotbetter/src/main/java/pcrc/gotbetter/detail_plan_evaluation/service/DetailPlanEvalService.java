@@ -57,7 +57,7 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase {
         List<DetailPlanEval> detailPlanEvals = detailPlanEvalRepository
                 .findByDetailPlanEvalIdDetailPlanId(command.getDetail_plan_id());
         if (Math.ceil(room.getCurrentUserNum()) / 2 <= detailPlanEvals.size() + 1) {
-            detailPlanEvalRepository.updateOverEval(detailPlan.getDetailPlanId());
+            detailPlanRepository.updateDetailPlanUndo(detailPlan.getDetailPlanId(), true);
             detailPlanEvalRepository.deleteByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());
         } else {
             DetailPlanEval detailPlanEval = DetailPlanEval.builder()
