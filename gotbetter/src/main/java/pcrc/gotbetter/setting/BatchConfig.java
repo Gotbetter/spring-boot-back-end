@@ -78,15 +78,15 @@ public class BatchConfig {
                     LocalDate now = LocalDate.now();
                     for (Room room : roomList) {
                         LocalDate weekPassed;
-                        int plusWeek = 0;
+                        int plusWeek = room.getCurrentWeek();
                         while (true) {
-                            weekPassed = room.getStartDate().plusDays(7L * room.getCurrentWeek() - 1);
+                            weekPassed = room.getStartDate().plusDays(7L * plusWeek - 1);
                             if (!weekPassed.isBefore(now)) {
                                 break;
                             }
                             plusWeek++;
                         }
-                        if (plusWeek != 0) {
+                        if (plusWeek != room.getCurrentWeek()) {
                             System.out.println("room_id: " + room.getRoomId() + ", start_date: " + room.getStartDate()
                                     + ", current_week/week: " + room.getCurrentWeek() + "/" + room.getWeek());
                             roomRepository.updateCurrentWeek(room.getRoomId(), plusWeek);
