@@ -1,20 +1,13 @@
 package pcrc.gotbetter.participant.data_access.repository;
 
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.util.StringUtils;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.transaction.annotation.Transactional;
 import pcrc.gotbetter.participant.data_access.entity.Participant;
-import pcrc.gotbetter.user.data_access.entity.User;
-
-import java.util.List;
 
 import static pcrc.gotbetter.participant.data_access.entity.QParticipant.participant;
 import static pcrc.gotbetter.participant.data_access.entity.QParticipate.participate;
-import static pcrc.gotbetter.user.data_access.entity.QUser.user;
 
 public class ParticipantRepositoryImpl implements ParticipantRepositoryQueryDSL {
 
@@ -22,20 +15,6 @@ public class ParticipantRepositoryImpl implements ParticipantRepositoryQueryDSL 
 
     public ParticipantRepositoryImpl(JPAQueryFactory queryFactory) {
         this.queryFactory = queryFactory;
-    }
-
-    @Override
-    public Boolean existsWaitMemberInARoom(Long user_id, Long room_id, Boolean active) {
-        BooleanBuilder builder = new BooleanBuilder();
-        builder.and(participateEqUserId(user_id))
-                .and(participateEqRoomId(room_id))
-                .and(participateEqAccepted(false));
-        Integer exists =  queryFactory
-                .selectOne()
-                .from(participate)
-                .where(builder)
-                .fetchFirst();
-        return exists != null;
     }
 
     @Override
@@ -55,31 +34,6 @@ public class ParticipantRepositoryImpl implements ParticipantRepositoryQueryDSL 
                 .from(participant)
                 .where(participantEqUserId(user_id), participantEqRoomId(room_id))
                 .fetchFirst();
-    }
-
-    @Override
-    public List<User> findWaitMembers(Long room_id) {
-        return queryFactory
-                .select(user)
-                .from(user)
-                .where(user.userId.in(
-                        JPAExpressions
-                                .select(participate.participateId.userId)
-                                .from(participate)
-                                .where(participateEqRoomId(room_id), participateEqAccepted(false))
-                ))
-                .fetch();
-    }
-
-    @Override
-    public List<Tuple> findActiveMembers(Long room_id) {
-        return queryFactory
-                .select(participant.participantId, user.userId, user.authId,
-                        user.usernameNick, user.email, user.profile, participant.authority)
-                .from(participant)
-                .leftJoin(user)
-                .where(participant.userId.eq(user.userId), participantEqRoomId(room_id))
-                .fetch();
     }
 
     @Override
@@ -135,12 +89,5 @@ public class ParticipantRepositoryImpl implements ParticipantRepositoryQueryDSL 
             return null;
         }
         return participate.participateId.roomId.eq(room_id);
-    }
-
-    private BooleanExpression participateEqAccepted(Boolean accepted) {
-        if (StringUtils.isNullOrEmpty(String.valueOf(accepted))) {
-            return null;
-        }
-        return participate.accepted.eq(accepted);
     }
 }
