@@ -1,7 +1,6 @@
 package pcrc.gotbetter.plan_evaluation.data_access.repository;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.util.StringUtils;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.transaction.Transactional;
 
@@ -39,16 +38,10 @@ public class PlanEvaluationRepositoryImpl implements PlanEvaluationRepositoryQue
      * planEvaluation eq
      */
     private BooleanExpression planEvaluationEqPlanId(Long plan_id) {
-        if (StringUtils.isNullOrEmpty(String.valueOf(plan_id))) {
-            return null;
-        }
-        return planEvaluation.planEvaluationId.planId.eq(plan_id);
+        return plan_id == null ? null : planEvaluation.planEvaluationId.planId.eq(plan_id);
     }
 
     private BooleanExpression planEvaluationEqParticipantId(Long participant_id) {
-        if (StringUtils.isNullOrEmpty(String.valueOf(participant_id))) {
-            return null;
-        }
-        return planEvaluation.planEvaluationId.participantId.eq(participant_id);
+        return participant_id == null ? null : planEvaluation.planEvaluationId.participantId.eq(participant_id);
     }
 }

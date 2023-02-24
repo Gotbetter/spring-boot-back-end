@@ -63,10 +63,7 @@ public class RoomRepositoryImpl implements RoomRepositoryQueryDSL{
      * room eq
      */
     private BooleanExpression roomEqRoomId(Long room_id) {
-        if (StringUtils.isNullOrEmpty(String.valueOf(room_id))) {
-            return null;
-        }
-        return room.roomId.eq(room_id);
+        return room_id == null ? null : room.roomId.eq(room_id);
     }
 
     private BooleanExpression roomEqRoomCode(String room_code) {

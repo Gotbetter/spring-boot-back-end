@@ -1,7 +1,6 @@
 package pcrc.gotbetter.detail_plan.data_access.repository;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.util.StringUtils;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.transaction.Transactional;
 
@@ -80,16 +79,10 @@ public class DetailPlanRepositoryImpl implements DetailPlanRepositoryQueryDSL {
      * participant eq
      */
     private BooleanExpression detailPlanEqDetailPlanId(Long detail_plan_id) {
-        if (StringUtils.isNullOrEmpty(String.valueOf(detail_plan_id))) {
-            return null;
-        }
-        return detailPlan.detailPlanId.eq(detail_plan_id);
+        return detail_plan_id == null ? null : detailPlan.detailPlanId.eq(detail_plan_id);
     }
 
     private BooleanExpression detailPlanEqPlanId(Long plan_id) {
-        if (StringUtils.isNullOrEmpty(String.valueOf(plan_id))) {
-            return null;
-        }
-        return detailPlan.planId.eq(plan_id);
+        return plan_id == null ? null : detailPlan.planId.eq(plan_id);
     }
 }

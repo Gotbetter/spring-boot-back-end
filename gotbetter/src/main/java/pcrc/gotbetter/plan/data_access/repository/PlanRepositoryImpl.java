@@ -1,7 +1,6 @@
 package pcrc.gotbetter.plan.data_access.repository;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.util.StringUtils;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.transaction.annotation.Transactional;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
@@ -68,30 +67,18 @@ public class PlanRepositoryImpl implements PlanRepositoryQueryDSL{
      * plan eq
      */
     private BooleanExpression eqPlanId(Long plan_id) {
-        if (StringUtils.isNullOrEmpty(String.valueOf(plan_id))) {
-            return null;
-        }
-        return plan.planId.eq(plan_id);
+        return plan_id == null ? null : plan.planId.eq(plan_id);
     }
 
     private BooleanExpression eqParticipantId(Long participant_id) {
-        if (StringUtils.isNullOrEmpty(String.valueOf(participant_id))) {
-            return null;
-        }
-        return plan.participantInfo.participantId.eq(participant_id);
+        return participant_id == null ? null : plan.participantInfo.participantId.eq(participant_id);
     }
 
     private BooleanExpression eqWeek(Integer week) {
-        if (StringUtils.isNullOrEmpty(String.valueOf(week))) {
-            return null;
-        }
-        return plan.week.eq(week);
+        return week == null ? null : plan.week.eq(week);
     }
 
     private BooleanExpression eqThreeDaysPassed(Boolean threeDaysPassed) {
-        if (StringUtils.isNullOrEmpty(String.valueOf(threeDaysPassed))) {
-            return null;
-        }
-        return plan.threeDaysPassed.eq(threeDaysPassed);
+        return threeDaysPassed == null ? null : plan.threeDaysPassed.eq(threeDaysPassed);
     }
 }

@@ -1,7 +1,6 @@
 package pcrc.gotbetter.detail_plan_evaluation.data_access.repository;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.util.StringUtils;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +14,15 @@ public class DetailPlanEvalRepositoryImpl implements DetailPlanEvalRepositoryQue
     }
 
     @Override
+    @Transactional
+    public void deleteDetailPlanEval(Long detail_plan_id, Long participant_id) {
+        queryFactory.delete(detailPlanEval)
+                .where(detailPlanEvalEqDetailPlanId(detail_plan_id),
+                        detailPlanEvalEqParticipantId(participant_id))
+                .execute();
+    }
+
+    @Override
     public Boolean existsEval(Long detail_plan_id, Long participant_id) {
         Integer exists =  queryFactory
                 .selectOne()
@@ -25,29 +33,14 @@ public class DetailPlanEvalRepositoryImpl implements DetailPlanEvalRepositoryQue
         return exists != null;
     }
 
-    @Override
-    @Transactional
-    public void deleteDetailPlanEval(Long detail_plan_id, Long participant_id) {
-        queryFactory.delete(detailPlanEval)
-                .where(detailPlanEvalEqDetailPlanId(detail_plan_id),
-                        detailPlanEvalEqParticipantId(participant_id))
-                .execute();
-    }
-
     /**
      * detailPlanEval eq
      */
     private BooleanExpression detailPlanEvalEqDetailPlanId(Long detail_plan_id) {
-        if (StringUtils.isNullOrEmpty(String.valueOf(detail_plan_id))) {
-            return null;
-        }
-        return detailPlanEval.detailPlanEvalId.detailPlanId.eq(detail_plan_id);
+        return detail_plan_id == null ? null : detailPlanEval.detailPlanEvalId.detailPlanId.eq(detail_plan_id);
     }
 
     private BooleanExpression detailPlanEvalEqParticipantId(Long participant_id) {
-        if (StringUtils.isNullOrEmpty(String.valueOf(participant_id))) {
-            return null;
-        }
-        return detailPlanEval.detailPlanEvalId.participantId.eq(participant_id);
+        return participant_id == null ? null : detailPlanEval.detailPlanEvalId.participantId.eq(participant_id);
     }
 }

@@ -53,13 +53,11 @@ public class ViewRepository {
     }
 
     public TryEnterView tryEnterByUserIdRoomId(Long user_id, Long room_id, Boolean accepted) {
-        BooleanBuilder builder = new BooleanBuilder();
-        builder.and(tryEnterViewEqUserId(user_id))
-                .and(tryEnterViewEqRoomId(room_id))
-                .and(tryEnterViewEqAccepted(accepted));
         return queryFactory
                 .selectFrom(tryEnterView)
-                .where(builder)
+                .where(tryEnterViewEqUserId(user_id),
+                        tryEnterViewEqRoomId(room_id),
+                        tryEnterViewEqAccepted(accepted))
                 .fetchFirst();
     }
 
