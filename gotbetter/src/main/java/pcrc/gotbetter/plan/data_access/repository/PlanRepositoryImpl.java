@@ -6,8 +6,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.transaction.annotation.Transactional;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
 
-import java.util.Optional;
-
 import static pcrc.gotbetter.plan.data_access.entity.QPlan.plan;
 
 public class PlanRepositoryImpl implements PlanRepositoryQueryDSL{
@@ -15,25 +13,6 @@ public class PlanRepositoryImpl implements PlanRepositoryQueryDSL{
 
     public PlanRepositoryImpl(JPAQueryFactory queryFactory) {
         this.queryFactory = queryFactory;
-    }
-
-    @Override
-    public Boolean existsByParticipantId(Long participant_id) {
-        Integer exists =  queryFactory
-                .selectOne()
-                .from(plan)
-                .where(eqParticipantId(participant_id))
-                .fetchFirst();
-        return exists != null;
-    }
-
-    @Override
-    public Optional<Plan> findWeekPlanOfUser(Long participant_id, Integer week) {
-        return Optional.ofNullable(queryFactory
-                .select(plan)
-                .from(plan)
-                .where(eqParticipantId(participant_id), eqWeek(week))
-                .fetchFirst());
     }
 
     @Override
@@ -47,16 +26,6 @@ public class PlanRepositoryImpl implements PlanRepositoryQueryDSL{
     }
 
     @Override
-    public Boolean existsByThreeDaysPassed(Long plan_id) {
-        Integer exists =  queryFactory
-                .selectOne()
-                .from(plan)
-                .where(eqPlanId(plan_id), eqThreeDaysPassed(true))
-                .fetchFirst();
-        return exists != null;
-    }
-
-    @Override
     @Transactional
     public void updateThreeDaysPassed(Long plan_id) {
         queryFactory
@@ -64,6 +33,35 @@ public class PlanRepositoryImpl implements PlanRepositoryQueryDSL{
                 .set(plan.threeDaysPassed, true)
                 .where(eqPlanId(plan_id))
                 .execute();
+    }
+
+    @Override
+    public Plan findWeekPlanOfUser(Long participant_id, Integer week) {
+        return queryFactory
+                .select(plan)
+                .from(plan)
+                .where(eqParticipantId(participant_id), eqWeek(week))
+                .fetchFirst();
+    }
+
+    @Override
+    public Boolean existsByParticipantId(Long participant_id) {
+        Integer exists =  queryFactory
+                .selectOne()
+                .from(plan)
+                .where(eqParticipantId(participant_id))
+                .fetchFirst();
+        return exists != null;
+    }
+
+    @Override
+    public Boolean existsByThreeDaysPassed(Long plan_id) {
+        Integer exists =  queryFactory
+                .selectOne()
+                .from(plan)
+                .where(eqPlanId(plan_id), eqThreeDaysPassed(true))
+                .fetchFirst();
+        return exists != null;
     }
 
     /**

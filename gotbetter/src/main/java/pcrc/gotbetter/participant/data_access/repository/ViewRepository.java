@@ -34,6 +34,16 @@ public class ViewRepository {
                 .fetch();
     }
 
+    public Boolean enteredExistByParticipantId(Long user_id, Long room_id) {
+        Integer exists =  queryFactory
+                .selectOne()
+                .from(enteredView)
+                .where(enteredView.userId.eq(user_id),
+                        enteredView.roomId.eq(room_id))
+                .fetchFirst();
+        return exists != null;
+    }
+
     public TryEnterView tryEnterByUserIdRoomId(Long user_id, Long room_id, Boolean accepted) {
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(tryEnterViewEqUserId(user_id))
