@@ -102,7 +102,7 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
 
     private void validateSenderInRoom(Long room_id) {
         long user_id = getCurrentUserId();
-        if (!viewRepository.enteredExistByParticipantId(user_id, room_id)) {
+        if (!viewRepository.enteredExistByUserIdRoomId(user_id, room_id)) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
     }

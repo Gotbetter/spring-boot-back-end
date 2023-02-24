@@ -27,6 +27,14 @@ public class ViewRepository {
                 .fetchFirst();
     }
 
+    public EnteredView enteredByUserIdRoomId(Long user_id, Long room_id) {
+        return queryFactory
+                .selectFrom(enteredView)
+                .where(enteredView.userId.eq(user_id),
+                        enteredView.roomId.eq(room_id))
+                .fetchFirst();
+    }
+
     public List<EnteredView> enteredListByRoomId(Long room_id) {
         return queryFactory
                 .selectFrom(enteredView)
@@ -34,7 +42,7 @@ public class ViewRepository {
                 .fetch();
     }
 
-    public Boolean enteredExistByParticipantId(Long user_id, Long room_id) {
+    public Boolean enteredExistByUserIdRoomId(Long user_id, Long room_id) {
         Integer exists =  queryFactory
                 .selectOne()
                 .from(enteredView)
