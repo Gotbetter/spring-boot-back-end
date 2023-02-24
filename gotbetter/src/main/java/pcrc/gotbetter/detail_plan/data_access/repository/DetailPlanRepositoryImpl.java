@@ -26,15 +26,6 @@ public class DetailPlanRepositoryImpl implements DetailPlanRepositoryQueryDSL {
 
     @Override
     @Transactional
-    public void deleteDetailPlan(Long detail_plan_id) {
-        queryFactory
-                .delete(detailPlan)
-                .where(detailPlanEqDetailPlanId(detail_plan_id))
-                .execute();
-    }
-
-    @Override
-    @Transactional
     public void updateRejected(Long detail_plan_id, Boolean rejected) {
         queryFactory
                 .update(detailPlan)
@@ -66,27 +57,39 @@ public class DetailPlanRepositoryImpl implements DetailPlanRepositoryQueryDSL {
                 .execute();
     }
 
+    @Override
+    @Transactional
+    public void deleteDetailPlan(Long detail_plan_id) {
+        queryFactory
+                .delete(detailPlan)
+                .where(detailPlanEqDetailPlanId(detail_plan_id))
+                .execute();
+    }
+
+    @Override
+    public Boolean existsByPlanId(Long plan_id) {
+        Integer exists =  queryFactory
+                .selectOne()
+                .from(detailPlan)
+                .where(detailPlanEqPlanId(plan_id))
+                .fetchFirst();
+        return exists != null;
+    }
+
     /**
      * participant eq
      */
-    private BooleanExpression detailPlanEqUserId(Long user_id) {
-        if (StringUtils.isNullOrEmpty(String.valueOf(user_id))) {
-            return null;
-        }
-        return detailPlan.participantInfo.userId.eq(user_id);
-    }
-
-    private BooleanExpression detailPlanEqRoomId(Long room_id) {
-        if (StringUtils.isNullOrEmpty(String.valueOf(room_id))) {
-            return null;
-        }
-        return detailPlan.participantInfo.roomId.eq(room_id);
-    }
-
     private BooleanExpression detailPlanEqDetailPlanId(Long detail_plan_id) {
         if (StringUtils.isNullOrEmpty(String.valueOf(detail_plan_id))) {
             return null;
         }
         return detailPlan.detailPlanId.eq(detail_plan_id);
+    }
+
+    private BooleanExpression detailPlanEqPlanId(Long plan_id) {
+        if (StringUtils.isNullOrEmpty(String.valueOf(plan_id))) {
+            return null;
+        }
+        return detailPlan.planId.eq(plan_id);
     }
 }

@@ -38,7 +38,6 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
     @Override
     @Transactional
     public void createPlanEvaluation(PlanEvaluationCommand command) {
-        //detail plan이 아무것도 없으면 막기
         Plan plan = validatePlan(command.getPlan_id());
         EnteredView enteredView = validateEnteredView(plan.getParticipantInfo().getRoomId());
 
@@ -47,6 +46,9 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
         if (plan.getRejected()) {
+            throw new GotBetterException(MessageType.FORBIDDEN);
+        }
+        if (!detailPlanRepository.existsByPlanId(plan.getPlanId())) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
         if (planEvaluationRepository.existsEval(plan.getPlanId(), enteredView.getParticipantId())) {

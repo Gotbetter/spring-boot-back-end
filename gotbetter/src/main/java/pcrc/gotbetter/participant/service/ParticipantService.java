@@ -132,12 +132,12 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 
     private void validateUserInRoom(Long room_id, Boolean is_leader) {
         long user_id = getCurrentUserId();
-        Participant participant = participantRepository.findByUserIdAndRoomId(user_id, room_id);
+        EnteredView enteredView = viewRepository.enteredByUserIdRoomId(user_id, room_id);
 
-        if (is_leader && (participant == null || !participant.getAuthority())) {
+        if (is_leader && (enteredView == null || !enteredView.getAuthority())) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
-        if (!is_leader && participant == null) {
+        if (!is_leader && enteredView == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
     }

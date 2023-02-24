@@ -13,6 +13,7 @@ import pcrc.gotbetter.room.data_access.repository.RoomRepository;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 
+import java.time.LocalDate;
 import java.util.Objects;
 
 import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
@@ -46,16 +47,13 @@ public class DetailPlanCompleteService implements DetailPlanCompleteOperationUse
         if (detailPlan.getRejected()) {
             detailPlanRepository.updateRejected(detailPlan.getDetailPlanId(), false);
         }
+        if (detailPlan.getComplete()) {
+            throw new GotBetterException(MessageType.CONFLICT);
+        }
         detailPlanRepository.updateDetailPlanCompleted(
                 detailPlan.getDetailPlanId(), command.getApprove_comment());
-        return DetailPlanReadUseCase.FindDetailPlanResult.builder()
-                .detail_plan_id(detailPlan.getDetailPlanId())
-                .content(detailPlan.getContent())
-                .complete(true)
-                .approve_comment(command.getApprove_comment())
-                .rejected(false)
-                .plan_id(detailPlan.getPlanId())
-                .build();
+        return DetailPlanReadUseCase.FindDetailPlanResult
+                .findByDetailPlanEval(detailPlan, command.getApprove_comment(), true);
     }
 
     @Override
@@ -69,16 +67,13 @@ public class DetailPlanCompleteService implements DetailPlanCompleteOperationUse
         || detailPlan.getRejected()) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
+        if (!detailPlan.getComplete()) {
+            throw new GotBetterException(MessageType.CONFLICT);
+        }
         detailPlanRepository.updateDetailPlanUndo(detailPlan.getDetailPlanId(), false);
         detailPlanEvalRepository.deleteByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());
-        return DetailPlanReadUseCase.FindDetailPlanResult.builder()
-                .detail_plan_id(detailPlan.getDetailPlanId())
-                .content(detailPlan.getContent())
-                .complete(false)
-                .approve_comment("")
-                .rejected(false)
-                .plan_id(detailPlan.getPlanId())
-                .build();
+        return DetailPlanReadUseCase.FindDetailPlanResult
+                .findByDetailPlanEval(detailPlan, "", false);
     }
 
     /**
@@ -101,8 +96,13 @@ public class DetailPlanCompleteService implements DetailPlanCompleteOperationUse
         Plan plan = planRepository.findByPlanId(plan_id).orElseThrow(() -> {
             throw new GotBetterException(MessageType.NOT_FOUND);
         });
+
         if (!Objects.equals(room.getCurrentWeek(), plan.getWeek())) {
             throw new GotBetterException(MessageType.FORBIDDEN);
+        } else {
+            if (plan.getTargetDate().isBefore(LocalDate.now())) {
+                throw new GotBetterException(MessageType.FORBIDDEN);
+            }
         }
     }
 }

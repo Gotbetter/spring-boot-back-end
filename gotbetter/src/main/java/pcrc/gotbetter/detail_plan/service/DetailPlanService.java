@@ -6,7 +6,7 @@ import pcrc.gotbetter.detail_plan.data_access.repository.DetailPlanRepository;
 import pcrc.gotbetter.detail_plan_evaluation.data_access.entity.DetailPlanEval;
 import pcrc.gotbetter.detail_plan_evaluation.data_access.repository.DetailPlanEvalRepository;
 import pcrc.gotbetter.participant.data_access.entity.ParticipantInfo;
-import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
+import pcrc.gotbetter.participant.data_access.repository.ViewRepository;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
 import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
@@ -22,15 +22,15 @@ import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
 public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlanReadUseCase {
     private final DetailPlanRepository detailPlanRepository;
     private final PlanRepository planRepository;
-    private final ParticipantRepository participantRepository;
     private final DetailPlanEvalRepository detailPlanEvalRepository;
+    private final ViewRepository viewRepository;
 
     public DetailPlanService(DetailPlanRepository detailPlanRepository, PlanRepository planRepository,
-                             ParticipantRepository participantRepository, DetailPlanEvalRepository detailPlanEvalRepository) {
+                             DetailPlanEvalRepository detailPlanEvalRepository, ViewRepository viewRepository) {
         this.detailPlanRepository = detailPlanRepository;
         this.planRepository = planRepository;
-        this.participantRepository = participantRepository;
         this.detailPlanEvalRepository = detailPlanEvalRepository;
+        this.viewRepository = viewRepository;
     }
 
     @Override
@@ -68,7 +68,7 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
         Plan plan = validatePlan(plan_id);
         Long user_id = getCurrentUserId();
 
-        if (!participantRepository.existsMemberInRoom(user_id, plan.getParticipantInfo().getRoomId())) {
+        if (!viewRepository.enteredExistByUserIdRoomId(user_id, plan.getParticipantInfo().getRoomId())) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
 

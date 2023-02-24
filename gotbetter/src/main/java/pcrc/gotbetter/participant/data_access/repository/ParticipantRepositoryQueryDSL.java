@@ -7,7 +7,5 @@ public interface ParticipantRepositoryQueryDSL {
     void updateParticipateAccepted(Long user_id, Long room_id);
 
     // select
-    Participant findByUserIdAndRoomId(Long user_id, Long room_id);
     Boolean isMatchedLeader(Long user_id, Long room_id);
-    Boolean existsMemberInRoom(Long user_id, Long room_id);
 }

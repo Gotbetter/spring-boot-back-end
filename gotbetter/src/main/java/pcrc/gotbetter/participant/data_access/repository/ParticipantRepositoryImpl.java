@@ -28,31 +28,12 @@ public class ParticipantRepositoryImpl implements ParticipantRepositoryQueryDSL 
     }
 
     @Override
-    public Participant findByUserIdAndRoomId(Long user_id, Long room_id) {
-        return queryFactory
-                .select(participant)
-                .from(participant)
-                .where(participantEqUserId(user_id), participantEqRoomId(room_id))
-                .fetchFirst();
-    }
-
-    @Override
     public Boolean isMatchedLeader(Long user_id, Long room_id) {
         Integer exists =  queryFactory
                 .selectOne()
                 .from(participant)
                 .where(participantEqUserId(user_id), participantEqRoomId(room_id),
                         participant.authority.eq(true))
-                .fetchFirst();
-        return exists != null;
-    }
-
-    @Override
-    public Boolean existsMemberInRoom(Long user_id, Long room_id) {
-        Integer exists =  queryFactory
-                .selectOne()
-                .from(participant)
-                .where(participantEqUserId(user_id), participantEqRoomId(room_id))
                 .fetchFirst();
         return exists != null;
     }
