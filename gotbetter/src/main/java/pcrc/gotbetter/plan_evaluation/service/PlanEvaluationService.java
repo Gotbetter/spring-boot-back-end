@@ -4,8 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pcrc.gotbetter.detail_plan.data_access.repository.DetailPlanRepository;
-import pcrc.gotbetter.participant.data_access.entity.Participant;
-import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
 import pcrc.gotbetter.participant.data_access.repository.ViewRepository;
 import pcrc.gotbetter.participant.data_access.view.EnteredView;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
@@ -13,8 +11,6 @@ import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
 import pcrc.gotbetter.plan_evaluation.data_access.entity.PlanEvaluation;
 import pcrc.gotbetter.plan_evaluation.data_access.entity.PlanEvaluationId;
 import pcrc.gotbetter.plan_evaluation.data_access.repository.PlanEvaluationRepository;
-import pcrc.gotbetter.room.data_access.entity.Room;
-import pcrc.gotbetter.room.data_access.repository.RoomRepository;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 
