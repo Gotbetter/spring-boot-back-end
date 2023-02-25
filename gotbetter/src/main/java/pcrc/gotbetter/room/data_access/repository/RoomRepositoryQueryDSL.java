@@ -11,5 +11,6 @@ public interface RoomRepositoryQueryDSL {
 
     // select
     List<Room> findListUnderWeek();
+    Integer findCurrentWeek(Long room_id);
     Boolean existByRoomCode(String room_code);
 }

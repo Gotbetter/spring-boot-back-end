@@ -9,6 +9,7 @@ import pcrc.gotbetter.participant.data_access.entity.ParticipantInfo;
 import pcrc.gotbetter.participant.data_access.repository.ViewRepository;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
 import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
+import pcrc.gotbetter.room.data_access.repository.RoomRepository;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 
@@ -24,13 +25,16 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
     private final DetailPlanRepository detailPlanRepository;
     private final PlanRepository planRepository;
     private final DetailPlanEvalRepository detailPlanEvalRepository;
+    private final RoomRepository roomRepository;
     private final ViewRepository viewRepository;
 
     public DetailPlanService(DetailPlanRepository detailPlanRepository, PlanRepository planRepository,
-                             DetailPlanEvalRepository detailPlanEvalRepository, ViewRepository viewRepository) {
+                             DetailPlanEvalRepository detailPlanEvalRepository, RoomRepository roomRepository,
+                             ViewRepository viewRepository) {
         this.detailPlanRepository = detailPlanRepository;
         this.planRepository = planRepository;
         this.detailPlanEvalRepository = detailPlanEvalRepository;
+        this.roomRepository = roomRepository;
         this.viewRepository = viewRepository;
     }
 
@@ -42,9 +46,7 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
         if (!Objects.equals(user_id, plan.getParticipantInfo().getUserId())) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
-        if (plan.getThreeDaysPassed() || plan.getStartDate().isBefore(LocalDate.now())) {
-            throw new GotBetterException(MessageType.FORBIDDEN_DATE);
-        }
+        validateThreeDaysPassed(plan, roomRepository.findCurrentWeek(plan.getParticipantInfo().getRoomId()));
         if (plan.getRejected()) {
             planRepository.updateRejected(plan.getPlanId(), false);
         }
@@ -95,7 +97,8 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
     public FindDetailPlanResult updateDetailPlan(DetailPlanUpdateCommand command) {
         DetailPlan detailPlan = validateDetailPlan(command.getDetail_plan_id(), command.getPlan_id());
 
-        validateThreeDaysPassed(command.getPlan_id());
+        validateThreeDaysPassed(validatePlan(detailPlan.getPlanId()),
+                roomRepository.findCurrentWeek(detailPlan.getParticipantInfo().getRoomId()));
 
         detailPlanRepository.updateDetailContent(command.getDetail_plan_id(), command.getContent());
         return FindDetailPlanResult.builder()
@@ -110,8 +113,10 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 
     @Override
     public void deleteDetailPlan(DetailPlanDeleteCommand command) {
-        validateDetailPlan(command.getDetail_plan_id(), command.getPlan_id());
-        validateThreeDaysPassed(command.getPlan_id());
+        DetailPlan detailPlan = validateDetailPlan(command.getDetail_plan_id(), command.getPlan_id());
+
+        validateThreeDaysPassed(validatePlan(detailPlan.getPlanId()),
+                roomRepository.findCurrentWeek(detailPlan.getParticipantInfo().getRoomId()));
 
         detailPlanRepository.deleteDetailPlan(command.getDetail_plan_id());
     }
@@ -139,8 +144,15 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
         return detailPlan;
     }
 
-    private void validateThreeDaysPassed(Long plan_id) {
-        Plan plan = validatePlan(plan_id);
+    private void validateThreeDaysPassed(Plan plan, Integer current_week) {
+        if (!Objects.equals(current_week, plan.getWeek())) {
+            throw new GotBetterException(MessageType.FORBIDDEN_DATE);
+        } else {
+            if (plan.getTargetDate().isBefore(LocalDate.now())
+                    || plan.getStartDate().isBefore(LocalDate.now())) {
+                throw new GotBetterException(MessageType.FORBIDDEN_DATE);
+            }
+        }
         if (plan.getThreeDaysPassed()) {
             throw new GotBetterException(MessageType.FORBIDDEN_DATE);
         }
