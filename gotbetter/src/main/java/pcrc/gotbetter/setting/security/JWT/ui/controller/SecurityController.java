@@ -24,7 +24,8 @@ public class SecurityController {
 
     @PostMapping(value = "/reissue")
     public ResponseEntity<TokenView> reissue(HttpServletRequest request) {
-        log.info("REISSUE");
+
+        log.info("\"REISSUE\"");
 
         TokenInfo tokenInfo = securityService.reissueNewAccessToken(request);
 

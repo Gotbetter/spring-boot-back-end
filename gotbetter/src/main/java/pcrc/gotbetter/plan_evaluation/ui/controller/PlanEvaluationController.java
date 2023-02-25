@@ -26,7 +26,7 @@ public class PlanEvaluationController {
     @PostMapping(value = "")
     public ResponseEntity<Void> createPlanDislike(@PathVariable(value = "plan_id") Long plan_id) {
 
-        log.info("CREATE A PLAN DISLIKE");
+        log.info("\"CREATE A PLAN DISLIKE\"");
 
         var command = PlanEvaluationOperationUseCase.PlanEvaluationCommand.builder()
                 .plan_id(plan_id)
@@ -38,7 +38,7 @@ public class PlanEvaluationController {
     @GetMapping(value = "")
     public ResponseEntity<PlanEvaluationView> getPlanDislike(@PathVariable(value = "plan_id") Long plan_id) {
 
-        log.info("GET A PLAN DISLIKE LIST");
+        log.info("\"GET A PLAN DISLIKE LIST\"");
 
         var query = PlanEvaluationReadUseCase.PlanEvaluationFindQuery.builder()
                 .plan_id(plan_id)
@@ -52,7 +52,7 @@ public class PlanEvaluationController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletePlanDislike(@PathVariable(value = "plan_id") Long plan_id) {
 
-        log.info("DELETE A PLAN DISLIKE");
+        log.info("\"DELETE A PLAN DISLIKE\"");
 
         var command = PlanEvaluationOperationUseCase.PlanEvaluationCommand.builder()
                 .plan_id(plan_id)

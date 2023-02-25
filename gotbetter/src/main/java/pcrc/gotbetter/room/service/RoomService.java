@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import pcrc.gotbetter.participant.data_access.entity.Participant;
 import pcrc.gotbetter.participant.data_access.entity.Participate;
 import pcrc.gotbetter.participant.data_access.entity.ParticipateId;
+import pcrc.gotbetter.participant.data_access.repository.ViewRepository;
+import pcrc.gotbetter.participant.data_access.view.TryEnterView;
 import pcrc.gotbetter.room.data_access.entity.Room;
 import pcrc.gotbetter.participant.data_access.repository.ParticipateRepository;
 import pcrc.gotbetter.room.data_access.repository.RoomRepository;
@@ -23,24 +25,28 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     private final RoomRepository roomRepository;
     private final ParticipateRepository participateRepository;
     private final ParticipantRepository participantRepository;
+    private final ViewRepository viewRepository;
 
     @Autowired
-    public RoomService(RoomRepository roomRepository, ParticipateRepository participateRepository, ParticipantRepository participantRepository) {
+    public RoomService(RoomRepository roomRepository, ParticipateRepository participateRepository,
+                       ParticipantRepository participantRepository, ViewRepository viewRepository) {
         this.roomRepository = roomRepository;
         this.participateRepository = participateRepository;
         this.participantRepository = participantRepository;
+        this.viewRepository = viewRepository;
     }
 
     @Override
     public List<FindRoomResult> getUserRooms() {
         Long user_id = getCurrentUserId();
-        List<Room> rooms = roomRepository.findUserRooms(user_id);
         List<FindRoomResult> result = new ArrayList<>();
+        List<TryEnterView> tryEnterViewList = viewRepository
+                .tryEnterListByUserIdRoomId(user_id, null, true);
 
-        for (Room r : rooms) {
+        for (TryEnterView t : tryEnterViewList) {
             result.add(FindRoomResult.builder()
-                    .room_id(r.getRoomId())
-                    .title(r.getTitle())
+                    .room_id(t.getTryEnterId().getRoomId())
+                    .title(t.getTitle())
                     .build());
         }
         return result;
@@ -49,19 +55,19 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     @Override
     public FindRoomResult getOneRoomInfo(Long room_id) {
         Long user_id = getCurrentUserId();
-        Room room = roomRepository.findRoomWithUserIdAndRoomId(user_id, room_id);
+        TryEnterView tryEnterView = viewRepository.tryEnterByUserIdRoomId(user_id, room_id, true);
 
-        if (room == null) {
+        if (tryEnterView == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
-        return FindRoomResult.findByRoom(room, null);
+        return FindRoomResult.findByRoom(tryEnterView);
     }
 
     @Override
     public FindRoomResult createRoom(RoomCreateCommand command) {
         Long user_id = getCurrentUserId();
-
         String room_code = getRandomCode();
+
         Room room = Room.builder()
                 .title(command.getTitle())
                 .maxUserNum(command.getMax_user_num())
@@ -87,8 +93,8 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
         participateRepository.save(participate);
 
         Participant participant = Participant.builder()
-                .userId(user_id)
-                .roomId(room.getRoomId())
+                .userId(participate.getParticipateId().getUserId())
+                .roomId(participate.getParticipateId().getRoomId())
                 .authority(true)
                 .refund(room.getEntryFee())
                 .build();

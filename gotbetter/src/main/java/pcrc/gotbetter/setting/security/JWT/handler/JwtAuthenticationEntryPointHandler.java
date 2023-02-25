@@ -22,7 +22,7 @@ public class JwtAuthenticationEntryPointHandler implements AuthenticationEntryPo
         LocalDateTime now = LocalDateTime.now();
         String formatedNow = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-        System.out.println("[" + formatedNow + "] exception: " + exception);
+//        System.out.println("[" + formatedNow + "] exception: " + exception);
 
         //토큰이 없는 경우 예외처리
         if (exception == null) {

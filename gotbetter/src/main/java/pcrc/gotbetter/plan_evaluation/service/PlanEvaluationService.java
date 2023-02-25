@@ -4,15 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pcrc.gotbetter.detail_plan.data_access.repository.DetailPlanRepository;
-import pcrc.gotbetter.participant.data_access.entity.Participant;
-import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
+import pcrc.gotbetter.participant.data_access.repository.ViewRepository;
+import pcrc.gotbetter.participant.data_access.view.EnteredView;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
 import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
 import pcrc.gotbetter.plan_evaluation.data_access.entity.PlanEvaluation;
 import pcrc.gotbetter.plan_evaluation.data_access.entity.PlanEvaluationId;
 import pcrc.gotbetter.plan_evaluation.data_access.repository.PlanEvaluationRepository;
-import pcrc.gotbetter.room.data_access.entity.Room;
-import pcrc.gotbetter.room.data_access.repository.RoomRepository;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 
@@ -25,41 +23,40 @@ import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
 public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  PlanEvaluationReadUseCase {
     private final PlanEvaluationRepository planEvaluationRepository;
     private final PlanRepository planRepository;
-    private final ParticipantRepository participantRepository;
-    private final RoomRepository roomRepository;
     private final DetailPlanRepository detailPlanRepository;
+    private final ViewRepository viewRepository;
 
     @Autowired
     public PlanEvaluationService(PlanEvaluationRepository planEvaluationRepository, PlanRepository planRepository,
-                                 ParticipantRepository participantRepository, RoomRepository roomRepository,
-                                 DetailPlanRepository detailPlanRepository) {
+                                 DetailPlanRepository detailPlanRepository, ViewRepository viewRepository) {
         this.planEvaluationRepository = planEvaluationRepository;
         this.planRepository = planRepository;
-        this.participantRepository = participantRepository;
-        this.roomRepository = roomRepository;
         this.detailPlanRepository = detailPlanRepository;
+        this.viewRepository = viewRepository;
     }
 
     @Override
     @Transactional
     public void createPlanEvaluation(PlanEvaluationCommand command) {
         Plan plan = validatePlan(command.getPlan_id());
-        Long user_id = getCurrentUserId();
-        Participant participant = validateMemberInRoom(user_id, plan.getParticipantInfo().getRoomId());
+        EnteredView enteredView = validateEnteredView(plan.getParticipantInfo().getRoomId());
 
-        if (plan.getThreeDaysPassed()) {
+        if (!Objects.equals(enteredView.getCurrentWeek(), plan.getWeek())
+                || plan.getThreeDaysPassed()) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
         if (plan.getRejected()) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
-        if (planEvaluationRepository.existsEval(plan.getPlanId(), participant.getParticipantId())) {
+        if (!detailPlanRepository.existsByPlanId(plan.getPlanId())) {
+            throw new GotBetterException(MessageType.FORBIDDEN);
+        }
+        if (planEvaluationRepository.existsEval(plan.getPlanId(), enteredView.getParticipantId())) {
             throw new GotBetterException(MessageType.CONFLICT);
         }
 
-        Room room = validateRoom(participant.getRoomId());
         List<PlanEvaluation> planEvaluations = planEvaluationRepository.findByPlanEvaluationIdPlanId(command.getPlan_id());
-        if (Math.ceil(room.getCurrentUserNum()) / 2 <= planEvaluations.size() + 1) {
+        if (Math.ceil(enteredView.getCurrentUserNum()) / 2 <= planEvaluations.size() + 1) {
             planRepository.updateRejected(plan.getPlanId(), true);
             planEvaluationRepository.deleteByPlanEvaluationIdPlanId(plan.getPlanId());
             detailPlanRepository.deleteByPlanId(plan.getPlanId());
@@ -67,9 +64,9 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
             PlanEvaluation planEvaluation = PlanEvaluation.builder()
                     .planEvaluationId(PlanEvaluationId.builder()
                             .planId(plan.getPlanId())
-                            .participantId(participant.getParticipantId())
-                            .userId(participant.getUserId())
-                            .roomId(participant.getRoomId())
+                            .participantId(enteredView.getParticipantId())
+                            .userId(enteredView.getUserId())
+                            .roomId(enteredView.getRoomId())
                             .build())
                     .build();
             planEvaluationRepository.save(planEvaluation);
@@ -79,36 +76,31 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
     @Override
     public FindPlanEvaluationResult getPlanDislike(PlanEvaluationFindQuery query) {
         Plan plan = validatePlan(query.getPlan_id());
-        Participant participant = validateMemberInRoom(getCurrentUserId(), plan.getParticipantInfo().getRoomId());
+        EnteredView enteredView = validateEnteredView(plan.getParticipantInfo().getRoomId());
         List<PlanEvaluation> planEvaluations = planEvaluationRepository.findByPlanEvaluationIdPlanId(query.getPlan_id());
         boolean checked = false;
 
         for (PlanEvaluation p : planEvaluations) {
-            if (Objects.equals(p.getPlanEvaluationId().getUserId(), participant.getUserId())) {
+            if (Objects.equals(p.getPlanEvaluationId().getUserId(), enteredView.getUserId())) {
                 checked = true;
                 break;
             }
         }
-
         return FindPlanEvaluationResult.findByPlanEvaluation(planEvaluations.size(), checked);
     }
 
     @Override
-    @Transactional
     public void deletePlanEvaluation(PlanEvaluationCommand command) {
-        List<PlanEvaluation> planEvaluations = planEvaluationRepository.findByPlanEvaluationIdPlanId(command.getPlan_id());
-        if (planEvaluations.size() == 0) {
-            throw new GotBetterException(MessageType.NOT_FOUND);
+        Plan plan = validatePlan(command.getPlan_id());
+        EnteredView enteredView = validateEnteredView(plan.getParticipantInfo().getRoomId());
+
+        if (!Objects.equals(enteredView.getCurrentWeek(), plan.getWeek())
+                || plan.getThreeDaysPassed()) {
+            throw new GotBetterException(MessageType.FORBIDDEN);
         }
-        validateThreeDaysPassed(command.getPlan_id());
-        Long user_id = getCurrentUserId();
-        for (PlanEvaluation p : planEvaluations) {
-            if (Objects.equals(p.getPlanEvaluationId().getUserId(), user_id)) {
-                planEvaluationRepository.deleteByPlanEvaluationId(p.getPlanEvaluationId());
-//                planEvaluationRepository.deleteDislike(p.getPlanEvaluationId().getPlanId(),
-//                        p.getPlanEvaluationId().getParticipantId());
-                return;
-            }
+        if (planEvaluationRepository.existsEval(plan.getPlanId(), enteredView.getParticipantId())) {
+            planEvaluationRepository.deletePlanEvaluation(plan.getPlanId(), enteredView.getParticipantId());
+            return;
         }
         throw new GotBetterException(MessageType.NOT_FOUND);
     }
@@ -122,23 +114,12 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
         });
     }
 
-    private Room validateRoom(Long room_id) {
-        return roomRepository.findByRoomId(room_id).orElseThrow(() -> {
+    private EnteredView validateEnteredView(Long room_id) {
+        EnteredView enteredView = viewRepository.enteredByUserIdRoomId(getCurrentUserId(), room_id);
+
+        if (enteredView == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
-        });
-    }
-
-    private Participant validateMemberInRoom(Long user_id, Long room_id) {
-        Participant participant = participantRepository.findByUserIdAndRoomId(user_id, room_id);
-        if (participant == null) {
-            throw new GotBetterException(MessageType.FORBIDDEN);
         }
-        return participant;
-    }
-
-    private void validateThreeDaysPassed(Long plan_id) {
-        if (planRepository.existsByThreeDaysPassed(plan_id)) {
-            throw new GotBetterException(MessageType.FORBIDDEN);
-        }
+        return enteredView;
     }
 }

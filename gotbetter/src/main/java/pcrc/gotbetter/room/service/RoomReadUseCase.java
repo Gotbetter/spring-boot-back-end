@@ -3,6 +3,7 @@ package pcrc.gotbetter.room.service;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
+import pcrc.gotbetter.participant.data_access.view.TryEnterView;
 import pcrc.gotbetter.room.data_access.entity.Room;
 
 import java.time.LocalDate;
@@ -46,6 +47,23 @@ public interface RoomReadUseCase {
                     .total_entry_fee(room.getTotalEntryFee())
                     .rule_id(room.getRuleId())
                     .participant_id(participant_id)
+                    .build();
+        }
+
+        public static FindRoomResult findByRoom(TryEnterView tryEnterView) {
+            return FindRoomResult.builder()
+                    .room_id(tryEnterView.getTryEnterId().getRoomId())
+                    .title(tryEnterView.getTitle())
+                    .max_user_num(tryEnterView.getMaxUserNum())
+                    .current_user_num(tryEnterView.getCurrentUserNum())
+                    .start_date(tryEnterView.getStartDate())
+                    .week(tryEnterView.getWeek())
+                    .current_week(tryEnterView.getCurrentWeek())
+                    .entry_fee(tryEnterView.getEntryFee())
+                    .room_code(tryEnterView.getRoomCode())
+                    .account(tryEnterView.getAccount())
+                    .total_entry_fee(tryEnterView.getTotalEntryFee())
+                    .rule_id(tryEnterView.getRuleId())
                     .build();
         }
     }

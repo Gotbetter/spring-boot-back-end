@@ -32,7 +32,7 @@ public class DetailPlanController {
     public ResponseEntity<DetailPlanView> createDetailPlan(@PathVariable(value = "plan_id") Long plan_id,
                                                            @Valid @RequestBody DetailPlanRequest request) {
 
-        log.info("CREATE A DETAIL PLAN");
+        log.info("\"CREATE A DETAIL PLAN\"");
 
         var command = DetailPlanOperationUseCase.DetailPlanCreateCommand.builder()
                 .plan_id(plan_id)
@@ -46,7 +46,7 @@ public class DetailPlanController {
     @GetMapping(value = "")
     public ResponseEntity<List<DetailPlanView>> getDetailPlan(@PathVariable(value = "plan_id") Long plan_id) {
 
-        log.info("GET DETAIL PLAN LIST");
+        log.info("\"GET DETAIL PLAN LIST\"");
 
         List<DetailPlanReadUseCase.FindDetailPlanResult> detailPlans = detailPlanReadUseCase.getDetailPlans(plan_id);
         List<DetailPlanView> detailPlanViews = new ArrayList<>();
@@ -61,7 +61,8 @@ public class DetailPlanController {
     public ResponseEntity<DetailPlanView> updateDetailPlan(@PathVariable(value = "plan_id") Long plan_id,
                                                            @PathVariable(value = "detail_plan_id") Long detail_plan_id,
                                                            @Valid @RequestBody DetailPlanRequest request) {
-        log.info("UPDATE A DETAIL PLAN");
+
+        log.info("\"UPDATE A DETAIL PLAN\"");
 
         var command = DetailPlanOperationUseCase.DetailPlanUpdateCommand.builder()
                 .detail_plan_id(detail_plan_id)
@@ -76,7 +77,8 @@ public class DetailPlanController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteDetailPlan(@PathVariable(value = "plan_id") Long plan_id,
                                            @PathVariable(value = "detail_plan_id") Long detail_plan_id) {
-        log.info("DELETE A DETAIL PLAN");
+
+        log.info("\"DELETE A DETAIL PLAN\"");
 
         var command = DetailPlanOperationUseCase.DetailPlanDeleteCommand.builder()
                 .detail_plan_id(detail_plan_id)

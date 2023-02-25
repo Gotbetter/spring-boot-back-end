@@ -20,7 +20,8 @@ public class DetailPlanEvalController {
     @PostMapping(value = "")
     @ResponseStatus(HttpStatus.CREATED)
     public void createDetailPlanEvaluation(@PathVariable(value = "detail_plan_id") Long detail_plan_id) {
-        log.info("CREATE A DETAIL PLAN DISLIKE");
+
+        log.info("\"CREATE A DETAIL PLAN DISLIKE\"");
 
         var command = DetailPlanEvalOperationUseCase.DetailPlanEvaluationCommand.builder()
                 .detail_plan_id(detail_plan_id)
@@ -31,7 +32,8 @@ public class DetailPlanEvalController {
     @DeleteMapping(value = "")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteDetailPlanEvaluation(@PathVariable(value = "detail_plan_id") Long detail_plan_id) {
-        log.info("DELETE A DETAIL PLAN DISLIKE");
+
+        log.info("\"DELETE A DETAIL PLAN DISLIKE\"");
 
         var command = DetailPlanEvalOperationUseCase.DetailPlanEvaluationCommand.builder()
                 .detail_plan_id(detail_plan_id)

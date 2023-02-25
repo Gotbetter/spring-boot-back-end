@@ -19,6 +19,16 @@ public class UserRepositoryImpl implements UserRepositoryQueryDSL {
     }
 
     @Override
+    @Transactional
+    public void updateRefreshToken(String auth_id, String refresh_token) {
+        queryFactory
+                .update(user)
+                .where(eqAuthId(auth_id))
+                .set(user.refresh_token, refresh_token)
+                .execute();
+    }
+
+    @Override
     public Boolean existsByAuthidOrEmail(String auth_id, String email) {
         BooleanBuilder builder = new BooleanBuilder();
         builder.or(eqAuthId(auth_id))
@@ -31,16 +41,9 @@ public class UserRepositoryImpl implements UserRepositoryQueryDSL {
         return existsUser != null;
     }
 
-    @Override
-    @Transactional
-    public void updateRefreshToken(String auth_id, String refresh_token) {
-        queryFactory
-                .update(user)
-                .where(eqAuthId(auth_id))
-                .set(user.refresh_token, refresh_token)
-                .execute();
-    }
-
+    /**
+     * user eq
+     */
     private BooleanExpression eqAuthId(String auth_id) {
         if (StringUtils.isNullOrEmpty(auth_id)) {
             return null;

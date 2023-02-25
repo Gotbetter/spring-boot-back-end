@@ -41,5 +41,17 @@ public interface DetailPlanReadUseCase {
                     .checked(checked)
                     .build();
         }
+
+        public static FindDetailPlanResult findByDetailPlanEval(DetailPlan detailPlan,
+                                                                String approve_comment, Boolean complete) {
+            return FindDetailPlanResult.builder()
+                    .detail_plan_id(detailPlan.getDetailPlanId())
+                    .content(detailPlan.getContent())
+                    .complete(complete)
+                    .approve_comment(approve_comment)
+                    .rejected(false)
+                    .plan_id(detailPlan.getPlanId())
+                    .build();
+        }
     }
 }
