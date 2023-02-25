@@ -1,11 +1,9 @@
 package pcrc.gotbetter.participant.data_access.view;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import org.hibernate.annotations.Immutable;
+import pcrc.gotbetter.participant.data_access.entity.ParticipateId;
 
 import java.time.LocalDate;
 
@@ -16,9 +14,9 @@ import java.time.LocalDate;
 public class TryEnterView {
     private Boolean accepted;
 
-    @Id
-    @Column(name = "user_id")
-    private Long userId;
+    @EmbeddedId
+    ParticipateId tryEnterId;
+
     @Column(name = "auth_id")
     private String authId;
     @Column(name = "username")
@@ -26,8 +24,6 @@ public class TryEnterView {
     private String email;
     private String profile;
 
-    @Column(name = "room_id")
-    private Long roomId;
     private String title;
     @Column(name = "max_user_num")
     private Integer maxUserNum;

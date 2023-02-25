@@ -52,7 +52,7 @@ public interface RoomReadUseCase {
 
         public static FindRoomResult findByRoom(TryEnterView tryEnterView) {
             return FindRoomResult.builder()
-                    .room_id(tryEnterView.getRoomId())
+                    .room_id(tryEnterView.getTryEnterId().getRoomId())
                     .title(tryEnterView.getTitle())
                     .max_user_num(tryEnterView.getMaxUserNum())
                     .current_user_num(tryEnterView.getCurrentUserNum())

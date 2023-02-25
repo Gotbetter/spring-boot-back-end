@@ -92,13 +92,13 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
         Participant participant = Participant.builder()
-                .userId(targetUserInfo.getUserId())
-                .roomId(targetUserInfo.getRoomId())
+                .userId(targetUserInfo.getTryEnterId().getUserId())
+                .roomId(targetUserInfo.getTryEnterId().getRoomId())
                 .authority(false)
                 .refund(targetUserInfo.getEntryFee())
                 .build();
         participantRepository.save(participant);
-        participantRepository.updateParticipateAccepted(targetUserInfo.getUserId(), targetUserInfo.getRoomId());
+        participantRepository.updateParticipateAccepted(targetUserInfo.getTryEnterId().getUserId(), targetUserInfo.getTryEnterId().getRoomId());
         roomRepository.updatePlusTotalEntryFeeAndCurrentNum(command.getRoom_id(), targetUserInfo.getEntryFee());
         return FindParticipantResult.findByParticipant(targetUserInfo,
                 participant.getParticipantId(), null);

@@ -45,7 +45,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 
         for (TryEnterView t : tryEnterViewList) {
             result.add(FindRoomResult.builder()
-                    .room_id(t.getRoomId())
+                    .room_id(t.getTryEnterId().getRoomId())
                     .title(t.getTitle())
                     .build());
         }

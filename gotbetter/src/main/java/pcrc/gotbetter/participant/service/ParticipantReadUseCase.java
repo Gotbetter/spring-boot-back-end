@@ -39,7 +39,7 @@ public interface ParticipantReadUseCase {
                                                               Boolean authority) {
             return FindParticipantResult.builder()
                     .participant_id(participant_id)
-                    .user_id(view.getUserId())
+                    .user_id(view.getTryEnterId().getUserId())
                     .auth_id(view.getAuthId())
                     .username(view.getUsernameNick())
                     .email(view.getEmail())

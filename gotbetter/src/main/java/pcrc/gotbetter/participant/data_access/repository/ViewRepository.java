@@ -1,6 +1,5 @@
 package pcrc.gotbetter.participant.data_access.repository;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.stereotype.Repository;
@@ -62,13 +61,11 @@ public class ViewRepository {
     }
 
     public List<TryEnterView> tryEnterListByUserIdRoomId(Long user_id, Long room_id, Boolean accepted) {
-        BooleanBuilder builder = new BooleanBuilder();
-        builder.and(tryEnterViewEqUserId(user_id))
-                .and(tryEnterViewEqRoomId(room_id))
-                .and(tryEnterViewEqAccepted(accepted));
         return queryFactory
                 .selectFrom(tryEnterView)
-                .where(builder)
+                .where(tryEnterViewEqUserId(user_id),
+                        tryEnterViewEqRoomId(room_id),
+                        tryEnterViewEqAccepted(accepted))
                 .fetch();
     }
 
@@ -76,10 +73,10 @@ public class ViewRepository {
      * try-enter view eq
      */
     private BooleanExpression tryEnterViewEqUserId(Long user_id) {
-        return user_id == null ? null : tryEnterView.userId.eq(user_id);
+        return user_id == null ? null : tryEnterView.tryEnterId.userId.eq(user_id);
     }
     private BooleanExpression tryEnterViewEqRoomId(Long room_id) {
-        return room_id == null ? null : tryEnterView.roomId.eq(room_id);
+        return room_id == null ? null : tryEnterView.tryEnterId.roomId.eq(room_id);
     }
     private BooleanExpression tryEnterViewEqAccepted(Boolean accepted) {
         return accepted == null ? null : tryEnterView.accepted.eq(accepted);
