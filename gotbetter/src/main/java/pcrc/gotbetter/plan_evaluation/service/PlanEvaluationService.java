@@ -14,6 +14,7 @@ import pcrc.gotbetter.plan_evaluation.data_access.repository.PlanEvaluationRepos
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -41,10 +42,7 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
         Plan plan = validatePlan(command.getPlan_id());
         EnteredView enteredView = validateEnteredView(plan.getParticipantInfo().getRoomId());
 
-        if (!Objects.equals(enteredView.getCurrentWeek(), plan.getWeek())
-                || plan.getThreeDaysPassed()) {
-            throw new GotBetterException(MessageType.FORBIDDEN_DATE);
-        }
+        validateDate(plan, enteredView.getCurrentWeek());
         if (plan.getRejected()) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
@@ -94,10 +92,7 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
         Plan plan = validatePlan(command.getPlan_id());
         EnteredView enteredView = validateEnteredView(plan.getParticipantInfo().getRoomId());
 
-        if (!Objects.equals(enteredView.getCurrentWeek(), plan.getWeek())
-                || plan.getThreeDaysPassed()) {
-            throw new GotBetterException(MessageType.FORBIDDEN_DATE);
-        }
+        validateDate(plan, enteredView.getCurrentWeek());
         if (planEvaluationRepository.existsEval(plan.getPlanId(), enteredView.getParticipantId())) {
             planEvaluationRepository.deletePlanEvaluation(plan.getPlanId(), enteredView.getParticipantId());
             return;
@@ -121,5 +116,19 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
         return enteredView;
+    }
+
+    private void validateDate(Plan plan, Integer current_week) {
+        if (!Objects.equals(current_week, plan.getWeek())) {
+            throw new GotBetterException(MessageType.FORBIDDEN_DATE);
+        } else {
+            if (plan.getTargetDate().isBefore(LocalDate.now())
+                    || plan.getStartDate().isBefore(LocalDate.now())) {
+                throw new GotBetterException(MessageType.FORBIDDEN_DATE);
+            }
+        }
+        if (plan.getThreeDaysPassed()) {
+            throw new GotBetterException(MessageType.FORBIDDEN_DATE);
+        }
     }
 }

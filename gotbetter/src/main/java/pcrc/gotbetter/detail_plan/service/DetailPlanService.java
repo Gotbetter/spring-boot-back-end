@@ -12,6 +12,7 @@ import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -41,7 +42,7 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
         if (!Objects.equals(user_id, plan.getParticipantInfo().getUserId())) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
-        if (plan.getThreeDaysPassed()) {
+        if (plan.getThreeDaysPassed() || plan.getStartDate().isBefore(LocalDate.now())) {
             throw new GotBetterException(MessageType.FORBIDDEN_DATE);
         }
         if (plan.getRejected()) {
@@ -93,7 +94,9 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
     @Override
     public FindDetailPlanResult updateDetailPlan(DetailPlanUpdateCommand command) {
         DetailPlan detailPlan = validateDetailPlan(command.getDetail_plan_id(), command.getPlan_id());
+
         validateThreeDaysPassed(command.getPlan_id());
+
         detailPlanRepository.updateDetailContent(command.getDetail_plan_id(), command.getContent());
         return FindDetailPlanResult.builder()
                 .detail_plan_id(command.getDetail_plan_id())
@@ -109,6 +112,7 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
     public void deleteDetailPlan(DetailPlanDeleteCommand command) {
         validateDetailPlan(command.getDetail_plan_id(), command.getPlan_id());
         validateThreeDaysPassed(command.getPlan_id());
+
         detailPlanRepository.deleteDetailPlan(command.getDetail_plan_id());
     }
 
@@ -136,7 +140,8 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
     }
 
     private void validateThreeDaysPassed(Long plan_id) {
-        if (planRepository.existsByThreeDaysPassed(plan_id)) {
+        Plan plan = validatePlan(plan_id);
+        if (plan.getThreeDaysPassed()) {
             throw new GotBetterException(MessageType.FORBIDDEN_DATE);
         }
     }

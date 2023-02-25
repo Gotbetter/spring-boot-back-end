@@ -15,6 +15,7 @@ import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,6 +68,10 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     public FindRoomResult createRoom(RoomCreateCommand command) {
         Long user_id = getCurrentUserId();
         String room_code = getRandomCode();
+
+        if (command.getStart_date().isBefore(LocalDate.now())) {
+            throw new GotBetterException(MessageType.BAD_REQUEST);
+        }
 
         Room room = Room.builder()
                 .title(command.getTitle())
