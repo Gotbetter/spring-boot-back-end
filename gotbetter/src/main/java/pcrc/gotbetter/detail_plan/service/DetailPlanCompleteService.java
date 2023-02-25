@@ -98,10 +98,10 @@ public class DetailPlanCompleteService implements DetailPlanCompleteOperationUse
         });
 
         if (!Objects.equals(room.getCurrentWeek(), plan.getWeek())) {
-            throw new GotBetterException(MessageType.FORBIDDEN);
+            throw new GotBetterException(MessageType.FORBIDDEN_DATE);
         } else {
             if (plan.getTargetDate().isBefore(LocalDate.now())) {
-                throw new GotBetterException(MessageType.FORBIDDEN);
+                throw new GotBetterException(MessageType.FORBIDDEN_DATE);
             }
         }
     }

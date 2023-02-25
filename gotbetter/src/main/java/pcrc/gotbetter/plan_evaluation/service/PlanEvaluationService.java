@@ -43,7 +43,7 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
 
         if (!Objects.equals(enteredView.getCurrentWeek(), plan.getWeek())
                 || plan.getThreeDaysPassed()) {
-            throw new GotBetterException(MessageType.FORBIDDEN);
+            throw new GotBetterException(MessageType.FORBIDDEN_DATE);
         }
         if (plan.getRejected()) {
             throw new GotBetterException(MessageType.FORBIDDEN);
@@ -96,7 +96,7 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
 
         if (!Objects.equals(enteredView.getCurrentWeek(), plan.getWeek())
                 || plan.getThreeDaysPassed()) {
-            throw new GotBetterException(MessageType.FORBIDDEN);
+            throw new GotBetterException(MessageType.FORBIDDEN_DATE);
         }
         if (planEvaluationRepository.existsEval(plan.getPlanId(), enteredView.getParticipantId())) {
             planEvaluationRepository.deletePlanEvaluation(plan.getPlanId(), enteredView.getParticipantId());

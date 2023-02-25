@@ -42,7 +42,7 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
         if (plan.getThreeDaysPassed()) {
-            throw new GotBetterException(MessageType.FORBIDDEN);
+            throw new GotBetterException(MessageType.FORBIDDEN_DATE);
         }
         if (plan.getRejected()) {
             planRepository.updateRejected(plan.getPlanId(), false);
@@ -69,7 +69,7 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
         Long user_id = getCurrentUserId();
 
         if (!viewRepository.enteredExistByUserIdRoomId(user_id, plan.getParticipantInfo().getRoomId())) {
-            throw new GotBetterException(MessageType.FORBIDDEN);
+            throw new GotBetterException(MessageType.NOT_FOUND);
         }
 
         List<DetailPlan> detailPlans = detailPlanRepository.findByPlanId(plan_id);
@@ -137,7 +137,7 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 
     private void validateThreeDaysPassed(Long plan_id) {
         if (planRepository.existsByThreeDaysPassed(plan_id)) {
-            throw new GotBetterException(MessageType.FORBIDDEN);
+            throw new GotBetterException(MessageType.FORBIDDEN_DATE);
         }
     }
 }
