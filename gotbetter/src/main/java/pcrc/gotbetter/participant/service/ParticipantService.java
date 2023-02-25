@@ -140,11 +140,5 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
         if (need_leader && !enteredView.getAuthority()) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
-//        if (need_leader && (enteredView == null || !enteredView.getAuthority())) {
-//            throw new GotBetterException(MessageType.FORBIDDEN);
-//        }
-//        if (!need_leader && enteredView == null) {
-//            throw new GotBetterException(MessageType.NOT_FOUND);
-//        }
     }
 }
