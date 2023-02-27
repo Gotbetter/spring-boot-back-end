@@ -50,6 +50,15 @@ public class RoomRepositoryImpl implements RoomRepositoryQueryDSL{
     }
 
     @Override
+    public Integer findCurrentWeek(Long room_id) {
+        return queryFactory
+                .select(room.currentWeek)
+                .from(room)
+                .where(roomEqRoomId(room_id))
+                .fetchFirst();
+    }
+
+    @Override
     public Boolean existByRoomCode(String room_code) {
         Integer exists =  queryFactory
                 .selectOne()

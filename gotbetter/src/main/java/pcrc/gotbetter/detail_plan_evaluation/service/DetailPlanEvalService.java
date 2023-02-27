@@ -118,11 +118,15 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase {
             throw new GotBetterException(MessageType.NOT_FOUND);
         });
         if (!Objects.equals(room.getCurrentWeek(), plan.getWeek())) {
-            throw new GotBetterException(MessageType.FORBIDDEN);
+            throw new GotBetterException(MessageType.FORBIDDEN_DATE);
         } else {
-            if (plan.getTargetDate().isBefore(LocalDate.now())) {
-                throw new GotBetterException(MessageType.FORBIDDEN);
+            if (plan.getTargetDate().isBefore(LocalDate.now())
+                    || plan.getStartDate().isBefore(LocalDate.now())) {
+                throw new GotBetterException(MessageType.FORBIDDEN_DATE);
             }
+        }
+        if (!plan.getThreeDaysPassed()) {
+            throw new GotBetterException(MessageType.FORBIDDEN_DATE);
         }
     }
 }

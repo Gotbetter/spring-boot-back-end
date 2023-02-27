@@ -125,20 +125,20 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
             throw new GotBetterException(MessageType.CONFLICT);
         }
         if (room.getCurrentUserNum() >= room.getMaxUserNum()) {
-            throw new GotBetterException(MessageType.NotAcceptable);
+            throw new GotBetterException(MessageType.CONFLICT_MAX);
         }
         return user_id;
     }
 
-    private void validateUserInRoom(Long room_id, Boolean is_leader) {
+    private void validateUserInRoom(Long room_id, Boolean need_leader) {
         long user_id = getCurrentUserId();
         EnteredView enteredView = viewRepository.enteredByUserIdRoomId(user_id, room_id);
 
-        if (is_leader && (enteredView == null || !enteredView.getAuthority())) {
-            throw new GotBetterException(MessageType.FORBIDDEN);
-        }
-        if (!is_leader && enteredView == null) {
+        if (enteredView == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
+        }
+        if (need_leader && !enteredView.getAuthority()) {
+            throw new GotBetterException(MessageType.FORBIDDEN);
         }
     }
 }
