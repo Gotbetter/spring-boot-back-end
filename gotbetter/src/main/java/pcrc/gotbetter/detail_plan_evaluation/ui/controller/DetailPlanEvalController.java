@@ -3,8 +3,11 @@ package pcrc.gotbetter.detail_plan_evaluation.ui.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pcrc.gotbetter.detail_plan_evaluation.service.DetailPlanEvalOperationUseCase;
+import pcrc.gotbetter.detail_plan_evaluation.service.DetailPlanEvalReadUseCase;
+import pcrc.gotbetter.detail_plan_evaluation.ui.view.DetailPlanEvaluationView;
 
 @Slf4j
 @RestController
@@ -18,26 +21,28 @@ public class DetailPlanEvalController {
     }
 
     @PostMapping(value = "")
-    @ResponseStatus(HttpStatus.CREATED)
-    public void createDetailPlanEvaluation(@PathVariable(value = "detail_plan_id") Long detail_plan_id) {
+    public ResponseEntity<DetailPlanEvaluationView> createDetailPlanEvaluation(@PathVariable(value = "detail_plan_id") Long detail_plan_id) {
 
         log.info("\"CREATE A DETAIL PLAN DISLIKE\"");
 
         var command = DetailPlanEvalOperationUseCase.DetailPlanEvaluationCommand.builder()
                 .detail_plan_id(detail_plan_id)
                 .build();
-        detailPlanEvalOperationUseCase.createDetailPlanEvaluation(command);
+        DetailPlanEvalReadUseCase.FindDetailPlanEvalResult result = detailPlanEvalOperationUseCase.createDetailPlanEvaluation(command);
+        return ResponseEntity.created(null).body(DetailPlanEvaluationView.builder().detailPlanEvalResult(result).build());
     }
 
     @DeleteMapping(value = "")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteDetailPlanEvaluation(@PathVariable(value = "detail_plan_id") Long detail_plan_id) {
+    public ResponseEntity<DetailPlanEvaluationView> deleteDetailPlanEvaluation(@PathVariable(value = "detail_plan_id") Long detail_plan_id) {
 
         log.info("\"DELETE A DETAIL PLAN DISLIKE\"");
 
         var command = DetailPlanEvalOperationUseCase.DetailPlanEvaluationCommand.builder()
                 .detail_plan_id(detail_plan_id)
                 .build();
-        detailPlanEvalOperationUseCase.deleteDetailPlanEvaluation(command);
+        DetailPlanEvalReadUseCase.FindDetailPlanEvalResult result = detailPlanEvalOperationUseCase.deleteDetailPlanEvaluation(command);
+        return ResponseEntity.created(null).body(DetailPlanEvaluationView.builder().detailPlanEvalResult(result).build());
+
     }
 }

@@ -45,9 +45,10 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase {
 
     @Override
     @Transactional
-    public void createDetailPlanEvaluation(DetailPlanEvaluationCommand command) {
+    public DetailPlanEvalReadUseCase.FindDetailPlanEvalResult createDetailPlanEvaluation(DetailPlanEvaluationCommand command) {
         DetailPlan detailPlan = validateDetailPlan(command.getDetail_plan_id());
         EnteredView enteredView = validateEnteredView(detailPlan.getParticipantInfo().getRoomId());
+        boolean rejected = false;
 
         validateWeekPassed(enteredView.getRoomId(),detailPlan.getPlanId());
         if (detailPlan.getRejected()) {
@@ -63,6 +64,7 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase {
         List<DetailPlanEval> detailPlanEvals = detailPlanEvalRepository
                 .findByDetailPlanEvalIdDetailPlanId(command.getDetail_plan_id());
         if (Math.ceil(enteredView.getCurrentUserNum()) / 2 <= detailPlanEvals.size() + 1) {
+            rejected = true;
             detailPlanRepository.updateDetailPlanUndo(detailPlan.getDetailPlanId(), true);
             detailPlanEvalRepository.deleteByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());
         } else {
@@ -77,17 +79,18 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase {
                     .build();
             detailPlanEvalRepository.save(detailPlanEval);
         }
+        return DetailPlanEvalReadUseCase.FindDetailPlanEvalResult.findByDetailPlanEval(detailPlan, rejected);
     }
 
     @Override
-    public void deleteDetailPlanEvaluation(DetailPlanEvaluationCommand command) {
+    public DetailPlanEvalReadUseCase.FindDetailPlanEvalResult deleteDetailPlanEvaluation(DetailPlanEvaluationCommand command) {
         DetailPlan detailPlan = validateDetailPlan(command.getDetail_plan_id());
         EnteredView enteredView = validateEnteredView(detailPlan.getParticipantInfo().getRoomId());
 
         validateWeekPassed(enteredView.getRoomId(),detailPlan.getPlanId());
         if (detailPlanEvalRepository.existsEval(detailPlan.getDetailPlanId(), enteredView.getParticipantId())) {
             detailPlanEvalRepository.deleteDetailPlanEval(detailPlan.getDetailPlanId(), enteredView.getParticipantId());
-            return;
+            return DetailPlanEvalReadUseCase.FindDetailPlanEvalResult.findByDetailPlanEval(detailPlan, null);
         }
         throw new GotBetterException(MessageType.NOT_FOUND);
     }
@@ -120,13 +123,13 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase {
         if (!Objects.equals(room.getCurrentWeek(), plan.getWeek())) {
             throw new GotBetterException(MessageType.FORBIDDEN_DATE);
         } else {
-            if (plan.getTargetDate().isBefore(LocalDate.now())
-                    || plan.getStartDate().isBefore(LocalDate.now())) {
+            if (plan.getStartDate().isAfter(LocalDate.now())
+                    || plan.getTargetDate().isBefore(LocalDate.now())) {
                 throw new GotBetterException(MessageType.FORBIDDEN_DATE);
             }
         }
-        if (!plan.getThreeDaysPassed()) {
-            throw new GotBetterException(MessageType.FORBIDDEN_DATE);
-        }
+//        if (!plan.getThreeDaysPassed()) {
+//            throw new GotBetterException(MessageType.FORBIDDEN_DATE);
+//        }
     }
 }
