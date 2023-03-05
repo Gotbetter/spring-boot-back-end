@@ -148,8 +148,8 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
         if (!Objects.equals(current_week, plan.getWeek())) {
             throw new GotBetterException(MessageType.FORBIDDEN_DATE);
         } else {
-            if (plan.getTargetDate().isBefore(LocalDate.now())
-                    || plan.getStartDate().isBefore(LocalDate.now())) {
+            if (plan.getStartDate().isAfter(LocalDate.now())
+                    || plan.getTargetDate().isBefore(LocalDate.now())) {
                 throw new GotBetterException(MessageType.FORBIDDEN_DATE);
             }
         }

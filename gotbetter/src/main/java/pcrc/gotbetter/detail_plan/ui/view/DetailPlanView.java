@@ -16,8 +16,8 @@ public class DetailPlanView {
     private final String approve_comment;
     private final Boolean rejected;
     private final Long plan_id;
-    private final Integer dislike_count;
-    private final Boolean checked;
+    private final Integer detail_plan_dislike_count;
+    private final Boolean detail_plan_dislike_checked;
 
     @Builder
     public DetailPlanView(DetailPlanReadUseCase.FindDetailPlanResult detailPlanResult) {
@@ -27,7 +27,7 @@ public class DetailPlanView {
         this.approve_comment = detailPlanResult.getApprove_comment();
         this.rejected = detailPlanResult.getRejected();
         this.plan_id = detailPlanResult.getPlan_id();
-        this.dislike_count = detailPlanResult.getDislike_count();
-        this.checked = detailPlanResult.getChecked();
+        this.detail_plan_dislike_count = detailPlanResult.getDetail_plan_dislike_count();
+        this.detail_plan_dislike_checked = detailPlanResult.getDetail_plan_dislike_checked();
     }
 }

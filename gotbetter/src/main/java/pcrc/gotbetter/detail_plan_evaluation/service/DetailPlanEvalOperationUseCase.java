@@ -6,8 +6,8 @@ import lombok.Getter;
 import lombok.ToString;
 
 public interface DetailPlanEvalOperationUseCase {
-    void createDetailPlanEvaluation(DetailPlanEvaluationCommand command);
-    void deleteDetailPlanEvaluation(DetailPlanEvaluationCommand command);
+    DetailPlanEvalReadUseCase.FindDetailPlanEvalResult createDetailPlanEvaluation(DetailPlanEvaluationCommand command);
+    DetailPlanEvalReadUseCase.FindDetailPlanEvalResult deleteDetailPlanEvaluation(DetailPlanEvaluationCommand command);
 
     @EqualsAndHashCode(callSuper = false)
     @Builder

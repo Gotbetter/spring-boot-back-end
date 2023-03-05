@@ -21,8 +21,8 @@ public interface DetailPlanReadUseCase {
         private final String approve_comment;
         private final Boolean rejected;
         private final Long plan_id;
-        private final Integer dislike_count;
-        private final Boolean checked;
+        private final Integer detail_plan_dislike_count;
+        private final Boolean detail_plan_dislike_checked;
 
         public static FindDetailPlanResult findByDetailPlan(DetailPlan detailPlan,
                                                             Integer dislike_count, Boolean checked) {
@@ -37,8 +37,8 @@ public interface DetailPlanReadUseCase {
                     .approve_comment(approve_comment)
                     .rejected(detailPlan.getRejected())
                     .plan_id(detailPlan.getPlanId())
-                    .dislike_count(dislike_count)
-                    .checked(checked)
+                    .detail_plan_dislike_count(dislike_count)
+                    .detail_plan_dislike_checked(checked)
                     .build();
         }
 
