@@ -5,6 +5,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.transaction.annotation.Transactional;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
 
+import java.util.List;
+
 import static pcrc.gotbetter.plan.data_access.entity.QPlan.plan;
 
 public class PlanRepositoryImpl implements PlanRepositoryQueryDSL{
@@ -63,6 +65,14 @@ public class PlanRepositoryImpl implements PlanRepositoryQueryDSL{
         return exists != null;
     }
 
+    @Override
+    public List<Plan> findListByRoomId(Long room_id, Integer passedWeek) {
+        return queryFactory
+                .selectFrom(plan)
+                .where(eqRoomId(room_id), eqWeek(passedWeek))
+                .fetch();
+    }
+
     /**
      * plan eq
      */
@@ -72,6 +82,10 @@ public class PlanRepositoryImpl implements PlanRepositoryQueryDSL{
 
     private BooleanExpression eqParticipantId(Long participant_id) {
         return participant_id == null ? null : plan.participantInfo.participantId.eq(participant_id);
+    }
+
+    private BooleanExpression eqRoomId(Long room_id) {
+        return room_id == null ? null : plan.participantInfo.roomId.eq(room_id);
     }
 
     private BooleanExpression eqWeek(Integer week) {

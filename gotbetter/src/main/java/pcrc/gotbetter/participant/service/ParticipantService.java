@@ -16,8 +16,10 @@ import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
@@ -95,13 +97,33 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
                 .userId(targetUserInfo.getTryEnterId().getUserId())
                 .roomId(targetUserInfo.getTryEnterId().getRoomId())
                 .authority(false)
-                .refund(targetUserInfo.getEntryFee())
+                .refund(0)
                 .build();
         participantRepository.save(participant);
         participantRepository.updateParticipateAccepted(targetUserInfo.getTryEnterId().getUserId(), targetUserInfo.getTryEnterId().getRoomId());
         roomRepository.updatePlusTotalEntryFeeAndCurrentNum(command.getRoom_id(), targetUserInfo.getEntryFee());
         return FindParticipantResult.findByParticipant(targetUserInfo,
                 participant.getParticipantId(), null);
+    }
+
+    @Override
+    public Integer getMyRefund(Long participant_id) {
+        EnteredView enteredView = viewRepository.enteredByParticipantId(participant_id);
+
+        if (enteredView == null) {
+            throw new GotBetterException(MessageType.NOT_FOUND);
+        }
+        if (!Objects.equals(enteredView.getWeek(), enteredView.getCurrentWeek())) {
+            throw new GotBetterException(MessageType.FORBIDDEN_DATE);
+        } else {
+            LocalDate now = LocalDate.now();
+            LocalDate lastDate = enteredView.getStartDate().plusDays(7L * enteredView.getCurrentWeek() - 1);
+            if (!now.isAfter(lastDate)) {
+                throw new GotBetterException(MessageType.FORBIDDEN_DATE);
+            }
+        }
+
+        return enteredView.getRefund();
     }
 
     /**

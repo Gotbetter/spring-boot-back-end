@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import pcrc.gotbetter.room.service.RoomOperationUseCase;
 import pcrc.gotbetter.room.service.RoomReadUseCase;
 import pcrc.gotbetter.room.ui.requestBody.RoomCreateRequest;
+import pcrc.gotbetter.room.ui.view.RankView;
 import pcrc.gotbetter.room.ui.view.RoomView;
 
 import java.util.ArrayList;
@@ -68,5 +69,19 @@ public class RoomController {
         RoomReadUseCase.FindRoomResult result = roomOperationUseCase.createRoom(command);
 
         return ResponseEntity.created(null).body(RoomView.builder().roomResult(result).build());
+    }
+
+    @GetMapping(value = "/{room_id}/rank")
+    public ResponseEntity<List<RankView>> getRank(@PathVariable Long room_id) {
+
+        log.info("\"GET A RANK LIST\"");
+
+        List<RoomReadUseCase.FindRankResult> result = roomReadUseCase.getRank(room_id);
+
+        List<RankView> rankViewList = new ArrayList<>();
+        for (RoomReadUseCase.FindRankResult rank : result) {
+            rankViewList.add(RankView.builder().rankResult(rank).build());
+        }
+        return ResponseEntity.ok(rankViewList);
     }
 }
