@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pcrc.gotbetter.participant.ui.view.ParticipantView;
+import pcrc.gotbetter.participant.ui.view.RefundView;
 import pcrc.gotbetter.room.service.RoomReadUseCase;
 import pcrc.gotbetter.participant.service.ParticipantOperationUseCase;
 import pcrc.gotbetter.participant.service.ParticipantReadUseCase;
@@ -75,5 +76,15 @@ public class ParticipantController {
         ParticipantReadUseCase.FindParticipantResult result = participantOperationUseCase.approveJoinRoom(command);
 
         return ResponseEntity.ok(ParticipantView.builder().participantResult(result).build());
+    }
+
+    @GetMapping(value = "/{participant_id}/refund")
+    public ResponseEntity<RefundView> getRefund(@PathVariable Long participant_id) {
+
+        log.info("\"GET MY REFUND\"");
+
+        Integer refund = participantReadUseCase.getMyRefund(participant_id);
+
+        return ResponseEntity.ok(RefundView.builder().refund(refund).build());
     }
 }

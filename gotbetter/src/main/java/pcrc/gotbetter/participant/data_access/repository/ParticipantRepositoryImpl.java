@@ -3,6 +3,9 @@ package pcrc.gotbetter.participant.data_access.repository;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.transaction.annotation.Transactional;
+import pcrc.gotbetter.participant.data_access.entity.Participant;
+
+import java.util.List;
 
 import static pcrc.gotbetter.participant.data_access.entity.QParticipant.participant;
 import static pcrc.gotbetter.participant.data_access.entity.QParticipate.participate;
@@ -26,6 +29,26 @@ public class ParticipantRepositoryImpl implements ParticipantRepositoryQueryDSL 
     }
 
     @Override
+    @Transactional
+    public void updatePercentSum(Long participant_id, Float percent) {
+        queryFactory
+                .update(participant)
+                .where(participantEqParticipantId(participant_id))
+                .set(participant.percentSum, participant.percentSum.add(percent))
+                .execute();
+    }
+
+    @Override
+    @Transactional
+    public void updateRefund(Long participant_id, Integer refund) {
+        queryFactory
+                .update(participant)
+                .where(participantEqParticipantId(participant_id))
+                .set(participant.refund, refund)
+                .execute();
+    }
+
+    @Override
     public Boolean isMatchedLeader(Long user_id, Long room_id) {
         Integer exists =  queryFactory
                 .selectOne()
@@ -34,6 +57,14 @@ public class ParticipantRepositoryImpl implements ParticipantRepositoryQueryDSL 
                         participant.authority.eq(true))
                 .fetchFirst();
         return exists != null;
+    }
+
+    @Override
+    public List<Participant> findListByRoomId(Long room_id) {
+        return queryFactory
+                .selectFrom(participant)
+                .where(participantEqRoomId(room_id))
+                .fetch();
     }
 
     /**
@@ -45,6 +76,10 @@ public class ParticipantRepositoryImpl implements ParticipantRepositoryQueryDSL 
 
     private BooleanExpression participantEqRoomId(Long room_id) {
         return room_id == null ? null : participant.roomId.eq(room_id);
+    }
+
+    private BooleanExpression participantEqParticipantId(Long participant_id) {
+        return participant_id == null ? null : participant.participantId.eq(participant_id);
     }
 
     /**

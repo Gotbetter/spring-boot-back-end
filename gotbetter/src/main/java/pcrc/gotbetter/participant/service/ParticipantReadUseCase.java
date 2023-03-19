@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface ParticipantReadUseCase {
     List<FindParticipantResult> getMemberListInARoom(Long room_id, Boolean accepted);
+    Integer getMyRefund(Long participant_id);
 
     @Getter
     @ToString

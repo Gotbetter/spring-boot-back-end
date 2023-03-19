@@ -7,6 +7,7 @@ import pcrc.gotbetter.participant.data_access.entity.Participant;
 import pcrc.gotbetter.participant.data_access.entity.Participate;
 import pcrc.gotbetter.participant.data_access.entity.ParticipateId;
 import pcrc.gotbetter.participant.data_access.repository.ViewRepository;
+import pcrc.gotbetter.participant.data_access.view.EnteredView;
 import pcrc.gotbetter.participant.data_access.view.TryEnterView;
 import pcrc.gotbetter.room.data_access.entity.Room;
 import pcrc.gotbetter.participant.data_access.repository.ParticipateRepository;
@@ -16,8 +17,7 @@ import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
 
@@ -101,12 +101,80 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
                 .userId(participate.getParticipateId().getUserId())
                 .roomId(participate.getParticipateId().getRoomId())
                 .authority(true)
-                .refund(room.getEntryFee())
+                .refund(0)
                 .build();
         participantRepository.save(participant);
 
         return FindRoomResult.findByRoom(room, participant.getParticipantId());
     }
+
+    @Override
+    public List<FindRankResult> getRank(Long room_id) {
+        Long user_id = getCurrentUserId();
+        if (!viewRepository.enteredExistByUserIdRoomId(user_id, room_id)) {
+            throw new GotBetterException(MessageType.NOT_FOUND);
+        }
+
+        List<EnteredView> enteredViewList = viewRepository.enteredListByRoomId(room_id);
+        List<FindRankResult> findRankResultList = new ArrayList<>();
+
+        LocalDate now = LocalDate.now();
+        if (now.isBefore(enteredViewList.get(1).getStartDate())) {
+            return findRankResultList;
+        }
+
+        // percent sum 기준 정렬
+        enteredViewList.sort((o1, o2) -> (int) (o2.getPercentSum() - o1.getPercentSum()));
+
+        int rank = 1;
+        for (EnteredView enteredView : enteredViewList) {
+            int refund = enteredView.getEntryFee();
+            if (rank == 1) {
+                refund *= 2;
+            } else if (enteredView.getCurrentUserNum() == rank) {
+                refund = 0;
+            }
+            findRankResultList.add(FindRankResult.findByRank(
+                    enteredView.getUsernameNick(), rank, refund));
+            rank++;
+        }
+        return findRankResultList;
+    }
+
+//    @Override
+//    public List<FindRankResult> getRank(Long room_id) {
+//        Long user_id = getCurrentUserId();
+//        if (!viewRepository.enteredExistByUserIdRoomId(user_id, room_id)) {
+//            throw new GotBetterException(MessageType.NOT_FOUND);
+//        }
+//
+//        List<EnteredView> enteredViewList = viewRepository.enteredListByRoomId(room_id);
+//        List<FindRankResult> findRankResultList = new ArrayList<>();
+//
+//        // percent sum 기준 정렬
+//        enteredViewList.sort((o1, o2) -> (int) (o2.getPercentSum() - o1.getPercentSum()));
+//
+//        int rank = 1;
+//        float beforePercentSum = enteredViewList.get(1).getPercentSum();
+//        for (EnteredView enteredView : enteredViewList) {
+//            int refund = enteredView.getEntryFee();
+//            int backupRank = rank;
+//            if (findRankResultList.size() != 0 && enteredView.getPercentSum() == beforePercentSum) {
+//                rank = findRankResultList.get(findRankResultList.size() - 1).getRank();
+//            }
+//            if (rank == 1) {
+//                refund *= 2;
+//            } else if (enteredView.getCurrentUserNum() == rank) {
+//                refund = 0;
+//            }
+//            findRankResultList.add(FindRankResult.findByRank(
+//                    enteredView.getUsernameNick(), rank, refund));
+//            rank = backupRank;
+//            rank++;
+//            beforePercentSum = enteredView.getPercentSum();
+//        }
+//        return findRankResultList;
+//    }
 
     /**
      * other

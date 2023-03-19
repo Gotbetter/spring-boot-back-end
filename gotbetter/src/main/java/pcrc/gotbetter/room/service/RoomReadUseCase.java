@@ -3,6 +3,7 @@ package pcrc.gotbetter.room.service;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
+import pcrc.gotbetter.participant.data_access.view.EnteredView;
 import pcrc.gotbetter.participant.data_access.view.TryEnterView;
 import pcrc.gotbetter.room.data_access.entity.Room;
 
@@ -13,6 +14,7 @@ public interface RoomReadUseCase {
 
     List<FindRoomResult> getUserRooms();
     FindRoomResult getOneRoomInfo(Long room_id);
+    List<FindRankResult> getRank(Long room_id);
 
     @Getter
     @ToString
@@ -64,6 +66,23 @@ public interface RoomReadUseCase {
                     .account(tryEnterView.getAccount())
                     .total_entry_fee(tryEnterView.getTotalEntryFee())
                     .rule_id(tryEnterView.getRuleId())
+                    .build();
+        }
+    }
+
+    @Getter
+    @ToString
+    @Builder
+    class FindRankResult {
+        private final String username;
+        private final Integer rank;
+        private final Integer refund;
+
+        public static FindRankResult findByRank(String username, Integer rank, Integer refund) {
+            return FindRankResult.builder()
+                    .username(username)
+                    .rank(rank)
+                    .refund(refund)
                     .build();
         }
     }

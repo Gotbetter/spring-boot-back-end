@@ -22,7 +22,6 @@ public class BatchScheduler {
 
     @Scheduled(cron = "0 0 0 * * *") // *(초) *(분) *(시) *(일) *(월) *(요일)
     public void runJob() {
-        System.out.println(">>>>> Run Job <<<<<");
         JobParameters jobParameters = new JobParametersBuilder()
                 .addLong("time", System.currentTimeMillis())
                 .toJobParameters();
@@ -34,4 +33,10 @@ public class BatchScheduler {
             log.error(exception.getMessage());
         }
     }
+
+//    @Scheduled(cron = "0 0/1 * * * *")
+//    public void testRun() {
+//        log.info(">>>>> TEST Job <<<<<");
+//        batchConfig.update_refund(31L);
+//    }
 }

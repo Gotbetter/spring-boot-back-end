@@ -33,10 +33,10 @@ public class RoomRepositoryImpl implements RoomRepositoryQueryDSL{
 
     @Override
     @Transactional
-    public void updateCurrentWeek(Long room_id, Integer plusWeek) {
+    public void updateCurrentWeek(Long room_id, Integer changeWeek) {
         queryFactory
                 .update(room)
-                .set(room.currentWeek, room.currentWeek.add(plusWeek))
+                .set(room.currentWeek, changeWeek)
                 .where(roomEqRoomId(room_id))
                 .execute();
     }
@@ -46,6 +46,14 @@ public class RoomRepositoryImpl implements RoomRepositoryQueryDSL{
         return queryFactory
                 .selectFrom(room)
                 .where(room.week.gt(room.currentWeek))
+                .fetch();
+    }
+
+    @Override
+    public List<Room> findListLastWeek() {
+        return queryFactory
+                .selectFrom(room)
+                .where(room.week.eq(room.currentWeek))
                 .fetch();
     }
 
