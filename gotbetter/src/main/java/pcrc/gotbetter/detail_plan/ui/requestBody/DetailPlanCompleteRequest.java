@@ -11,6 +11,5 @@ import lombok.ToString;
 @NoArgsConstructor
 public class DetailPlanCompleteRequest {
     @NotNull
-    @NotBlank
     private String approve_comment;
 }
