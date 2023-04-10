@@ -1,5 +1,7 @@
 package pcrc.gotbetter.detail_plan.data_access.repository;
 
+import pcrc.gotbetter.detail_plan.data_access.entity.DetailPlan;
+
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -14,4 +16,5 @@ public interface DetailPlanRepositoryQueryDSL {
     // select
     Boolean existsByPlanId(Long plan_id);
     HashMap<String, Long> countCompleteTrue(Long plan_id);
+    DetailPlan findByDetailPlanId(Long detail_plan_id);
 }

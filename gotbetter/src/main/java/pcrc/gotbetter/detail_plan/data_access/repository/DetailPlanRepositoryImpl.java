@@ -7,6 +7,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
+import pcrc.gotbetter.detail_plan.data_access.entity.DetailPlan;
 
 import java.util.HashMap;
 import java.util.List;
@@ -96,6 +97,14 @@ public class DetailPlanRepositoryImpl implements DetailPlanRepositoryQueryDSL {
         result.put("completeCount", (Long) object[1]);
         em.clear();
         return result;
+    }
+
+    @Override
+    public DetailPlan findByDetailPlanId(Long detail_plan_id) {
+        return queryFactory
+                .selectFrom(detailPlan)
+                .where(detailPlanEqDetailPlanId(detail_plan_id))
+                .fetchFirst();
     }
 
     /**

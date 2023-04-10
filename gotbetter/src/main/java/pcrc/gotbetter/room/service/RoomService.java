@@ -17,6 +17,7 @@ import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
@@ -45,10 +46,11 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
                 .tryEnterListByUserIdRoomId(user_id, null, true);
 
         for (TryEnterView t : tryEnterViewList) {
-            result.add(FindRoomResult.builder()
-                    .room_id(t.getTryEnterId().getRoomId())
-                    .title(t.getTitle())
-                    .build());
+            result.add(FindRoomResult.findByRoom(t));
+//            result.add(FindRoomResult.builder()
+//                    .room_id(t.getTryEnterId().getRoomId())
+//                    .title(t.getTitle())
+//                    .build());
         }
         return result;
     }
@@ -68,8 +70,9 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     public FindRoomResult createRoom(RoomCreateCommand command) {
         Long user_id = getCurrentUserId();
         String room_code = getRandomCode();
+        LocalDate start_date = LocalDate.parse(command.getStart_date(), DateTimeFormatter.ISO_DATE);
 
-        if (command.getStart_date().isBefore(LocalDate.now())) {
+        if (start_date.isBefore(LocalDate.now())) {
             throw new GotBetterException(MessageType.BAD_REQUEST);
         }
 
@@ -77,7 +80,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
                 .title(command.getTitle())
                 .maxUserNum(command.getMax_user_num())
                 .currentUserNum(1)
-                .startDate(command.getStart_date())
+                .startDate(start_date)
                 .week(command.getWeek())
                 .currentWeek(command.getCurrent_week())
                 .entryFee(command.getEntry_fee())

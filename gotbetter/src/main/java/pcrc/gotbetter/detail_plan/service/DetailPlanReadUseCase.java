@@ -43,7 +43,8 @@ public interface DetailPlanReadUseCase {
         }
 
         public static FindDetailPlanResult findByDetailPlanEval(DetailPlan detailPlan,
-                                                                String approve_comment, Boolean complete) {
+                                                                String approve_comment, Boolean complete,
+                                                                Integer dislike_count, Boolean checked) {
             return FindDetailPlanResult.builder()
                     .detail_plan_id(detailPlan.getDetailPlanId())
                     .content(detailPlan.getContent())
@@ -51,6 +52,8 @@ public interface DetailPlanReadUseCase {
                     .approve_comment(approve_comment)
                     .rejected(false)
                     .plan_id(detailPlan.getPlanId())
+                    .detail_plan_dislike_count(dislike_count)
+                    .detail_plan_dislike_checked(checked)
                     .build();
         }
     }
