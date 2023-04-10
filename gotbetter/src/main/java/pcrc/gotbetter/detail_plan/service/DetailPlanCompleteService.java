@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pcrc.gotbetter.detail_plan.data_access.entity.DetailPlan;
 import pcrc.gotbetter.detail_plan.data_access.repository.DetailPlanRepository;
+import pcrc.gotbetter.detail_plan_evaluation.data_access.entity.DetailPlanEval;
 import pcrc.gotbetter.detail_plan_evaluation.data_access.repository.DetailPlanEvalRepository;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
 import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
@@ -14,6 +15,7 @@ import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 
 import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
@@ -52,8 +54,10 @@ public class DetailPlanCompleteService implements DetailPlanCompleteOperationUse
         }
         detailPlanRepository.updateDetailPlanCompleted(
                 detailPlan.getDetailPlanId(), command.getApprove_comment());
+        List<DetailPlanEval> detailPlanEvals = detailPlanEvalRepository.findByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());
         return DetailPlanReadUseCase.FindDetailPlanResult
-                .findByDetailPlanEval(detailPlan, command.getApprove_comment(), true);
+                .findByDetailPlanEval(detailPlan, command.getApprove_comment(), true
+                        , detailPlanEvals.size(), false);
     }
 
     @Override
@@ -72,17 +76,20 @@ public class DetailPlanCompleteService implements DetailPlanCompleteOperationUse
         }
         detailPlanRepository.updateDetailPlanUndo(detailPlan.getDetailPlanId(), false);
         detailPlanEvalRepository.deleteByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());
+        List<DetailPlanEval> detailPlanEvals = detailPlanEvalRepository.findByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());
         return DetailPlanReadUseCase.FindDetailPlanResult
-                .findByDetailPlanEval(detailPlan, "", false);
+                .findByDetailPlanEval(detailPlan, "", false
+                        , detailPlanEvals.size(), false);
     }
 
     /**
      * validate
      */
     private DetailPlan validateDetailPlan(Long detail_plan_id, Long plan_id) {
-        DetailPlan detailPlan = detailPlanRepository.findByDetailPlanId(detail_plan_id).orElseThrow(() -> {
+        DetailPlan detailPlan = detailPlanRepository.findByDetailPlanId(detail_plan_id);
+        if (detailPlan == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
-        });
+        }
         if (!Objects.equals(detailPlan.getPlanId(), plan_id)) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }

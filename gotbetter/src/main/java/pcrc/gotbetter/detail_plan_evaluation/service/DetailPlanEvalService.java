@@ -18,6 +18,7 @@ import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -45,10 +46,9 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase {
 
     @Override
     @Transactional
-    public DetailPlanEvalReadUseCase.FindDetailPlanEvalResult createDetailPlanEvaluation(DetailPlanEvaluationCommand command) {
+    public DetailPlanEvalReadUseCase.FindDetailPlanEvalResult createDetailPlanEvaluation(DetailPlanEvaluationCommand command) throws InterruptedException {
         DetailPlan detailPlan = validateDetailPlan(command.getDetail_plan_id());
         EnteredView enteredView = validateEnteredView(detailPlan.getParticipantInfo().getRoomId());
-        boolean rejected = false;
 
         validateWeekPassed(enteredView.getRoomId(),detailPlan.getPlanId());
         if (detailPlan.getRejected()) {
@@ -63,10 +63,16 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase {
 
         List<DetailPlanEval> detailPlanEvals = detailPlanEvalRepository
                 .findByDetailPlanEvalIdDetailPlanId(command.getDetail_plan_id());
-        if (Math.ceil(enteredView.getCurrentUserNum()) / 2 <= detailPlanEvals.size() + 1) {
-            rejected = true;
+        if (enteredView.getCurrentUserNum() / 2 < detailPlanEvals.size() + 1) {
             detailPlanRepository.updateDetailPlanUndo(detailPlan.getDetailPlanId(), true);
             detailPlanEvalRepository.deleteByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());
+            HashMap<String, Object> data = detail_dislike_data(enteredView.getUserId(), command.getDetail_plan_id());
+            Thread.sleep(1000);
+            DetailPlan d = validateDetailPlan(command.getDetail_plan_id());
+            System.out.println(d.getDetailPlanId() + ' ' + d.getContent() + ' ' + d.getComplete() + ' ' + d.getApprove_comment() + ' ' + d.getRejected());
+            return DetailPlanEvalReadUseCase.FindDetailPlanEvalResult.findByDetailPlanEval(
+                    validateDetailPlan(command.getDetail_plan_id()),
+                    (Integer) data.get("detail_dislike_cnt"), (Boolean) data.get("detail_dislike_checked"));
         } else {
             DetailPlanEval detailPlanEval = DetailPlanEval.builder()
                     .detailPlanEvalId(DetailPlanEvalId.builder()
@@ -78,8 +84,10 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase {
                             .build())
                     .build();
             detailPlanEvalRepository.save(detailPlanEval);
+            HashMap<String, Object> data = detail_dislike_data(enteredView.getUserId(), command.getDetail_plan_id());
+            return DetailPlanEvalReadUseCase.FindDetailPlanEvalResult.findByDetailPlanEval(detailPlan
+                    , (Integer) data.get("detail_dislike_cnt"), (Boolean) data.get("detail_dislike_checked"));
         }
-        return DetailPlanEvalReadUseCase.FindDetailPlanEvalResult.findByDetailPlanEval(detailPlan, rejected);
     }
 
     @Override
@@ -90,7 +98,9 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase {
         validateWeekPassed(enteredView.getRoomId(),detailPlan.getPlanId());
         if (detailPlanEvalRepository.existsEval(detailPlan.getDetailPlanId(), enteredView.getParticipantId())) {
             detailPlanEvalRepository.deleteDetailPlanEval(detailPlan.getDetailPlanId(), enteredView.getParticipantId());
-            return DetailPlanEvalReadUseCase.FindDetailPlanEvalResult.findByDetailPlanEval(detailPlan, null);
+            HashMap<String, Object> data = detail_dislike_data(enteredView.getUserId(), command.getDetail_plan_id());
+            return DetailPlanEvalReadUseCase.FindDetailPlanEvalResult.findByDetailPlanEval(detailPlan
+                    , (Integer) data.get("detail_dislike_cnt"), (Boolean) data.get("detail_dislike_checked"));
         }
         throw new GotBetterException(MessageType.NOT_FOUND);
     }
@@ -99,9 +109,11 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase {
      * validate
      */
     private DetailPlan validateDetailPlan(Long detail_plan_id) {
-        return detailPlanRepository.findByDetailPlanId(detail_plan_id).orElseThrow(() -> {
+        DetailPlan detailPlan = detailPlanRepository.findByDetailPlanId(detail_plan_id);
+        if (detailPlan == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
-        });
+        }
+        return detailPlan;
     }
 
     private EnteredView validateEnteredView(Long room_id) {
@@ -131,5 +143,22 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase {
 //        if (!plan.getThreeDaysPassed()) {
 //            throw new GotBetterException(MessageType.FORBIDDEN_DATE);
 //        }
+    }
+
+    private HashMap<String, Object> detail_dislike_data(Long user_id, Long detail_plan_id) {
+        List<DetailPlanEval> detailPlanEvals = detailPlanEvalRepository
+                .findByDetailPlanEvalIdDetailPlanId(detail_plan_id);
+        boolean checked = false;
+        HashMap<String, Object> data = new HashMap<>();
+
+        for (DetailPlanEval de : detailPlanEvals) {
+            if (Objects.equals(de.getDetailPlanEvalId().getUserId(), user_id)) {
+                checked = true;
+                break;
+            }
+        }
+        data.put("detail_dislike_cnt", detailPlanEvals.size());
+        data.put("detail_dislike_checked", checked);
+        return data;
     }
 }

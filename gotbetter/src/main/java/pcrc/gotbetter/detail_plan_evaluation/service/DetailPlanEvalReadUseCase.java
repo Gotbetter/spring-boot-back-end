@@ -16,16 +16,20 @@ public interface DetailPlanEvalReadUseCase {
         private final String approve_comment;
         private final Boolean rejected;
         private final Long plan_id;
+        private final Integer detail_plan_dislike_count;
+        private final Boolean detail_plan_dislike_checked;
 
-        public static FindDetailPlanEvalResult findByDetailPlanEval(DetailPlan detailPlan, Boolean rejected) {
-            Boolean is_rejected = rejected == null ? detailPlan.getRejected() : rejected;
+        public static FindDetailPlanEvalResult findByDetailPlanEval(DetailPlan detailPlan,
+                                                                    Integer dislike_count, Boolean checked) {
             return FindDetailPlanEvalResult.builder()
                     .detail_plan_id(detailPlan.getDetailPlanId())
                     .content(detailPlan.getContent())
                     .complete(detailPlan.getComplete())
                     .approve_comment(detailPlan.getApprove_comment())
-                    .rejected(is_rejected)
+                    .rejected(detailPlan.getRejected())
                     .plan_id(detailPlan.getPlanId())
+                    .detail_plan_dislike_count(dislike_count)
+                    .detail_plan_dislike_checked(checked)
                     .build();
         }
     }

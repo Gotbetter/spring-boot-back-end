@@ -21,7 +21,7 @@ public class DetailPlanEvalController {
     }
 
     @PostMapping(value = "")
-    public ResponseEntity<DetailPlanEvaluationView> createDetailPlanEvaluation(@PathVariable(value = "detail_plan_id") Long detail_plan_id) {
+    public ResponseEntity<DetailPlanEvaluationView> createDetailPlanEvaluation(@PathVariable(value = "detail_plan_id") Long detail_plan_id) throws InterruptedException {
 
         log.info("\"CREATE A DETAIL PLAN DISLIKE\"");
 

@@ -63,7 +63,8 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
                 .rejected(false)
                 .build();
         detailPlanRepository.save(detailPlan);
-        return FindDetailPlanResult.findByDetailPlan(detailPlan, null, null);
+        List<DetailPlanEval> detailPlanEvals = detailPlanEvalRepository.findByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());
+        return FindDetailPlanResult.findByDetailPlan(detailPlan, detailPlanEvals.size(), false);
     }
 
     @Override
@@ -101,6 +102,8 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
                 roomRepository.findCurrentWeek(detailPlan.getParticipantInfo().getRoomId()));
 
         detailPlanRepository.updateDetailContent(command.getDetail_plan_id(), command.getContent());
+        // detail plan eval 삭제하고, 완료 사항도 삭제?
+        List<DetailPlanEval> detailPlanEvals = detailPlanEvalRepository.findByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());
         return FindDetailPlanResult.builder()
                 .detail_plan_id(command.getDetail_plan_id())
                 .content(command.getContent())
@@ -108,6 +111,8 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
                 .approve_comment(detailPlan.getApprove_comment() == null ? "" : detailPlan.getApprove_comment())
                 .rejected(detailPlan.getRejected())
                 .plan_id(detailPlan.getPlanId())
+                .detail_plan_dislike_count(detailPlanEvals.size())
+                .detail_plan_dislike_checked(false)
                 .build();
     }
 
@@ -132,10 +137,11 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
     }
 
     private DetailPlan validateDetailPlan(Long detail_plan_id, Long plan_id) {
-        DetailPlan detailPlan = detailPlanRepository.findByDetailPlanId(detail_plan_id)
-                .orElseThrow(() -> {
-                    throw new GotBetterException(MessageType.NOT_FOUND);
-                });
+        DetailPlan detailPlan = detailPlanRepository.findByDetailPlanId(detail_plan_id);
+
+        if (detailPlan == null) {
+            throw new GotBetterException(MessageType.NOT_FOUND);
+        }
         Long user_id = getCurrentUserId();
         if (!(Objects.equals(detailPlan.getPlanId(), plan_id)
                 && Objects.equals(detailPlan.getParticipantInfo().getUserId(), user_id))) {
