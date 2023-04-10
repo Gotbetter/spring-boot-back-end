@@ -6,15 +6,13 @@ import lombok.Getter;
 import lombok.ToString;
 import pcrc.gotbetter.plan.service.PlanReadUseCase;
 
-import java.time.LocalDate;
-
 @Getter
 @ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PlanView {
     private final Long plan_id;
-    private final LocalDate start_date;
-    private final LocalDate target_date;
+    private final String start_date;
+    private final String target_date;
     private final Float score;
     private final Integer week;
     private final Boolean three_days_passed;
