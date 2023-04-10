@@ -21,12 +21,18 @@ public interface PlanEvaluationReadUseCase {
     @ToString
     @Builder
     class FindPlanEvaluationResult {
+        private final Long plan_id;
+        private final Boolean rejected;
         private final Integer dislike_count;
         private final Boolean checked;
 
-        public static FindPlanEvaluationResult findByPlanEvaluation(Integer dislike_count,
+        public static FindPlanEvaluationResult findByPlanEvaluation(Long plan_id,
+                                                                    Boolean rejected,
+                                                                    Integer dislike_count,
                                                                     Boolean checked) {
             return FindPlanEvaluationResult.builder()
+                    .plan_id(plan_id)
+                    .rejected(rejected)
                     .dislike_count(dislike_count)
                     .checked(checked)
                     .build();

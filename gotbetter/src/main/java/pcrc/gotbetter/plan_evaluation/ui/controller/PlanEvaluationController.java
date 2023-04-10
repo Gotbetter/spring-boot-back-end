@@ -24,15 +24,15 @@ public class PlanEvaluationController {
     }
 
     @PostMapping(value = "")
-    public ResponseEntity<Void> createPlanDislike(@PathVariable(value = "plan_id") Long plan_id) {
+    public ResponseEntity<PlanEvaluationView> createPlanDislike(@PathVariable(value = "plan_id") Long plan_id) {
 
         log.info("\"CREATE A PLAN DISLIKE\"");
 
         var command = PlanEvaluationOperationUseCase.PlanEvaluationCommand.builder()
                 .plan_id(plan_id)
                 .build();
-        planEvaluationOperationUseCase.createPlanEvaluation(command);
-        return ResponseEntity.created(null).body(null);
+        PlanEvaluationReadUseCase.FindPlanEvaluationResult result = planEvaluationOperationUseCase.createPlanEvaluation(command);
+        return ResponseEntity.created(null).body(PlanEvaluationView.builder().planEvaluationResult(result).build());
     }
 
     @GetMapping(value = "")

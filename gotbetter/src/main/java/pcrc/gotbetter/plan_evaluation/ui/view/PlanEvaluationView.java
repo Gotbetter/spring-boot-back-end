@@ -10,11 +10,15 @@ import pcrc.gotbetter.plan_evaluation.service.PlanEvaluationReadUseCase;
 @ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PlanEvaluationView {
+    private final Long plan_id;
+    private final Boolean rejected;
     private final Integer dislike_count;
     private final Boolean checked;
 
     @Builder
     public PlanEvaluationView(PlanEvaluationReadUseCase.FindPlanEvaluationResult planEvaluationResult) {
+        this.plan_id = planEvaluationResult.getPlan_id();
+        this.rejected = planEvaluationResult.getRejected();
         this.dislike_count = planEvaluationResult.getDislike_count();
         this.checked = planEvaluationResult.getChecked();
     }
