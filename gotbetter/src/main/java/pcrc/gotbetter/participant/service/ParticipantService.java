@@ -93,6 +93,10 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
         if (targetUserInfo == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
+        // 방 인원 수 체크 추가
+        if (Objects.equals(targetUserInfo.getMaxUserNum(), targetUserInfo.getCurrentUserNum())) {
+            throw new GotBetterException(MessageType.CONFLICT_MAX);
+        }
         Participant participant = Participant.builder()
                 .userId(targetUserInfo.getTryEnterId().getUserId())
                 .roomId(targetUserInfo.getTryEnterId().getRoomId())
@@ -143,8 +147,13 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
                         .roomId(room.getRoomId()).build()
         );
 
-        if (participate.isPresent()) {
-            throw new GotBetterException(MessageType.CONFLICT);
+        if (participate.isPresent()) { // 이미 방에 참여했는지 승인요청만보냈 상태인지 분리
+            if (participate.get().getAccepted()) {
+                throw new GotBetterException(MessageType.CONFLICT_JOIN);
+            }
+            else {
+                throw new GotBetterException(MessageType.CONFLICT);
+            }
         }
         if (room.getCurrentUserNum() >= room.getMaxUserNum()) {
             throw new GotBetterException(MessageType.CONFLICT_MAX);

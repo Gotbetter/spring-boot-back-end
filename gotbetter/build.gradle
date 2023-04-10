@@ -4,6 +4,22 @@ plugins {
 	id 'io.spring.dependency-management' version '1.1.0'
 }
 
+//ext.profile = (!project.hasProperty('profile') || !profile) ? 'local' : profile
+
+sourceSets {
+	main {
+		resources {
+			srcDirs "src/main/resources", "src/main/resources/profiles"
+		}
+	}
+}
+
+tasks{
+	processResources{
+		duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.INCLUDE
+	}
+}
+
 tasks.withType(JavaCompile) {
 	options.compilerArgs << '-parameters'
 }

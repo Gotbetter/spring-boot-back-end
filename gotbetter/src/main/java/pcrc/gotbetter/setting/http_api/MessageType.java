@@ -9,6 +9,7 @@ public enum MessageType {
     NOT_FOUND ("No data was found for the server. Please refer to parameter description.", HttpStatus.NOT_FOUND),
     INTERNAL_SERVER_ERROR ("An error occurred inside the server.", HttpStatus.INTERNAL_SERVER_ERROR),
     CONFLICT ("Already exists data.", HttpStatus.CONFLICT),
+    CONFLICT_JOIN ("Already in the room.", HttpStatus.CONFLICT),
     CONFLICT_MAX("Already full.", HttpStatus.CONFLICT),
     FORBIDDEN ("Do not have an authorization.", HttpStatus.FORBIDDEN),
     FORBIDDEN_DATE("It's not the day.", HttpStatus.FORBIDDEN),
