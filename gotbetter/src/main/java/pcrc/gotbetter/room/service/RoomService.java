@@ -122,7 +122,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
         List<FindRankResult> findRankResultList = new ArrayList<>();
 
         LocalDate now = LocalDate.now();
-        if (now.isBefore(enteredViewList.get(1).getStartDate())) {
+        if (now.isBefore(enteredViewList.get(0).getStartDate())) {
             return findRankResultList;
         }
 
