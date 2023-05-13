@@ -1,4 +1,4 @@
-package pcrc.gotbetter.setting.security.JWT.service;
+package pcrc.gotbetter.user.login_method.jwt.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import pcrc.gotbetter.user.data_access.entity.User;
 import pcrc.gotbetter.user.data_access.repository.UserRepository;
+import pcrc.gotbetter.user.login_method.oauth.UserPrincipal;
 
 @Service
 public class CustomUserDetailService implements UserDetailsService {
@@ -19,19 +20,11 @@ public class CustomUserDetailService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String auth_id) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
 
-        return userRepository.findByAuthId(auth_id)
-                .map(this::createUserDetails)
-                .orElseThrow(() -> new UsernameNotFoundException("Not existed user."));
-    }
-
-    private UserDetails createUserDetails(User user) {
-        return User.builder()
-                .userId(user.getUserId())
-                .authId(user.getAuthId())
-                .email(user.getEmail())
-                .profile(user.getProfile())
-                .build();
+        User user = userRepository.findByUserId(Long.valueOf(userId)).orElseThrow(() -> {
+            throw new UsernameNotFoundException("Not existed user.");
+        });
+        return UserPrincipal.create(user);
     }
 }

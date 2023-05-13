@@ -1,31 +1,31 @@
-package pcrc.gotbetter.setting.security.JWT.service;
+package pcrc.gotbetter.user.login_method.jwt.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
-import pcrc.gotbetter.setting.security.JWT.JwtProvider;
-import pcrc.gotbetter.setting.security.JWT.TokenInfo;
+import pcrc.gotbetter.user.login_method.jwt.config.JwtProvider;
+import pcrc.gotbetter.user.login_method.jwt.config.TokenInfo;
 import pcrc.gotbetter.user.data_access.entity.User;
 import pcrc.gotbetter.user.data_access.repository.UserRepository;
 
 import java.util.Date;
 
 @Service
-public class SecurityService {
+public class JwtService {
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
 
     @Autowired
-    public SecurityService(JwtProvider jwtProvider, UserRepository userRepository) {
+    public JwtService(JwtProvider jwtProvider, UserRepository userRepository) {
         this.jwtProvider = jwtProvider;
         this.userRepository = userRepository;
     }
 
     public TokenInfo reissueNewAccessToken(HttpServletRequest request) {
 
-        String refreshToken = jwtProvider.resolveToken(request);
+        String refreshToken = jwtProvider.extractToken(request);
 
         if (!jwtProvider.validateJwtToken(request, refreshToken)) {
             throw new GotBetterException(MessageType.ReLogin);
@@ -51,7 +51,7 @@ public class SecurityService {
                 .orElseThrow(() -> {
                     throw new GotBetterException(MessageType.ReLogin);
                 });
-        if (!user.getRefresh_token().equals(refreshToken)) {
+        if (!user.getRefreshToken().equals(refreshToken)) {
             throw new GotBetterException(MessageType.ReLogin);
         }
         return user;

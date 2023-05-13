@@ -1,4 +1,4 @@
-package pcrc.gotbetter.setting.security.JWT;
+package pcrc.gotbetter.user.login_method.jwt.config;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -8,22 +8,23 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import pcrc.gotbetter.setting.security.JWT.service.CustomUserDetailService;
+import pcrc.gotbetter.user.login_method.jwt.service.CustomUserDetailService;
 
 import java.security.Key;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class JwtProvider {
     private final Key secretKey;
     private final Long accessExpiredTime;
     private final Long refreshExpiredTime;
+    private static final String AUTHORITIES_KEY = "role";
     private final CustomUserDetailService customUserDetailService;
 
     public JwtProvider(@Value("${external.jwt.secretKey}") String secretKey,
@@ -37,13 +38,14 @@ public class JwtProvider {
         this.customUserDetailService = customUserDetailService;
     }
 
-    public TokenInfo generateToken(String auth_id) {
+    public TokenInfo generateToken(String userId) {
 
         Map<String, Object> headers = new HashMap<>();
         headers.put("type", "token");
 
         Map<String, Object> payloads = new HashMap<>();
-        payloads.put("id", auth_id);
+        payloads.put("id", userId);
+        payloads.put(AUTHORITIES_KEY, "USER");
 
         Date now = new Date();
 
@@ -75,20 +77,26 @@ public class JwtProvider {
         try {
             Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
             return true;
-        } catch (SecurityException | MalformedJwtException exception) {
-            request.setAttribute("exception", "MalformedJwtException"); // JWT가 올바르게 구성되지 않았을 때
+        } catch (SecurityException exception) {
+            request.setAttribute("exception", "Invalid JWT signature");
+        } catch (MalformedJwtException exception) {
+            request.setAttribute("exception", "Invalid JWT token"); // JWT가 올바르게 구성되지 않았을 때
         } catch (ExpiredJwtException exception) {
-            request.setAttribute("exception", "ExpiredJwtException"); // 토큰 만료
+            request.setAttribute("exception", "Expired Jwt token"); // 토큰 만료
         } catch (UnsupportedJwtException exception) {
-            request.setAttribute("exception", "UnsupportedJwtException"); // 예상하는 형식과 일치하지 않는 특정 형식이나 구성의 JWT일 경우
+            request.setAttribute("exception", "Unsupported Jwt token"); // 예상하는 형식과 일치하지 않는 특정 형식이나 구성의 JWT일 경우
         } catch (JwtException | IllegalArgumentException exception) {
-            request.setAttribute("exception", "IllegalArgumentException");
+            request.setAttribute("exception", "Jwt token compact of handler are invalid");
         }
         return false;
     }
 
     public Authentication getAuthentication(ServletRequest request, String accessToken) {
 
+        Claims claims = parseClaims(accessToken);
+        Collection<? extends GrantedAuthority> authorities =
+                Arrays.stream(new String[]{claims.get(AUTHORITIES_KEY).toString()})
+                        .map(SimpleGrantedAuthority::new).toList();
         UserDetails userDetails;
 
         try {
@@ -97,8 +105,7 @@ public class JwtProvider {
             request.setAttribute("exception", "UsernameOrPasswordNotFound");
             return null;
         }
-
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+        return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
     }
 
     public Claims parseClaims(String token) {
@@ -109,7 +116,7 @@ public class JwtProvider {
         }
     }
 
-    public String resolveToken(HttpServletRequest request) {
+    public String extractToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);

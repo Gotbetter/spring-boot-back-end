@@ -56,7 +56,7 @@ public class UserController {
     }
 
     @PostMapping(value = "/login")
-    public ResponseEntity<UserView> login(@Valid @RequestBody UserLoginRequest request) throws IOException {
+    public ResponseEntity<UserView> login(@Valid @RequestBody UserLoginRequest request) {
 
         log.info("\"LOGIN\"");
 

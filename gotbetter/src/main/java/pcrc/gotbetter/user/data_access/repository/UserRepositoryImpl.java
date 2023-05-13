@@ -1,6 +1,5 @@
 package pcrc.gotbetter.user.data_access.repository;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.util.StringUtils;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -24,26 +23,35 @@ public class UserRepositoryImpl implements UserRepositoryQueryDSL {
         queryFactory
                 .update(user)
                 .where(eqAuthId(auth_id))
-                .set(user.refresh_token, refresh_token)
+                .set(user.refreshToken, refresh_token)
                 .execute();
     }
 
     @Override
-    public Boolean existsByAuthidOrEmail(String auth_id, String email) {
-        BooleanBuilder builder = new BooleanBuilder();
-        builder.or(eqAuthId(auth_id))
-                .or(eqEmail(email));
-        Integer existsUser = queryFactory
-                .selectOne()
+    public void updateUsername(Long userId, String username) {
+        queryFactory
+                .update(user)
+                .where(eqUserId(userId))
+                .set(user.username, username)
+                .execute();
+    }
+
+    @Override
+    public Long findUserIdByEmail(String email) {
+        return queryFactory
+                .select(user.userId)
                 .from(user)
-                .where(builder)
+                .where(eqEmail(email))
                 .fetchFirst();
-        return existsUser != null;
     }
 
     /**
      * user eq
      */
+    private BooleanExpression eqUserId(Long userId) {
+        return userId == null ? null : user.userId.eq(userId);
+    }
+
     private BooleanExpression eqAuthId(String auth_id) {
         if (StringUtils.isNullOrEmpty(auth_id)) {
             return null;

@@ -1,14 +1,15 @@
 package pcrc.gotbetter.user.service;
 
 import lombok.*;
-import pcrc.gotbetter.setting.security.JWT.TokenInfo;
+import pcrc.gotbetter.user.data_access.entity.UserSet;
+import pcrc.gotbetter.user.login_method.jwt.config.TokenInfo;
 import pcrc.gotbetter.user.data_access.entity.User;
 
 import java.io.IOException;
 
 public interface UserReadUseCase {
 
-    FindUserResult loginUser(UserFindQuery query) throws IOException;
+    FindUserResult loginUser(UserFindQuery query);
     FindUserResult verifyId(String auth_id);
     FindUserResult getUserInfo() throws IOException;
 
@@ -33,11 +34,11 @@ public interface UserReadUseCase {
         private final String access_token;
         private final String refresh_token;
 
-        public static FindUserResult findByUser(User user, TokenInfo tokenInfo) {
+        public static FindUserResult findByUser(User user, UserSet userSet, TokenInfo tokenInfo) {
             return FindUserResult.builder()
                     .user_id(user.getUserId())
-                    .auth_id(user.getAuthId())
-                    .username(user.getUsernameNick())
+                    .auth_id(userSet.getAuthId())
+                    .username(user.getUsername())
                     .email(user.getEmail())
                     .profile(user.getProfile())
                     .access_token(tokenInfo.getAccessToken())

@@ -1,4 +1,4 @@
-package pcrc.gotbetter.setting.security.JWT.handler;
+package pcrc.gotbetter.user.login_method.jwt.config.handler;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter;
 @Component
 public class JwtAuthenticationEntryPointHandler implements AuthenticationEntryPoint {
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
         String exception = (String)request.getAttribute("exception");
 
         LocalDateTime now = LocalDateTime.now();
@@ -49,7 +49,6 @@ public class JwtAuthenticationEntryPointHandler implements AuthenticationEntryPo
 
         if (exception.equals("UsernameOrPasswordNotFound")) {
             setResponse(response, "UsernameOrPasswordNotFound", MessageType.UsernameOrPasswordNotFound);
-            return;
         }
     }
 
