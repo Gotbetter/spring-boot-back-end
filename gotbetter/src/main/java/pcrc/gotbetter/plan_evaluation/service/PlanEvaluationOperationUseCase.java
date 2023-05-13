@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 public interface PlanEvaluationOperationUseCase {
-    void createPlanEvaluation(PlanEvaluationCommand command);
+    PlanEvaluationReadUseCase.FindPlanEvaluationResult createPlanEvaluation(PlanEvaluationCommand command);
     void deletePlanEvaluation(PlanEvaluationCommand command);
 
     @EqualsAndHashCode(callSuper = false)

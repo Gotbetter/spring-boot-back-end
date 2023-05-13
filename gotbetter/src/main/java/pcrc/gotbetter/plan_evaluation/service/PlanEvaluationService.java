@@ -38,7 +38,7 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
 
     @Override
     @Transactional
-    public void createPlanEvaluation(PlanEvaluationCommand command) {
+    public FindPlanEvaluationResult createPlanEvaluation(PlanEvaluationCommand command) {
         Plan plan = validatePlan(command.getPlan_id());
         EnteredView enteredView = validateEnteredView(plan.getParticipantInfo().getRoomId());
 
@@ -53,11 +53,15 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
             throw new GotBetterException(MessageType.CONFLICT);
         }
 
+        boolean rejected = false;
+        boolean checked = false;
+        int planEvalSize = 0;
         List<PlanEvaluation> planEvaluations = planEvaluationRepository.findByPlanEvaluationIdPlanId(command.getPlan_id());
-        if (Math.ceil(enteredView.getCurrentUserNum()) / 2 <= planEvaluations.size() + 1) {
+        if (Math.floor(enteredView.getCurrentUserNum() - 1) / 2 < planEvaluations.size() + 1) {
             planRepository.updateRejected(plan.getPlanId(), true);
             planEvaluationRepository.deleteByPlanEvaluationIdPlanId(plan.getPlanId());
             detailPlanRepository.deleteByPlanId(plan.getPlanId());
+            rejected = true;
         } else {
             PlanEvaluation planEvaluation = PlanEvaluation.builder()
                     .planEvaluationId(PlanEvaluationId.builder()
@@ -68,7 +72,11 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
                             .build())
                     .build();
             planEvaluationRepository.save(planEvaluation);
+            checked = true;
+            planEvalSize = planEvaluations.size() + 1;
         }
+        return FindPlanEvaluationResult.findByPlanEvaluation(plan.getPlanId(), rejected,
+                planEvalSize, checked);
     }
 
     @Override
@@ -84,7 +92,8 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
                 break;
             }
         }
-        return FindPlanEvaluationResult.findByPlanEvaluation(planEvaluations.size(), checked);
+        return FindPlanEvaluationResult.findByPlanEvaluation(plan.getPlanId(), plan.getRejected(),
+                planEvaluations.size(), checked);
     }
 
     @Override

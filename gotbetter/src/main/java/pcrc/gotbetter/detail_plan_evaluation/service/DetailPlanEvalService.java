@@ -63,7 +63,7 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase {
 
         List<DetailPlanEval> detailPlanEvals = detailPlanEvalRepository
                 .findByDetailPlanEvalIdDetailPlanId(command.getDetail_plan_id());
-        if (enteredView.getCurrentUserNum() / 2 < detailPlanEvals.size() + 1) {
+        if (Math.floor(enteredView.getCurrentUserNum() - 1) / 2 < detailPlanEvals.size() + 1) {
             detailPlanRepository.updateDetailPlanUndo(detailPlan.getDetailPlanId(), true);
             detailPlanEvalRepository.deleteByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());
             HashMap<String, Object> data = detail_dislike_data(enteredView.getUserId(), command.getDetail_plan_id());
