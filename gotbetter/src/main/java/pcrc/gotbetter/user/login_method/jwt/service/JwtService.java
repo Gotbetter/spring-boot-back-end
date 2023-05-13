@@ -33,9 +33,9 @@ public class JwtService {
 
         User user = validateRefreshToken(refreshToken);
         long diffDays = compareDate(jwtProvider.parseClaims(refreshToken).getExpiration());
-        TokenInfo tokenInfo = jwtProvider.generateToken(user.getAuthId());
+        TokenInfo tokenInfo = jwtProvider.generateToken(user.getUserId().toString());
         if (diffDays < 30) {
-            userRepository.updateRefreshToken(user.getAuthId(), tokenInfo.getRefreshToken());
+            userRepository.updateRefreshToken(user.getUserId(), tokenInfo.getRefreshToken());
         } else {
             tokenInfo.setRefreshToken(refreshToken);
         }
@@ -46,8 +46,8 @@ public class JwtService {
      * validate section
      */
     private User validateRefreshToken(String refreshToken) {
-        String auth_id = (String) jwtProvider.parseClaims(refreshToken).get("id");
-        User user = userRepository.findByAuthId(auth_id)
+        String userId = (String) jwtProvider.parseClaims(refreshToken).get("id");
+        User user = userRepository.findByUserId(Long.valueOf(userId))
                 .orElseThrow(() -> {
                     throw new GotBetterException(MessageType.ReLogin);
                 });

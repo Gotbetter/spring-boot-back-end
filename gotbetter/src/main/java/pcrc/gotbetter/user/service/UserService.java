@@ -95,7 +95,7 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
         // jwt
         TokenInfo tokenInfo = jwtProvider.generateToken(findUserSet.getUserId().toString());
 
-        userRepository.updateRefreshToken(findUserSet.getUserId().toString(), tokenInfo.getRefreshToken());
+        userRepository.updateRefreshToken(findUserSet.getUserId(), tokenInfo.getRefreshToken());
         return FindUserResult.findByUser(User.builder().build(), UserSet.builder().build(), tokenInfo);
     }
 
@@ -120,7 +120,7 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
                 .profile(bytes)
                 .build();
         UserSet userSet = UserSet.builder()
-                .authId(findUserSet.getAuthId())
+                .authId(findUserSet != null ? findUserSet.getAuthId() : "")
                 .build();
         return FindUserResult.findByUser(user, userSet, TokenInfo.builder().build());
     }

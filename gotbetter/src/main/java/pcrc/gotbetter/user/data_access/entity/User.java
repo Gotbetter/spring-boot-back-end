@@ -1,80 +1,46 @@
 package pcrc.gotbetter.user.data_access.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import java.util.ArrayList;
-import java.util.Collection;
+import pcrc.gotbetter.user.login_method.login_type.RoleType;
 
 @Entity
 @Table(name = "User")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
-public class User implements UserDetails {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long userId;
-    @Column(name = "auth_id")
-    private String authId;
-    private String password;
-    @Column(name = "username")
-    private String usernameNick;
+
+    @NotNull
+    private String username;
+
+    @NotNull
     private String email;
+
     private String profile;
-    private String refresh_token;
+
+    @Column(name = "role_type", length = 20)
+    @Enumerated(EnumType.STRING)
+    private RoleType roleType;
+
+    @Column(name = "refresh_token")
+    private String refreshToken;
 
     @Builder
-    public User(Long userId, String authId, String password,
-                String usernameNick, String email, String profile) {
+    public User(Long userId, String username,
+                String email, String profile,
+                RoleType roleType) {
         this.userId = userId;
-        this.authId = authId;
-        this.password = password;
-        this.usernameNick = usernameNick;
+        this.username = username;
         this.email = email;
         this.profile = profile;
-    }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        Collection<GrantedAuthority> collection = new ArrayList<>();
-        collection.add(new SimpleGrantedAuthority(this.authId));
-        return collection;
-    }
-
-    @Override
-    public String getUsername() {
-        return authId;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
+        this.roleType = roleType;
     }
 }

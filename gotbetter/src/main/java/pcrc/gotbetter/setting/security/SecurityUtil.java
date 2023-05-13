@@ -2,9 +2,9 @@ package pcrc.gotbetter.setting.security;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
-import pcrc.gotbetter.user.data_access.entity.User;
 
 public class SecurityUtil {
 
@@ -14,7 +14,8 @@ public class SecurityUtil {
                 || authentication.getPrincipal().equals("anonymousUser")) {
             throw new GotBetterException(MessageType.ReLogin);
         }
-        User user = (User) authentication.getPrincipal();
-        return user.getUserId();
+
+        UserDetails principal = (UserDetails) authentication.getPrincipal();
+        return Long.parseLong(principal.getUsername());
     }
 }
