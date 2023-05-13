@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.ToString;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
 
-import java.time.LocalDate;
-
 public interface PlanReadUseCase {
 
     FindPlanResult getWeekPlan(PlanFindQuery query);
@@ -26,8 +24,8 @@ public interface PlanReadUseCase {
     @Builder
     class FindPlanResult {
         private final Long plan_id;
-        private final LocalDate start_date;
-        private final LocalDate target_date;
+        private final String start_date;
+        private final String target_date;
         private final Float score;
         private final Integer week;
         private final Boolean three_days_passed;
@@ -38,8 +36,8 @@ public interface PlanReadUseCase {
         public static FindPlanResult findByPlan(Plan plan) {
             return FindPlanResult.builder()
                     .plan_id(plan.getPlanId())
-                    .start_date(plan.getStartDate())
-                    .target_date(plan.getTargetDate())
+                    .start_date(plan.getStartDate().toString())
+                    .target_date(plan.getTargetDate().toString())
                     .score(plan.getScore())
                     .week(plan.getWeek())
                     .three_days_passed(plan.getThreeDaysPassed())

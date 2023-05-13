@@ -3,11 +3,9 @@ package pcrc.gotbetter.room.service;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
-import pcrc.gotbetter.participant.data_access.view.EnteredView;
 import pcrc.gotbetter.participant.data_access.view.TryEnterView;
 import pcrc.gotbetter.room.data_access.entity.Room;
 
-import java.time.LocalDate;
 import java.util.List;
 
 public interface RoomReadUseCase {
@@ -24,7 +22,7 @@ public interface RoomReadUseCase {
         private final String title;
         private final Integer max_user_num;
         private final Integer current_user_num;
-        private final LocalDate start_date;
+        private final String start_date;
         private final Integer week;
         private final Integer current_week;
         private final Integer entry_fee;
@@ -40,7 +38,7 @@ public interface RoomReadUseCase {
                     .title(room.getTitle())
                     .max_user_num(room.getMaxUserNum())
                     .current_user_num(room.getCurrentUserNum())
-                    .start_date(room.getStartDate())
+                    .start_date(room.getStartDate().toString())
                     .week(room.getWeek())
                     .current_week(room.getCurrentWeek())
                     .entry_fee(room.getEntryFee())
@@ -58,7 +56,7 @@ public interface RoomReadUseCase {
                     .title(tryEnterView.getTitle())
                     .max_user_num(tryEnterView.getMaxUserNum())
                     .current_user_num(tryEnterView.getCurrentUserNum())
-                    .start_date(tryEnterView.getStartDate())
+                    .start_date(tryEnterView.getStartDate().toString())
                     .week(tryEnterView.getWeek())
                     .current_week(tryEnterView.getCurrentWeek())
                     .entry_fee(tryEnterView.getEntryFee())
