@@ -15,8 +15,8 @@ public interface DetailPlanCompleteOperationUseCase {
     @Getter
     @ToString
     class DetailPlanCompleteCommand {
-        private final Long plan_id;
-        private final Long detail_plan_id;
-        private final String approve_comment;
+        private final Long planId;
+        private final Long detailPlanId;
+        private final String approveComment;
     }
 }

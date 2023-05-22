@@ -25,7 +25,7 @@ public interface DetailPlanEvalReadUseCase {
                     .detail_plan_id(detailPlan.getDetailPlanId())
                     .content(detailPlan.getContent())
                     .complete(detailPlan.getComplete())
-                    .approve_comment(detailPlan.getApprove_comment())
+                    .approve_comment(detailPlan.getApproveComment())
                     .rejected(detailPlan.getRejected())
                     .plan_id(detailPlan.getPlanId())
                     .detail_plan_dislike_count(dislike_count)

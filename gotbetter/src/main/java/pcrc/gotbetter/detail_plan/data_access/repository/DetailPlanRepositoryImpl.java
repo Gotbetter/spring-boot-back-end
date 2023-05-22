@@ -1,8 +1,6 @@
 package pcrc.gotbetter.detail_plan.data_access.repository;
 
-import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
@@ -10,8 +8,6 @@ import jakarta.transaction.Transactional;
 import pcrc.gotbetter.detail_plan.data_access.entity.DetailPlan;
 
 import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
 
 import static pcrc.gotbetter.detail_plan.data_access.entity.QDetailPlan.detailPlan;
 
@@ -26,71 +22,71 @@ public class DetailPlanRepositoryImpl implements DetailPlanRepositoryQueryDSL {
 
     @Override
     @Transactional
-    public void updateDetailContent(Long detail_plan_id, String content) {
+    public void updateDetailContent(Long detailPlanId, String content) {
         queryFactory
                 .update(detailPlan)
                 .set(detailPlan.content, content)
-                .where(detailPlanEqDetailPlanId(detail_plan_id))
+                .where(detailPlanEqDetailPlanId(detailPlanId))
                 .execute();
     }
 
     @Override
     @Transactional
-    public void updateRejected(Long detail_plan_id, Boolean rejected) {
+    public void updateRejected(Long detailPlanId, Boolean rejected) {
         queryFactory
                 .update(detailPlan)
                 .set(detailPlan.rejected, rejected)
-                .where(detailPlanEqDetailPlanId(detail_plan_id))
+                .where(detailPlanEqDetailPlanId(detailPlanId))
                 .execute();
     }
 
     @Override
     @Transactional
-    public void updateDetailPlanCompleted(Long detail_plan_id, String approve_comment) {
+    public void updateDetailPlanCompleted(Long detailPlanId, String approveComment) {
         queryFactory
                 .update(detailPlan)
                 .set(detailPlan.complete, true)
-                .set(detailPlan.approve_comment, approve_comment)
-                .where(detailPlanEqDetailPlanId(detail_plan_id))
+                .set(detailPlan.approveComment, approveComment)
+                .where(detailPlanEqDetailPlanId(detailPlanId))
                 .execute();
     }
 
     @Override
     @Transactional
-    public void updateDetailPlanUndo(Long detail_plan_id, Boolean rejected) {
+    public void updateDetailPlanUndo(Long detailPlanId, Boolean rejected) {
         queryFactory
                 .update(detailPlan)
                 .set(detailPlan.complete, false)
-                .setNull(detailPlan.approve_comment)
+                .setNull(detailPlan.approveComment)
                 .set(detailPlan.rejected, rejected)
-                .where(detailPlanEqDetailPlanId(detail_plan_id))
+                .where(detailPlanEqDetailPlanId(detailPlanId))
                 .execute();
     }
 
     @Override
     @Transactional
-    public void deleteDetailPlan(Long detail_plan_id) {
+    public void deleteDetailPlan(Long detailPlanId) {
         queryFactory
                 .delete(detailPlan)
-                .where(detailPlanEqDetailPlanId(detail_plan_id))
+                .where(detailPlanEqDetailPlanId(detailPlanId))
                 .execute();
     }
 
     @Override
-    public Boolean existsByPlanId(Long plan_id) {
+    public Boolean existsByPlanId(Long planId) {
         Integer exists =  queryFactory
                 .selectOne()
                 .from(detailPlan)
-                .where(detailPlanEqPlanId(plan_id))
+                .where(detailPlanEqPlanId(planId))
                 .fetchFirst();
         return exists != null;
     }
 
     @Override
-    public HashMap<String, Long> countCompleteTrue(Long plan_id) {
+    public HashMap<String, Long> countCompleteTrue(Long planId) {
         Query query = em.createQuery(
                 "SELECT count(p) as size, count(if(p.complete=true, p.complete, null))" +
-                " FROM DetailPlan p WHERE p.planId = " + plan_id);
+                " FROM DetailPlan p WHERE p.planId = " + planId);
         Object[] object = (Object[]) query.getResultList().get(0);
         HashMap<String, Long> result = new HashMap<>();
         result.put("size", (Long) object[0]);
@@ -100,21 +96,21 @@ public class DetailPlanRepositoryImpl implements DetailPlanRepositoryQueryDSL {
     }
 
     @Override
-    public DetailPlan findByDetailPlanId(Long detail_plan_id) {
+    public DetailPlan findByDetailPlanId(Long detailPlanId) {
         return queryFactory
                 .selectFrom(detailPlan)
-                .where(detailPlanEqDetailPlanId(detail_plan_id))
+                .where(detailPlanEqDetailPlanId(detailPlanId))
                 .fetchFirst();
     }
 
     /**
      * participant eq
      */
-    private BooleanExpression detailPlanEqDetailPlanId(Long detail_plan_id) {
-        return detail_plan_id == null ? null : detailPlan.detailPlanId.eq(detail_plan_id);
+    private BooleanExpression detailPlanEqDetailPlanId(Long detailPlanId) {
+        return detailPlanId == null ? null : detailPlan.detailPlanId.eq(detailPlanId);
     }
 
-    private BooleanExpression detailPlanEqPlanId(Long plan_id) {
-        return plan_id == null ? null : detailPlan.planId.eq(plan_id);
+    private BooleanExpression detailPlanEqPlanId(Long planId) {
+        return planId == null ? null : detailPlan.planId.eq(planId);
     }
 }

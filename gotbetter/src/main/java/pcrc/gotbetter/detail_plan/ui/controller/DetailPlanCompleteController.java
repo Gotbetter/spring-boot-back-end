@@ -29,9 +29,9 @@ public class DetailPlanCompleteController {
         log.info("COMPLETED DETAIL PLAN");
 
         var command = DetailPlanCompleteOperationUseCase.DetailPlanCompleteCommand.builder()
-                .plan_id(plan_id)
-                .detail_plan_id(detail_plan_id)
-                .approve_comment(request.getApprove_comment())
+                .planId(plan_id)
+                .detailPlanId(detail_plan_id)
+                .approveComment(request.getApprove_comment())
                 .build();
         DetailPlanReadUseCase.FindDetailPlanResult result = detailPlanCompleteOperationUseCase.completeDetailPlan(command);
 
@@ -44,8 +44,8 @@ public class DetailPlanCompleteController {
         log.info("COMPLETED DETAIL PLAN");
 
         var command = DetailPlanCompleteOperationUseCase.DetailPlanCompleteCommand.builder()
-                .plan_id(plan_id)
-                .detail_plan_id(detail_plan_id)
+                .planId(plan_id)
+                .detailPlanId(detail_plan_id)
                 .build();
         DetailPlanReadUseCase.FindDetailPlanResult result = detailPlanCompleteOperationUseCase.undoCompleteDetailPlan(command);
 

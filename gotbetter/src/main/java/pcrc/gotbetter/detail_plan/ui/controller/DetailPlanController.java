@@ -35,7 +35,7 @@ public class DetailPlanController {
         log.info("\"CREATE A DETAIL PLAN\"");
 
         var command = DetailPlanOperationUseCase.DetailPlanCreateCommand.builder()
-                .plan_id(plan_id)
+                .planId(plan_id)
                 .content(request.getContent())
                 .build();
         DetailPlanReadUseCase.FindDetailPlanResult result = detailPlanOperationUseCase.createDetailPlan(command);
@@ -65,8 +65,8 @@ public class DetailPlanController {
         log.info("\"UPDATE A DETAIL PLAN\"");
 
         var command = DetailPlanOperationUseCase.DetailPlanUpdateCommand.builder()
-                .detail_plan_id(detail_plan_id)
-                .plan_id(plan_id)
+                .detailPlanId(detail_plan_id)
+                .planId(plan_id)
                 .content(request.getContent())
                 .build();
         DetailPlanReadUseCase.FindDetailPlanResult result = detailPlanOperationUseCase.updateDetailPlan(command);
@@ -81,8 +81,8 @@ public class DetailPlanController {
         log.info("\"DELETE A DETAIL PLAN\"");
 
         var command = DetailPlanOperationUseCase.DetailPlanDeleteCommand.builder()
-                .detail_plan_id(detail_plan_id)
-                .plan_id(plan_id)
+                .detailPlanId(detail_plan_id)
+                .planId(plan_id)
                 .build();
         detailPlanOperationUseCase.deleteDetailPlan(command);
     }

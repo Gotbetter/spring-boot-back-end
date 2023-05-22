@@ -39,11 +39,11 @@ public class DetailPlanCompleteService implements DetailPlanCompleteOperationUse
 
     @Override
     public DetailPlanReadUseCase.FindDetailPlanResult completeDetailPlan(DetailPlanCompleteCommand command) {
-        DetailPlan detailPlan = validateDetailPlan(command.getDetail_plan_id(), command.getPlan_id());
-        Long user_id = getCurrentUserId();
+        DetailPlan detailPlan = validateDetailPlan(command.getDetailPlanId(), command.getPlanId());
+        Long currentUserId = getCurrentUserId();
 
         validateWeekPassed(detailPlan.getParticipantInfo().getRoomId(), detailPlan.getPlanId());
-        if (!Objects.equals(user_id, detailPlan.getParticipantInfo().getUserId())) {
+        if (!Objects.equals(currentUserId, detailPlan.getParticipantInfo().getUserId())) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
         if (detailPlan.getRejected()) {
@@ -53,21 +53,21 @@ public class DetailPlanCompleteService implements DetailPlanCompleteOperationUse
             throw new GotBetterException(MessageType.CONFLICT);
         }
         detailPlanRepository.updateDetailPlanCompleted(
-                detailPlan.getDetailPlanId(), command.getApprove_comment());
+                detailPlan.getDetailPlanId(), command.getApproveComment());
         List<DetailPlanEval> detailPlanEvals = detailPlanEvalRepository.findByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());
         return DetailPlanReadUseCase.FindDetailPlanResult
-                .findByDetailPlanEval(detailPlan, command.getApprove_comment(), true
+                .findByDetailPlanEval(detailPlan, command.getApproveComment(), true
                         , detailPlanEvals.size(), false);
     }
 
     @Override
     @Transactional
     public DetailPlanReadUseCase.FindDetailPlanResult undoCompleteDetailPlan(DetailPlanCompleteCommand command) {
-        DetailPlan detailPlan = validateDetailPlan(command.getDetail_plan_id(), command.getPlan_id());
-        Long user_id = getCurrentUserId();
+        DetailPlan detailPlan = validateDetailPlan(command.getDetailPlanId(), command.getPlanId());
+        Long currentUserId = getCurrentUserId();
 
         validateWeekPassed(detailPlan.getParticipantInfo().getRoomId(), detailPlan.getPlanId());
-        if (!Objects.equals(user_id, detailPlan.getParticipantInfo().getUserId())
+        if (!Objects.equals(currentUserId, detailPlan.getParticipantInfo().getUserId())
         || detailPlan.getRejected()) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
@@ -85,22 +85,22 @@ public class DetailPlanCompleteService implements DetailPlanCompleteOperationUse
     /**
      * validate
      */
-    private DetailPlan validateDetailPlan(Long detail_plan_id, Long plan_id) {
-        DetailPlan detailPlan = detailPlanRepository.findByDetailPlanId(detail_plan_id);
+    private DetailPlan validateDetailPlan(Long detailPlanId, Long planId) {
+        DetailPlan detailPlan = detailPlanRepository.findByDetailPlanId(detailPlanId);
         if (detailPlan == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
-        if (!Objects.equals(detailPlan.getPlanId(), plan_id)) {
+        if (!Objects.equals(detailPlan.getPlanId(), planId)) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
         return detailPlan;
     }
 
-    private void validateWeekPassed(Long room_id, Long plan_id) {
-        Room room = roomRepository.findByRoomId(room_id).orElseThrow(() -> {
+    private void validateWeekPassed(Long roomId, Long planId) {
+        Room room = roomRepository.findByRoomId(roomId).orElseThrow(() -> {
             throw new GotBetterException(MessageType.NOT_FOUND);
         });
-        Plan plan = planRepository.findByPlanId(plan_id).orElseThrow(() -> {
+        Plan plan = planRepository.findByPlanId(planId).orElseThrow(() -> {
             throw new GotBetterException(MessageType.NOT_FOUND);
         });
 
