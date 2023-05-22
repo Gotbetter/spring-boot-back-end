@@ -9,6 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface PlanRepository extends JpaRepository<Plan, Long>, PlanRepositoryQueryDSL {
-    Optional<Plan> findByPlanId(Long plan_id);
-    List<Plan> findByThreeDaysPassed(Boolean three_days_passed);
+    Optional<Plan> findByPlanId(Long planId);
+    List<Plan> findByThreeDaysPassed(Boolean threeDaysPassed);
 }
