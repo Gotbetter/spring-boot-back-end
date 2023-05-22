@@ -40,10 +40,10 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 
     @Override
     public List<FindRoomResult> getUserRooms() {
-        Long user_id = getCurrentUserId();
+        Long currentUserId = getCurrentUserId();
         List<FindRoomResult> result = new ArrayList<>();
         List<TryEnterView> tryEnterViewList = viewRepository
-                .tryEnterListByUserIdRoomId(user_id, null, true);
+                .tryEnterListByUserIdRoomId(currentUserId, null, true);
 
         for (TryEnterView t : tryEnterViewList) {
             result.add(FindRoomResult.findByRoom(t));
@@ -56,9 +56,9 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     }
 
     @Override
-    public FindRoomResult getOneRoomInfo(Long room_id) {
-        Long user_id = getCurrentUserId();
-        TryEnterView tryEnterView = viewRepository.tryEnterByUserIdRoomId(user_id, room_id, true);
+    public FindRoomResult getOneRoomInfo(Long roomId) {
+        Long currentUserId = getCurrentUserId();
+        TryEnterView tryEnterView = viewRepository.tryEnterByUserIdRoomId(currentUserId, roomId, true);
 
         if (tryEnterView == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
@@ -68,32 +68,32 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 
     @Override
     public FindRoomResult createRoom(RoomCreateCommand command) {
-        Long user_id = getCurrentUserId();
-        String room_code = getRandomCode();
-        LocalDate start_date = LocalDate.parse(command.getStart_date(), DateTimeFormatter.ISO_DATE);
+        Long currentUserId = getCurrentUserId();
+        String roomCode = getRandomCode();
+        LocalDate startDate = LocalDate.parse(command.getStartDate(), DateTimeFormatter.ISO_DATE);
 
-        if (start_date.isBefore(LocalDate.now())) {
+        if (startDate.isBefore(LocalDate.now())) {
             throw new GotBetterException(MessageType.BAD_REQUEST);
         }
 
         Room room = Room.builder()
                 .title(command.getTitle())
-                .maxUserNum(command.getMax_user_num())
+                .maxUserNum(command.getMaxUserNum())
                 .currentUserNum(1)
-                .startDate(start_date)
+                .startDate(startDate)
                 .week(command.getWeek())
-                .currentWeek(command.getCurrent_week())
-                .entryFee(command.getEntry_fee())
-                .roomCode(room_code)
+                .currentWeek(command.getCurrentWeek())
+                .entryFee(command.getEntryFee())
+                .roomCode(roomCode)
                 .account(command.getAccount())
-                .totalEntryFee(command.getEntry_fee())
-                .ruleId(command.getRule_id())
+                .totalEntryFee(command.getEntryFee())
+                .ruleId(command.getRuleId())
                 .build();
         roomRepository.save(room);
 
         Participate participate = Participate.builder()
                 .participateId(ParticipateId.builder()
-                        .userId(user_id)
+                        .userId(currentUserId)
                         .roomId(room.getRoomId())
                         .build())
                 .accepted(true)
@@ -112,13 +112,13 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     }
 
     @Override
-    public List<FindRankResult> getRank(Long room_id) {
-        Long user_id = getCurrentUserId();
-        if (!viewRepository.enteredExistByUserIdRoomId(user_id, room_id)) {
+    public List<FindRankResult> getRank(Long roomId) {
+        Long currentUserId = getCurrentUserId();
+        if (!viewRepository.enteredExistByUserIdRoomId(currentUserId, roomId)) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
 
-        List<EnteredView> enteredViewList = viewRepository.enteredListByRoomId(room_id);
+        List<EnteredView> enteredViewList = viewRepository.enteredListByRoomId(roomId);
         List<FindRankResult> findRankResultList = new ArrayList<>();
 
         LocalDate now = LocalDate.now();
@@ -187,10 +187,10 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
         boolean useNumbers = true;
         int randomStrLen = 8;
 
-        String room_code;
+        String roomCode;
         do {
-            room_code = RandomStringUtils.random(randomStrLen, useLetters, useNumbers);
-        } while (roomRepository.existByRoomCode(room_code));
-        return room_code;
+            roomCode = RandomStringUtils.random(randomStrLen, useLetters, useNumbers);
+        } while (roomRepository.existByRoomCode(roomCode));
+        return roomCode;
     }
 }

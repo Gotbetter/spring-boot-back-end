@@ -15,12 +15,12 @@ public interface RoomOperationUseCase {
     @ToString
     class RoomCreateCommand {
         private final String title;
-        private final Integer max_user_num;
-        private final String start_date;
+        private final Integer maxUserNum;
+        private final String startDate;
         private final Integer week;
-        private final Integer current_week;
-        private final Integer entry_fee;
-        private final Integer rule_id;
+        private final Integer currentWeek;
+        private final Integer entryFee;
+        private final Integer ruleId;
         private final String account;
     }
 }

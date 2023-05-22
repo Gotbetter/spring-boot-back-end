@@ -22,22 +22,22 @@ public class RoomRepositoryImpl implements RoomRepositoryQueryDSL{
 
     @Override
     @Transactional
-    public void updatePlusTotalEntryFeeAndCurrentNum(Long room_id, Integer fee) {
+    public void updatePlusTotalEntryFeeAndCurrentNum(Long roomId, Integer fee) {
         queryFactory
                 .update(room)
                 .set(room.totalEntryFee, room.totalEntryFee.add(fee))
                 .set(room.currentUserNum, room.currentUserNum.add(1))
-                .where(roomEqRoomId(room_id))
+                .where(roomEqRoomId(roomId))
                 .execute();
     }
 
     @Override
     @Transactional
-    public void updateCurrentWeek(Long room_id, Integer changeWeek) {
+    public void updateCurrentWeek(Long roomId, Integer changeWeek) {
         queryFactory
                 .update(room)
                 .set(room.currentWeek, changeWeek)
-                .where(roomEqRoomId(room_id))
+                .where(roomEqRoomId(roomId))
                 .execute();
     }
 
@@ -58,20 +58,20 @@ public class RoomRepositoryImpl implements RoomRepositoryQueryDSL{
     }
 
     @Override
-    public Integer findCurrentWeek(Long room_id) {
+    public Integer findCurrentWeek(Long roomId) {
         return queryFactory
                 .select(room.currentWeek)
                 .from(room)
-                .where(roomEqRoomId(room_id))
+                .where(roomEqRoomId(roomId))
                 .fetchFirst();
     }
 
     @Override
-    public Boolean existByRoomCode(String room_code) {
+    public Boolean existByRoomCode(String roomCode) {
         Integer exists =  queryFactory
                 .selectOne()
                 .from(room)
-                .where(roomEqRoomCode(room_code))
+                .where(roomEqRoomCode(roomCode))
                 .fetchFirst();
         return exists != null;
     }
@@ -79,14 +79,14 @@ public class RoomRepositoryImpl implements RoomRepositoryQueryDSL{
     /**
      * room eq
      */
-    private BooleanExpression roomEqRoomId(Long room_id) {
-        return room_id == null ? null : room.roomId.eq(room_id);
+    private BooleanExpression roomEqRoomId(Long roomId) {
+        return roomId == null ? null : room.roomId.eq(roomId);
     }
 
-    private BooleanExpression roomEqRoomCode(String room_code) {
-        if (StringUtils.isNullOrEmpty(String.valueOf(room_code))) {
+    private BooleanExpression roomEqRoomCode(String roomCode) {
+        if (StringUtils.isNullOrEmpty(String.valueOf(roomCode))) {
             return null;
         }
-        return room.roomCode.eq(room_code);
+        return room.roomCode.eq(roomCode);
     }
 }

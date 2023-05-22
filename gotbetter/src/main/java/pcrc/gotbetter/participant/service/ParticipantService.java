@@ -60,8 +60,8 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
         participateRepository.save(participate);
 
         return RoomReadUseCase.FindRoomResult.builder()
-                .room_id(room.getRoomId())
-                .entry_fee(room.getEntryFee())
+                .roomId(room.getRoomId())
+                .entryFee(room.getEntryFee())
                 .account(room.getAccount())
                 .build();
     }
