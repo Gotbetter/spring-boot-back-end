@@ -1,4 +1,4 @@
-package pcrc.gotbetter.setting.security.JWT;
+package pcrc.gotbetter.user.login_method.jwt.config;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

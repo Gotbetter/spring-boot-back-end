@@ -24,11 +24,11 @@ public interface ParticipantReadUseCase {
         private final String profile;
         private final Boolean authority;
 
-        public static FindParticipantResult findByParticipant(EnteredView view) {
+        public static FindParticipantResult findByParticipant(EnteredView view, String authId) {
             return FindParticipantResult.builder()
                     .participant_id(view.getParticipantId())
                     .user_id(view.getUserId())
-                    .auth_id(view.getAuthId())
+                    .auth_id(authId) // 수정
                     .username(view.getUsernameNick())
                     .email(view.getEmail())
                     .profile(view.getProfile())
@@ -37,11 +37,11 @@ public interface ParticipantReadUseCase {
         }
 
         public static FindParticipantResult findByParticipant(TryEnterView view, Long participant_id,
-                                                              Boolean authority) {
+                                                              Boolean authority, String authId) {
             return FindParticipantResult.builder()
                     .participant_id(participant_id)
                     .user_id(view.getTryEnterId().getUserId())
-                    .auth_id(view.getAuthId())
+                    .auth_id(authId) // 수정
                     .username(view.getUsernameNick())
                     .email(view.getEmail())
                     .profile(view.getProfile())

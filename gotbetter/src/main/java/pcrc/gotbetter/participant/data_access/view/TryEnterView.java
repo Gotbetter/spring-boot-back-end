@@ -17,8 +17,6 @@ public class TryEnterView {
     @EmbeddedId
     ParticipateId tryEnterId;
 
-    @Column(name = "auth_id")
-    private String authId;
     @Column(name = "username")
     private String usernameNick;
     private String email;

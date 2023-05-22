@@ -1,4 +1,4 @@
-package pcrc.gotbetter.setting.security.JWT;
+package pcrc.gotbetter.user.login_method.jwt.config;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
@@ -20,7 +19,7 @@ public class JwtFilter extends GenericFilterBean {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        String token = jwtProvider.resolveToken((HttpServletRequest) request);
+        String token = jwtProvider.extractToken((HttpServletRequest) request);
 
         if (token != null && jwtProvider.validateJwtToken(request, token)) {
             Authentication authentication = jwtProvider.getAuthentication(request, token);

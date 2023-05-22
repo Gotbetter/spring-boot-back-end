@@ -14,14 +14,17 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import pcrc.gotbetter.setting.security.JWT.JwtProvider;
-import pcrc.gotbetter.setting.security.JWT.JwtSecurityConfig;
-import pcrc.gotbetter.setting.security.JWT.handler.JwtAccessDeniedHandler;
-import pcrc.gotbetter.setting.security.JWT.handler.JwtAuthenticationEntryPointHandler;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import pcrc.gotbetter.user.login_method.jwt.config.JwtProvider;
+import pcrc.gotbetter.user.login_method.jwt.config.JwtSecurityConfig;
+import pcrc.gotbetter.user.login_method.jwt.config.handler.JwtAccessDeniedHandler;
+import pcrc.gotbetter.user.login_method.jwt.config.handler.JwtAuthenticationEntryPointHandler;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+@EnableWebMvc
+public class SecurityConfig implements WebMvcConfigurer {
 
     private final JwtProvider jwtProvider;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
@@ -31,10 +34,14 @@ public class SecurityConfig {
     private String frontend;
     @Value("${external.backend}")
     private String backend;
+    @Value("${external.backend.prod}")
+    private String prodBackend;
     @Value("${external.localFront}")
     private String localFront;
     @Value("${external.localBack}")
     private String localBack;
+    @Value("${external.localBack.prod}")
+    private String prodLocalBack;
 
     @Autowired
     public SecurityConfig(JwtProvider jwtProvider, JwtAccessDeniedHandler jwtAccessDeniedHandler, JwtAuthenticationEntryPointHandler jwtAuthenticationEntryPointHandler) {
@@ -45,7 +52,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        String[] uriPost = {"/users", "/users/verify", "/users/login", "/users/reissue"};
+        String[] uriPost = {"/users", "/users/verify", "/users/login", "/users/reissue", "/oauth"};
         String[] uriGet = {"/rules"};
 
         http.cors().configurationSource(corsConfigurationSource());
@@ -82,6 +89,8 @@ public class SecurityConfig {
         configuration.addAllowedOrigin(backend);
         configuration.addAllowedOrigin(localFront);
         configuration.addAllowedOrigin(localBack);
+        configuration.addAllowedOrigin(prodBackend);
+        configuration.addAllowedOrigin(prodLocalBack);
         configuration.addAllowedHeader(localFront);
         configuration.addAllowedHeader(frontend);
         configuration.addAllowedOrigin("http://jxy.me");
@@ -97,4 +106,9 @@ public class SecurityConfig {
         return source;
     }
 
+//    @Override
+//    public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {   // 기본 컨버터를 유지관리
+//        converters.removeIf(v->v.getSupportedMediaTypes().contains(MediaType.APPLICATION_JSON));  // 기존 json용 컨버터 제거
+//        converters.add(new MappingJackson2HttpMessageConverter());  // 새로 json 컨버터 추가. 필요시 커스텀 컨버터 bean 사용
+//    }
 }

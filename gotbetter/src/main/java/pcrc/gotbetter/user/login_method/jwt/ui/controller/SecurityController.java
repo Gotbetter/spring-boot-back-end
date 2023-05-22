@@ -1,4 +1,4 @@
-package pcrc.gotbetter.setting.security.JWT.ui.controller;
+package pcrc.gotbetter.user.login_method.jwt.ui.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -7,19 +7,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import pcrc.gotbetter.setting.security.JWT.TokenInfo;
-import pcrc.gotbetter.setting.security.JWT.service.SecurityService;
-import pcrc.gotbetter.setting.security.JWT.ui.view.TokenView;
+import pcrc.gotbetter.user.login_method.jwt.config.TokenInfo;
+import pcrc.gotbetter.user.login_method.jwt.service.JwtService;
+import pcrc.gotbetter.user.login_method.jwt.ui.view.TokenView;
 
 @Slf4j
 @RestController
 @RequestMapping(value = "/users")
 public class SecurityController {
-    private final SecurityService securityService;
+    private final JwtService jwtService;
 
     @Autowired
-    public SecurityController(SecurityService securityService) {
-        this.securityService = securityService;
+    public SecurityController(JwtService jwtService) {
+        this.jwtService = jwtService;
     }
 
     @PostMapping(value = "/reissue")
@@ -27,7 +27,7 @@ public class SecurityController {
 
         log.info("\"REISSUE\"");
 
-        TokenInfo tokenInfo = securityService.reissueNewAccessToken(request);
+        TokenInfo tokenInfo = jwtService.reissueNewAccessToken(request);
 
         return ResponseEntity.ok(TokenView.builder().tokenInfo(tokenInfo).build());
     }

@@ -24,8 +24,6 @@ public class EnteredView {
 
     @Column(name = "user_id")
     private Long userId;
-    @Column(name = "auth_id")
-    private String authId;
     @Column(name = "username")
     private String usernameNick;
     private String email;

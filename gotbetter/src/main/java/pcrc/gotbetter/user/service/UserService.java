@@ -6,8 +6,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
-import pcrc.gotbetter.setting.security.JWT.JwtProvider;
-import pcrc.gotbetter.setting.security.JWT.TokenInfo;
+import pcrc.gotbetter.user.data_access.entity.UserSet;
+import pcrc.gotbetter.user.data_access.repository.UserSetRepository;
+import pcrc.gotbetter.user.login_method.jwt.config.JwtProvider;
+import pcrc.gotbetter.user.login_method.jwt.config.TokenInfo;
 import pcrc.gotbetter.user.data_access.entity.User;
 import pcrc.gotbetter.user.data_access.repository.UserRepository;
 
@@ -22,8 +24,9 @@ import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
 public class UserService implements UserOperationUseCase, UserReadUseCase {
 
     private final PasswordEncoder passwordEncoder;
-    private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
+    private final UserRepository userRepository;
+    private final UserSetRepository userSetRepository;
     @Value("${local.default.profile.path}")
     String default_profile_local_path;
     @Value("${server.default.profile.path}")
@@ -31,75 +34,77 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
 
     @Autowired
     public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository,
-                       JwtProvider jwtProvider) {
+                       JwtProvider jwtProvider, UserSetRepository userSetRepository) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.jwtProvider = jwtProvider;
+        this.userSetRepository = userSetRepository;
     }
 
     @Override
     public FindUserResult createUser(UserCreateCommand command) {
-        validateDuplicateUser(command.getAuth_id(), command.getEmail());
+        // auth_id 이미 있는지 검사
+        validateUserAuthId(command.getAuth_id());
+        // email 있는지 확인하고 있으면 userset확인하고 이것도 있으면 존재하는 유저라고 판단
+        Long userId = validateUserEmail(command.getEmail());
+
+        if (userId != null) {
+            validateAlreadyJoin(userId);
+            // username update
+            userRepository.updateUsername(userId, command.getUsername());
+        } else {
+            User saveUser = User.builder()
+                    .username(command.getUsername())
+                    .email(command.getEmail())
+                    .build();
+            userRepository.save(saveUser);
+            userId = saveUser.getUserId();
+        }
 
         String encodePassword = passwordEncoder.encode(command.getPassword());
-        User saveUser = User.builder()
+        UserSet savedUserSet = UserSet.builder()
+                .userId(userId)
                 .authId(command.getAuth_id())
                 .password(encodePassword)
-                .usernameNick(command.getUsername())
-                .email(command.getEmail())
                 .build();
-        userRepository.save(saveUser);
+        userSetRepository.save(savedUserSet);
 
         User returnUser = User.builder()
-                .authId(command.getAuth_id())
-                .usernameNick(command.getUsername())
+                .username(command.getUsername())
                 .email(command.getEmail())
                 .build();
-        return FindUserResult.findByUser(returnUser, TokenInfo.builder().build());
+        UserSet userSet = UserSet.builder()
+                .authId(command.getAuth_id())
+                .build();
+        return FindUserResult.findByUser(returnUser, userSet, TokenInfo.builder().build());
     }
 
     @Override
     public FindUserResult verifyId(String auth_id) {
-        validateDuplicateUser(auth_id, null);
-        User user = User.builder()
+        validateUserAuthId(auth_id);
+        UserSet userSet = UserSet.builder()
                 .authId(auth_id)
                 .build();
-        return FindUserResult.findByUser(user, TokenInfo.builder().build());
+        return FindUserResult.findByUser(User.builder().build(), userSet, TokenInfo.builder().build());
     }
 
     @Override
-    public FindUserResult loginUser(UserFindQuery query) throws IOException {
+    public FindUserResult loginUser(UserFindQuery query) {
         // 아이디와 비번이 매치되는 유저가 있는지 확인
-        User findUser = validateFindUser(query);
-
-        String bytes;
-        try {
-            bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(
-                    Paths.get(findUser.getProfile())));
-        } catch (Exception e) {
-            String os = System.getProperty("os.name").toLowerCase();
-            String dir = os.contains("win") ? default_profile_local_path : default_profile_server_path;
-            bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
-        }
-
+        UserSet findUserSet = validateFindUserSet(query);
         // jwt
-        TokenInfo tokenInfo = jwtProvider.generateToken(findUser.getAuthId());
-        userRepository.updateRefreshToken(findUser.getAuthId(), tokenInfo.getRefreshToken());
+        TokenInfo tokenInfo = jwtProvider.generateToken(findUserSet.getUserId().toString());
 
-        User user = User.builder()
-//                .authId(findUser.getAuthId())
-//                .usernameNick(findUser.getUsernameNick())
-//                .email(findUser.getEmail())
-//                .profile(bytes)
-                .build();
-        return FindUserResult.findByUser(user, tokenInfo);
+        userRepository.updateRefreshToken(findUserSet.getUserId(), tokenInfo.getRefreshToken());
+        return FindUserResult.findByUser(User.builder().build(), UserSet.builder().build(), tokenInfo);
     }
 
     @Override
     public FindUserResult getUserInfo() throws IOException {
         User findUser = validateUser();
-
+        UserSet findUserSet = userSetRepository.findByUserId(findUser.getUserId());
         String bytes;
+
         try {
             bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(
                     Paths.get(findUser.getProfile())));
@@ -108,44 +113,53 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
             String dir = os.contains("win") ? default_profile_local_path : default_profile_server_path;
             bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
         }
-
         User user = User.builder()
                 .userId(findUser.getUserId())
-                .authId(findUser.getAuthId())
-                .usernameNick(findUser.getUsernameNick())
+                .username(findUser.getUsername())
                 .email(findUser.getEmail())
                 .profile(bytes)
                 .build();
-        return FindUserResult.findByUser(user, TokenInfo.builder().build());
+        UserSet userSet = UserSet.builder()
+                .authId(findUserSet != null ? findUserSet.getAuthId() : "")
+                .build();
+        return FindUserResult.findByUser(user, userSet, TokenInfo.builder().build());
     }
 
     /**
      * validate
      */
-    private void validateDuplicateUser(String auth_id, String email) {
-        // 이미 있는 아이디인지 또는 이미 있는 이메일인지 확인
-        if (userRepository.existsByAuthidOrEmail(auth_id, email)) {
+    private UserSet validateFindUserSet(UserFindQuery query) {
+        UserSet findUserSet = userSetRepository.findByAuthId(query.getAuth_id());
+
+        if (findUserSet == null) {
+            throw new GotBetterException(MessageType.NOT_FOUND);
+        }
+        if (!passwordEncoder.matches(query.getPassword(), findUserSet.getPassword())) {
+            throw new GotBetterException(MessageType.NOT_FOUND);
+        }
+        return findUserSet;
+    }
+
+    private User validateUser() {
+        Long userId = getCurrentUserId();
+        return userRepository.findByUserId(userId).orElseThrow(() -> {
+            throw new GotBetterException(MessageType.NOT_FOUND);
+        });
+    }
+
+    private Long validateUserEmail(String email) {
+        return userRepository.findUserIdByEmail(email);
+    }
+
+    private void validateAlreadyJoin(Long userId) {
+        if (userSetRepository.existsByUserId(userId)) {
             throw new GotBetterException(MessageType.CONFLICT);
         }
     }
 
-    private User validateFindUser(UserFindQuery query) {
-        User findUser = userRepository.findByAuthId(query.getAuth_id())
-                .orElseThrow(() -> {
-                    throw new GotBetterException(MessageType.NOT_FOUND);
-                });
-
-        if (!passwordEncoder.matches(query.getPassword(), findUser.getPassword())) {
-            throw new GotBetterException(MessageType.NOT_FOUND);
+    private void validateUserAuthId(String authId) {
+        if (userSetRepository.existsByAuthId(authId)) {
+            throw new GotBetterException(MessageType.CONFLICT);
         }
-
-        return findUser;
-    }
-
-    private User validateUser() {
-        Long user_id = getCurrentUserId();
-        return userRepository.findByUserId(user_id).orElseThrow(() -> {
-            throw new GotBetterException(MessageType.NOT_FOUND);
-        });
     }
 }

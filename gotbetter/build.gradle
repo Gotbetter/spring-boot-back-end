@@ -71,6 +71,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-batch'
 	implementation 'org.springframework.boot:spring-boot-starter-quartz'
 
+	// google oauth
+	implementation 'org.springframework.security:spring-security-oauth2-core:6.0.2'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
 	// test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.kafka:spring-kafka-test'
