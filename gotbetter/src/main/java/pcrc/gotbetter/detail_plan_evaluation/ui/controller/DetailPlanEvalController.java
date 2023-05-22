@@ -26,7 +26,7 @@ public class DetailPlanEvalController {
         log.info("\"CREATE A DETAIL PLAN DISLIKE\"");
 
         var command = DetailPlanEvalOperationUseCase.DetailPlanEvaluationCommand.builder()
-                .detail_plan_id(detail_plan_id)
+                .detailPlanId(detail_plan_id)
                 .build();
         DetailPlanEvalReadUseCase.FindDetailPlanEvalResult result = detailPlanEvalOperationUseCase.createDetailPlanEvaluation(command);
         return ResponseEntity.created(null).body(DetailPlanEvaluationView.builder().detailPlanEvalResult(result).build());
@@ -39,7 +39,7 @@ public class DetailPlanEvalController {
         log.info("\"DELETE A DETAIL PLAN DISLIKE\"");
 
         var command = DetailPlanEvalOperationUseCase.DetailPlanEvaluationCommand.builder()
-                .detail_plan_id(detail_plan_id)
+                .detailPlanId(detail_plan_id)
                 .build();
         DetailPlanEvalReadUseCase.FindDetailPlanEvalResult result = detailPlanEvalOperationUseCase.deleteDetailPlanEvaluation(command);
         return ResponseEntity.created(null).body(DetailPlanEvaluationView.builder().detailPlanEvalResult(result).build());

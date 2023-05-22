@@ -15,20 +15,20 @@ public class DetailPlanEvalRepositoryImpl implements DetailPlanEvalRepositoryQue
 
     @Override
     @Transactional
-    public void deleteDetailPlanEval(Long detail_plan_id, Long participant_id) {
+    public void deleteDetailPlanEval(Long detailPlanId, Long participantId) {
         queryFactory.delete(detailPlanEval)
-                .where(detailPlanEvalEqDetailPlanId(detail_plan_id),
-                        detailPlanEvalEqParticipantId(participant_id))
+                .where(detailPlanEvalEqDetailPlanId(detailPlanId),
+                        detailPlanEvalEqParticipantId(participantId))
                 .execute();
     }
 
     @Override
-    public Boolean existsEval(Long detail_plan_id, Long participant_id) {
+    public Boolean existsEval(Long detailPlanId, Long participantId) {
         Integer exists =  queryFactory
                 .selectOne()
                 .from(detailPlanEval)
-                .where(detailPlanEvalEqDetailPlanId(detail_plan_id),
-                        detailPlanEvalEqParticipantId(participant_id))
+                .where(detailPlanEvalEqDetailPlanId(detailPlanId),
+                        detailPlanEvalEqParticipantId(participantId))
                 .fetchFirst();
         return exists != null;
     }
@@ -36,11 +36,11 @@ public class DetailPlanEvalRepositoryImpl implements DetailPlanEvalRepositoryQue
     /**
      * detailPlanEval eq
      */
-    private BooleanExpression detailPlanEvalEqDetailPlanId(Long detail_plan_id) {
-        return detail_plan_id == null ? null : detailPlanEval.detailPlanEvalId.detailPlanId.eq(detail_plan_id);
+    private BooleanExpression detailPlanEvalEqDetailPlanId(Long detailPlanId) {
+        return detailPlanId == null ? null : detailPlanEval.detailPlanEvalId.detailPlanId.eq(detailPlanId);
     }
 
-    private BooleanExpression detailPlanEvalEqParticipantId(Long participant_id) {
-        return participant_id == null ? null : detailPlanEval.detailPlanEvalId.participantId.eq(participant_id);
+    private BooleanExpression detailPlanEvalEqParticipantId(Long participantId) {
+        return participantId == null ? null : detailPlanEval.detailPlanEvalId.participantId.eq(participantId);
     }
 }

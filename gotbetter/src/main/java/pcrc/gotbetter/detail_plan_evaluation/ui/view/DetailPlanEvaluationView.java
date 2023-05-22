@@ -21,13 +21,13 @@ public class DetailPlanEvaluationView {
 
     @Builder
     public DetailPlanEvaluationView(DetailPlanEvalReadUseCase.FindDetailPlanEvalResult detailPlanEvalResult) {
-        this.detail_plan_id = detailPlanEvalResult.getDetail_plan_id();
+        this.detail_plan_id = detailPlanEvalResult.getDetailPlanId();
         this.content = detailPlanEvalResult.getContent();
         this.complete = detailPlanEvalResult.getComplete();
-        this.approve_comment = detailPlanEvalResult.getApprove_comment();
+        this.approve_comment = detailPlanEvalResult.getApproveComment();
         this.rejected = detailPlanEvalResult.getRejected();
-        this.plan_id = detailPlanEvalResult.getPlan_id();
-        this.detail_plan_dislike_count = detailPlanEvalResult.getDetail_plan_dislike_count();
-        this.detail_plan_dislike_checked = detailPlanEvalResult.getDetail_plan_dislike_checked();
+        this.plan_id = detailPlanEvalResult.getPlanId();
+        this.detail_plan_dislike_count = detailPlanEvalResult.getDetailPlanDislikeCount();
+        this.detail_plan_dislike_checked = detailPlanEvalResult.getDetailPlanDislikeChecked();
     }
 }
