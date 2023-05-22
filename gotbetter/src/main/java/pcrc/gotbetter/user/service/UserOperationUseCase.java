@@ -11,7 +11,7 @@ public interface UserOperationUseCase {
     @Getter
     @ToString
     class UserCreateCommand {
-        private final String auth_id;
+        private final String authId;
         private final String password;
         private final String username;
         private final String email;

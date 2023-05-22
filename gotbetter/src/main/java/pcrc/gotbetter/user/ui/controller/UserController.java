@@ -35,7 +35,7 @@ public class UserController {
         log.info("\"JOIN\"");
 
         var command = UserOperationUseCase.UserCreateCommand.builder()
-                .auth_id(request.getAuth_id())
+                .authId(request.getAuth_id())
                 .password(request.getPassword())
                 .username(request.getUsername())
                 .email(request.getEmail())
@@ -61,7 +61,7 @@ public class UserController {
         log.info("\"LOGIN\"");
 
         var query = UserReadUseCase.UserFindQuery.builder()
-                .auth_id(request.getAuth_id())
+                .authId(request.getAuth_id())
                 .password(request.getPassword())
                 .build();
         UserReadUseCase.FindUserResult result = userReadUseCase.loginUser(query);

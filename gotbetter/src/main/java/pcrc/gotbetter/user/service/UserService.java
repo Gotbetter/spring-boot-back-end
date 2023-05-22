@@ -28,9 +28,9 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
     private final UserRepository userRepository;
     private final UserSetRepository userSetRepository;
     @Value("${local.default.profile.path}")
-    String default_profile_local_path;
+    String DEFAULT_PROFILE_LOCAL_PATH;
     @Value("${server.default.profile.path}")
-    String default_profile_server_path;
+    String DEFAULT_PROFILE_SERVER_PATH;
 
     @Autowired
     public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository,
@@ -43,8 +43,8 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
 
     @Override
     public FindUserResult createUser(UserCreateCommand command) {
-        // auth_id 이미 있는지 검사
-        validateUserAuthId(command.getAuth_id());
+        // authId 이미 있는지 검사
+        validateUserAuthId(command.getAuthId());
         // email 있는지 확인하고 있으면 userset확인하고 이것도 있으면 존재하는 유저라고 판단
         Long userId = validateUserEmail(command.getEmail());
 
@@ -64,7 +64,7 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
         String encodePassword = passwordEncoder.encode(command.getPassword());
         UserSet savedUserSet = UserSet.builder()
                 .userId(userId)
-                .authId(command.getAuth_id())
+                .authId(command.getAuthId())
                 .password(encodePassword)
                 .build();
         userSetRepository.save(savedUserSet);
@@ -74,16 +74,16 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
                 .email(command.getEmail())
                 .build();
         UserSet userSet = UserSet.builder()
-                .authId(command.getAuth_id())
+                .authId(command.getAuthId())
                 .build();
         return FindUserResult.findByUser(returnUser, userSet, TokenInfo.builder().build());
     }
 
     @Override
-    public FindUserResult verifyId(String auth_id) {
-        validateUserAuthId(auth_id);
+    public FindUserResult verifyId(String authId) {
+        validateUserAuthId(authId);
         UserSet userSet = UserSet.builder()
-                .authId(auth_id)
+                .authId(authId)
                 .build();
         return FindUserResult.findByUser(User.builder().build(), userSet, TokenInfo.builder().build());
     }
@@ -110,7 +110,7 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
                     Paths.get(findUser.getProfile())));
         } catch (Exception e) {
             String os = System.getProperty("os.name").toLowerCase();
-            String dir = os.contains("win") ? default_profile_local_path : default_profile_server_path;
+            String dir = os.contains("win") ? DEFAULT_PROFILE_LOCAL_PATH : DEFAULT_PROFILE_SERVER_PATH;
             bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
         }
         User user = User.builder()
@@ -129,7 +129,7 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
      * validate
      */
     private UserSet validateFindUserSet(UserFindQuery query) {
-        UserSet findUserSet = userSetRepository.findByAuthId(query.getAuth_id());
+        UserSet findUserSet = userSetRepository.findByAuthId(query.getAuthId());
 
         if (findUserSet == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);

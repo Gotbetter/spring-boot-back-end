@@ -17,12 +17,12 @@ public class SocialAccountRepositoryImpl implements SocialAccountRepositoryQuery
     }
 
     @Override
-    public Boolean existsByProviderTypeAndProviderId(ProviderType provider_type, String provider_id) {
+    public Boolean existsByProviderTypeAndProviderId(ProviderType providerType, String providerId) {
         Integer existsUser = queryFactory
                 .selectOne()
                 .from(socialAccount)
-                .where(eqProviderType(provider_type),
-                        eqProviderId(provider_id))
+                .where(eqProviderType(providerType),
+                        eqProviderId(providerId))
                 .fetchFirst();
         return existsUser != null;
     }
