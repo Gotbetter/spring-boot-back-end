@@ -46,13 +46,13 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
     }
 
     @Override
-    public RoomReadUseCase.FindRoomResult requestJoinRoom(String room_code) {
-        Room room = validateRoomWithRoomCode(room_code);
-        Long user_id = validateAbleToJoinRoom(room);
+    public RoomReadUseCase.FindRoomResult requestJoinRoom(String roomCode) {
+        Room room = validateRoomWithRoomCode(roomCode);
+        Long currentUserId = validateAbleToJoinRoom(room);
 
         Participate participate = Participate.builder()
                 .participateId(ParticipateId.builder()
-                        .userId(user_id)
+                        .userId(currentUserId)
                         .roomId(room.getRoomId())
                         .build())
                 .accepted(false)
@@ -67,20 +67,20 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
     }
 
     @Override
-    public List<FindParticipantResult> getMemberListInARoom(Long room_id, Boolean accepted) {
+    public List<FindParticipantResult> getMemberListInARoom(Long roomId, Boolean accepted) {
         List<FindParticipantResult> result = new ArrayList<>();
 
         if (accepted) {
-            validateUserInRoom(room_id, false);
-            List<EnteredView> enteredViewList = viewRepository.enteredListByRoomId(room_id);
+            validateUserInRoom(roomId, false);
+            List<EnteredView> enteredViewList = viewRepository.enteredListByRoomId(roomId);
             for (EnteredView p : enteredViewList) {
                 String authId = validateUserSetAuthId(p.getUserId());
                 result.add(FindParticipantResult.findByParticipant(p, authId));
             }
         } else {
-            validateUserInRoom(room_id, true);
+            validateUserInRoom(roomId, true);
             List<TryEnterView> tryEnterViewList = viewRepository
-                    .tryEnterListByUserIdRoomId(null, room_id, false);
+                    .tryEnterListByUserIdRoomId(null, roomId, false);
             for (TryEnterView p : tryEnterViewList) {
                 String authId = validateUserSetAuthId(p.getTryEnterId().getUserId());
                 result.add(FindParticipantResult.findByParticipant(p, -1L, false, authId));
@@ -91,10 +91,10 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 
     @Override
     public FindParticipantResult approveJoinRoom(UserRoomAcceptedUpdateCommand command) {
-        validateUserInRoom(command.getRoom_id(), true);
+        validateUserInRoom(command.getRoomId(), true);
 
         TryEnterView targetUserInfo = viewRepository.tryEnterByUserIdRoomId(
-                command.getUser_id(), command.getRoom_id(), false);
+                command.getUserId(), command.getRoomId(), false);
 
         if (targetUserInfo == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
@@ -111,15 +111,15 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
                 .build();
         participantRepository.save(participant);
         participantRepository.updateParticipateAccepted(targetUserInfo.getTryEnterId().getUserId(), targetUserInfo.getTryEnterId().getRoomId());
-        roomRepository.updatePlusTotalEntryFeeAndCurrentNum(command.getRoom_id(), targetUserInfo.getEntryFee());
+        roomRepository.updatePlusTotalEntryFeeAndCurrentNum(command.getRoomId(), targetUserInfo.getEntryFee());
         String authId = validateUserSetAuthId(targetUserInfo.getTryEnterId().getUserId());
         return FindParticipantResult.findByParticipant(targetUserInfo,
                 participant.getParticipantId(), null, authId);
     }
 
     @Override
-    public Integer getMyRefund(Long participant_id) {
-        EnteredView enteredView = viewRepository.enteredByParticipantId(participant_id);
+    public Integer getMyRefund(Long participantId) {
+        EnteredView enteredView = viewRepository.enteredByParticipantId(participantId);
 
         if (enteredView == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
@@ -140,17 +140,17 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
     /**
      * validate section
      */
-    private Room validateRoomWithRoomCode(String room_code) {
-        return roomRepository.findByRoomCode(room_code).orElseThrow(() -> {
+    private Room validateRoomWithRoomCode(String roomCode) {
+        return roomRepository.findByRoomCode(roomCode).orElseThrow(() -> {
             throw new GotBetterException(MessageType.NOT_FOUND);
         });
     }
 
     private Long validateAbleToJoinRoom(Room room) {
-        Long user_id = getCurrentUserId();
+        Long currentUserId = getCurrentUserId();
         Optional<Participate> participate = participateRepository.findByParticipateId(
                 ParticipateId.builder()
-                        .userId(user_id)
+                        .userId(currentUserId)
                         .roomId(room.getRoomId()).build()
         );
 
@@ -165,17 +165,17 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
         if (room.getCurrentUserNum() >= room.getMaxUserNum()) {
             throw new GotBetterException(MessageType.CONFLICT_MAX);
         }
-        return user_id;
+        return currentUserId;
     }
 
-    private void validateUserInRoom(Long room_id, Boolean need_leader) {
-        long user_id = getCurrentUserId();
-        EnteredView enteredView = viewRepository.enteredByUserIdRoomId(user_id, room_id);
+    private void validateUserInRoom(Long roomId, Boolean needLeader) {
+        long currentUserId = getCurrentUserId();
+        EnteredView enteredView = viewRepository.enteredByUserIdRoomId(currentUserId, roomId);
 
         if (enteredView == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
-        if (need_leader && !enteredView.getAuthority()) {
+        if (needLeader && !enteredView.getAuthority()) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
     }

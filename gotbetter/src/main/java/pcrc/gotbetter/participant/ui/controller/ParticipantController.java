@@ -70,8 +70,8 @@ public class ParticipantController {
         log.info("\"APPROVE JOIN ROOM\"");
 
         var command = ParticipantOperationUseCase.UserRoomAcceptedUpdateCommand.builder()
-                .user_id(request.getUser_id())
-                .room_id(request.getRoom_id())
+                .userId(request.getUser_id())
+                .roomId(request.getRoom_id())
                 .build();
         ParticipantReadUseCase.FindParticipantResult result = participantOperationUseCase.approveJoinRoom(command);
 

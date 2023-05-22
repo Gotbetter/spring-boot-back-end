@@ -19,52 +19,52 @@ public class ViewRepository {
         this.queryFactory = queryFactory;
     }
 
-    public EnteredView enteredByParticipantId(Long participant_id) {
+    public EnteredView enteredByParticipantId(Long participantId) {
         return queryFactory
                 .selectFrom(enteredView)
-                .where(enteredView.participantId.eq(participant_id))
+                .where(enteredView.participantId.eq(participantId))
                 .fetchFirst();
     }
 
-    public EnteredView enteredByUserIdRoomId(Long user_id, Long room_id) {
+    public EnteredView enteredByUserIdRoomId(Long userId, Long roomId) {
         return queryFactory
                 .selectFrom(enteredView)
-                .where(enteredView.userId.eq(user_id),
-                        enteredView.roomId.eq(room_id))
+                .where(enteredView.userId.eq(userId),
+                        enteredView.roomId.eq(roomId))
                 .fetchFirst();
     }
 
-    public List<EnteredView> enteredListByRoomId(Long room_id) {
+    public List<EnteredView> enteredListByRoomId(Long roomId) {
         return queryFactory
                 .selectFrom(enteredView)
-                .where(enteredView.roomId.eq(room_id))
+                .where(enteredView.roomId.eq(roomId))
                 .fetch();
     }
 
-    public Boolean enteredExistByUserIdRoomId(Long user_id, Long room_id) {
+    public Boolean enteredExistByUserIdRoomId(Long userId, Long roomId) {
         Integer exists =  queryFactory
                 .selectOne()
                 .from(enteredView)
-                .where(enteredView.userId.eq(user_id),
-                        enteredView.roomId.eq(room_id))
+                .where(enteredView.userId.eq(userId),
+                        enteredView.roomId.eq(roomId))
                 .fetchFirst();
         return exists != null;
     }
 
-    public TryEnterView tryEnterByUserIdRoomId(Long user_id, Long room_id, Boolean accepted) {
+    public TryEnterView tryEnterByUserIdRoomId(Long userId, Long roomId, Boolean accepted) {
         return queryFactory
                 .selectFrom(tryEnterView)
-                .where(tryEnterViewEqUserId(user_id),
-                        tryEnterViewEqRoomId(room_id),
+                .where(tryEnterViewEqUserId(userId),
+                        tryEnterViewEqRoomId(roomId),
                         tryEnterViewEqAccepted(accepted))
                 .fetchFirst();
     }
 
-    public List<TryEnterView> tryEnterListByUserIdRoomId(Long user_id, Long room_id, Boolean accepted) {
+    public List<TryEnterView> tryEnterListByUserIdRoomId(Long userId, Long roomId, Boolean accepted) {
         return queryFactory
                 .selectFrom(tryEnterView)
-                .where(tryEnterViewEqUserId(user_id),
-                        tryEnterViewEqRoomId(room_id),
+                .where(tryEnterViewEqUserId(userId),
+                        tryEnterViewEqRoomId(roomId),
                         tryEnterViewEqAccepted(accepted))
                 .fetch();
     }
@@ -72,11 +72,11 @@ public class ViewRepository {
     /**
      * try-enter view eq
      */
-    private BooleanExpression tryEnterViewEqUserId(Long user_id) {
-        return user_id == null ? null : tryEnterView.tryEnterId.userId.eq(user_id);
+    private BooleanExpression tryEnterViewEqUserId(Long userId) {
+        return userId == null ? null : tryEnterView.tryEnterId.userId.eq(userId);
     }
-    private BooleanExpression tryEnterViewEqRoomId(Long room_id) {
-        return room_id == null ? null : tryEnterView.tryEnterId.roomId.eq(room_id);
+    private BooleanExpression tryEnterViewEqRoomId(Long roomId) {
+        return roomId == null ? null : tryEnterView.tryEnterId.roomId.eq(roomId);
     }
     private BooleanExpression tryEnterViewEqAccepted(Boolean accepted) {
         return accepted == null ? null : tryEnterView.accepted.eq(accepted);

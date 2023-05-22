@@ -141,8 +141,8 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
     }
 
     private User validateUser() {
-        Long userId = getCurrentUserId();
-        return userRepository.findByUserId(userId).orElseThrow(() -> {
+        Long currentUserId = getCurrentUserId();
+        return userRepository.findByUserId(currentUserId).orElseThrow(() -> {
             throw new GotBetterException(MessageType.NOT_FOUND);
         });
     }

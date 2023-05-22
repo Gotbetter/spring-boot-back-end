@@ -20,9 +20,9 @@ public class ParticipantView {
 
     @Builder
     public ParticipantView(ParticipantReadUseCase.FindParticipantResult participantResult) {
-        this.participant_id = participantResult.getParticipant_id();
-        this.user_id = participantResult.getUser_id();
-        this.auth_id = participantResult.getAuth_id();
+        this.participant_id = participantResult.getParticipantId();
+        this.user_id = participantResult.getUserId();
+        this.auth_id = participantResult.getAuthId();
         this.username = participantResult.getUsername();
         this.email = participantResult.getEmail();
         this.profile = participantResult.getProfile();
