@@ -9,16 +9,16 @@ import pcrc.gotbetter.participant.data_access.view.TryEnterView;
 import java.util.List;
 
 public interface ParticipantReadUseCase {
-    List<FindParticipantResult> getMemberListInARoom(Long room_id, Boolean accepted);
-    Integer getMyRefund(Long participant_id);
+    List<FindParticipantResult> getMemberListInARoom(Long roomId, Boolean accepted);
+    Integer getMyRefund(Long participantId);
 
     @Getter
     @ToString
     @Builder
     class FindParticipantResult {
-        private final Long participant_id;
-        private final Long user_id;
-        private final String auth_id;
+        private final Long participantId;
+        private final Long userId;
+        private final String authId;
         private final String username;
         private final String email;
         private final String profile;
@@ -26,9 +26,9 @@ public interface ParticipantReadUseCase {
 
         public static FindParticipantResult findByParticipant(EnteredView view, String authId) {
             return FindParticipantResult.builder()
-                    .participant_id(view.getParticipantId())
-                    .user_id(view.getUserId())
-                    .auth_id(authId) // 수정
+                    .participantId(view.getParticipantId())
+                    .userId(view.getUserId())
+                    .authId(authId)
                     .username(view.getUsernameNick())
                     .email(view.getEmail())
                     .profile(view.getProfile())
@@ -36,12 +36,12 @@ public interface ParticipantReadUseCase {
                     .build();
         }
 
-        public static FindParticipantResult findByParticipant(TryEnterView view, Long participant_id,
+        public static FindParticipantResult findByParticipant(TryEnterView view, Long participantId,
                                                               Boolean authority, String authId) {
             return FindParticipantResult.builder()
-                    .participant_id(participant_id)
-                    .user_id(view.getTryEnterId().getUserId())
-                    .auth_id(authId) // 수정
+                    .participantId(participantId)
+                    .userId(view.getTryEnterId().getUserId())
+                    .authId(authId)
                     .username(view.getUsernameNick())
                     .email(view.getEmail())
                     .profile(view.getProfile())

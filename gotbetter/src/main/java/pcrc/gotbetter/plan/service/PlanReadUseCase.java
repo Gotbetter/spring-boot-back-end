@@ -15,7 +15,7 @@ public interface PlanReadUseCase {
     @ToString
     @Builder
     class PlanFindQuery {
-        private final Long participant_id;
+        private final Long participantId;
         private final Integer week;
     }
 
@@ -23,27 +23,27 @@ public interface PlanReadUseCase {
     @ToString
     @Builder
     class FindPlanResult {
-        private final Long plan_id;
-        private final String start_date;
-        private final String target_date;
+        private final Long planId;
+        private final String startDate;
+        private final String targetDate;
         private final Float score;
         private final Integer week;
-        private final Boolean three_days_passed;
+        private final Boolean threeDaysPassed;
         private final Boolean rejected;
-        private final Long user_id;
-        private final Long room_id;
+        private final Long userId;
+        private final Long roomId;
 
         public static FindPlanResult findByPlan(Plan plan) {
             return FindPlanResult.builder()
-                    .plan_id(plan.getPlanId())
-                    .start_date(plan.getStartDate().toString())
-                    .target_date(plan.getTargetDate().toString())
+                    .planId(plan.getPlanId())
+                    .startDate(plan.getStartDate().toString())
+                    .targetDate(plan.getTargetDate().toString())
                     .score(plan.getScore())
                     .week(plan.getWeek())
-                    .three_days_passed(plan.getThreeDaysPassed())
+                    .threeDaysPassed(plan.getThreeDaysPassed())
                     .rejected(plan.getRejected())
-                    .user_id(plan.getParticipantInfo().getUserId())
-                    .room_id(plan.getParticipantInfo().getRoomId())
+                    .userId(plan.getParticipantInfo().getUserId())
+                    .roomId(plan.getParticipantInfo().getRoomId())
                     .build();
         }
     }

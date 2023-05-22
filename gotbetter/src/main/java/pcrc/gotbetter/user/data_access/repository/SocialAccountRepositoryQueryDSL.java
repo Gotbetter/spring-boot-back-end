@@ -6,5 +6,5 @@ public interface SocialAccountRepositoryQueryDSL {
     // create, update, delete
 
     // select
-    Boolean existsByProviderTypeAndProviderId(ProviderType provider_type, String provider_id);
+    Boolean existsByProviderTypeAndProviderId(ProviderType providerType, String providerId);
 }

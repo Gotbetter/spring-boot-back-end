@@ -39,7 +39,7 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
     @Override
     @Transactional
     public FindPlanEvaluationResult createPlanEvaluation(PlanEvaluationCommand command) {
-        Plan plan = validatePlan(command.getPlan_id());
+        Plan plan = validatePlan(command.getPlanId());
         EnteredView enteredView = validateEnteredView(plan.getParticipantInfo().getRoomId());
 
         validateDate(plan, enteredView.getCurrentWeek());
@@ -56,7 +56,7 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
         boolean rejected = false;
         boolean checked = false;
         int planEvalSize = 0;
-        List<PlanEvaluation> planEvaluations = planEvaluationRepository.findByPlanEvaluationIdPlanId(command.getPlan_id());
+        List<PlanEvaluation> planEvaluations = planEvaluationRepository.findByPlanEvaluationIdPlanId(command.getPlanId());
         if (Math.floor(enteredView.getCurrentUserNum() - 1) / 2 < planEvaluations.size() + 1) {
             planRepository.updateRejected(plan.getPlanId(), true);
             planEvaluationRepository.deleteByPlanEvaluationIdPlanId(plan.getPlanId());
@@ -81,9 +81,9 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
 
     @Override
     public FindPlanEvaluationResult getPlanDislike(PlanEvaluationFindQuery query) {
-        Plan plan = validatePlan(query.getPlan_id());
+        Plan plan = validatePlan(query.getPlanId());
         EnteredView enteredView = validateEnteredView(plan.getParticipantInfo().getRoomId());
-        List<PlanEvaluation> planEvaluations = planEvaluationRepository.findByPlanEvaluationIdPlanId(query.getPlan_id());
+        List<PlanEvaluation> planEvaluations = planEvaluationRepository.findByPlanEvaluationIdPlanId(query.getPlanId());
         boolean checked = false;
 
         for (PlanEvaluation p : planEvaluations) {
@@ -98,7 +98,7 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
 
     @Override
     public void deletePlanEvaluation(PlanEvaluationCommand command) {
-        Plan plan = validatePlan(command.getPlan_id());
+        Plan plan = validatePlan(command.getPlanId());
         EnteredView enteredView = validateEnteredView(plan.getParticipantInfo().getRoomId());
 
         validateDate(plan, enteredView.getCurrentWeek());
@@ -112,14 +112,14 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
     /**
      * validate
      */
-    private Plan validatePlan(Long plan_id) {
-        return planRepository.findByPlanId(plan_id).orElseThrow(() -> {
+    private Plan validatePlan(Long planId) {
+        return planRepository.findByPlanId(planId).orElseThrow(() -> {
             throw new GotBetterException(MessageType.NOT_FOUND);
         });
     }
 
-    private EnteredView validateEnteredView(Long room_id) {
-        EnteredView enteredView = viewRepository.enteredByUserIdRoomId(getCurrentUserId(), room_id);
+    private EnteredView validateEnteredView(Long roomId) {
+        EnteredView enteredView = viewRepository.enteredByUserIdRoomId(getCurrentUserId(), roomId);
 
         if (enteredView == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
@@ -127,8 +127,8 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
         return enteredView;
     }
 
-    private void validateDate(Plan plan, Integer current_week) {
-        if (!Objects.equals(current_week, plan.getWeek())) {
+    private void validateDate(Plan plan, Integer currentWeek) {
+        if (!Objects.equals(currentWeek, plan.getWeek())) {
             throw new GotBetterException(MessageType.FORBIDDEN_DATE);
         } else {
             if (plan.getStartDate().isAfter(LocalDate.now())

@@ -15,21 +15,21 @@ public class PlanEvaluationRepositoryImpl implements PlanEvaluationRepositoryQue
 
     @Override
     @Transactional
-    public void deletePlanEvaluation(Long plan_id, Long participant_id) {
+    public void deletePlanEvaluation(Long planId, Long participantId) {
         queryFactory
                 .delete(planEvaluation)
-                .where(planEvaluationEqPlanId(plan_id),
-                        planEvaluationEqParticipantId(participant_id))
+                .where(planEvaluationEqPlanId(planId),
+                        planEvaluationEqParticipantId(participantId))
                 .execute();
     }
 
     @Override
-    public Boolean existsEval(Long plan_id, Long participant_id) {
+    public Boolean existsEval(Long planId, Long participantId) {
         Integer exists =  queryFactory
                 .selectOne()
                 .from(planEvaluation)
-                .where(planEvaluationEqPlanId(plan_id),
-                        planEvaluationEqParticipantId(participant_id))
+                .where(planEvaluationEqPlanId(planId),
+                        planEvaluationEqParticipantId(participantId))
                 .fetchFirst();
         return exists != null;
     }
@@ -37,11 +37,11 @@ public class PlanEvaluationRepositoryImpl implements PlanEvaluationRepositoryQue
     /**
      * planEvaluation eq
      */
-    private BooleanExpression planEvaluationEqPlanId(Long plan_id) {
-        return plan_id == null ? null : planEvaluation.planEvaluationId.planId.eq(plan_id);
+    private BooleanExpression planEvaluationEqPlanId(Long planId) {
+        return planId == null ? null : planEvaluation.planEvaluationId.planId.eq(planId);
     }
 
-    private BooleanExpression planEvaluationEqParticipantId(Long participant_id) {
-        return participant_id == null ? null : planEvaluation.planEvaluationId.participantId.eq(participant_id);
+    private BooleanExpression planEvaluationEqParticipantId(Long participantId) {
+        return participantId == null ? null : planEvaluation.planEvaluationId.participantId.eq(participantId);
     }
 }

@@ -26,18 +26,18 @@ public class RoomView {
 
     @Builder
     public RoomView(RoomReadUseCase.FindRoomResult roomResult) {
-        this.room_id = roomResult.getRoom_id();
+        this.room_id = roomResult.getRoomId();
         this.title = roomResult.getTitle();
-        this.max_user_num = roomResult.getMax_user_num();
-        this.current_user_num = roomResult.getCurrent_user_num();
-        this.start_date = roomResult.getStart_date();
+        this.max_user_num = roomResult.getMaxUserNum();
+        this.current_user_num = roomResult.getCurrentUserNum();
+        this.start_date = roomResult.getStartDate();
         this.week = roomResult.getWeek();
-        this.current_week = roomResult.getCurrent_week();
-        this.entry_fee = roomResult.getEntry_fee();
-        this.room_code = roomResult.getRoom_code();
+        this.current_week = roomResult.getCurrentWeek();
+        this.entry_fee = roomResult.getEntryFee();
+        this.room_code = roomResult.getRoomCode();
         this.account = roomResult.getAccount();
-        this.total_entry_fee = roomResult.getTotal_entry_fee();
-        this.rule_id = roomResult.getRule_id();
-        this.participant_id = roomResult.getParticipant_id();
+        this.total_entry_fee = roomResult.getTotalEntryFee();
+        this.rule_id = roomResult.getRuleId();
+        this.participant_id = roomResult.getParticipantId();
     }
 }

@@ -32,7 +32,7 @@ public class PlanController {
         log.info("\"CREATE PLANS\"");
 
         var command = PlanOperationUseCase.PlanCreateCommand.builder()
-                .participant_id(request.getParticipant_id())
+                .participantId(request.getParticipant_id())
                 .build();
 
         List<PlanView> planViews = new ArrayList<>();
@@ -51,7 +51,7 @@ public class PlanController {
         log.info("\"GET A WEEK PLAN\"");
 
         var query = PlanReadUseCase.PlanFindQuery.builder()
-                .participant_id(participant_id)
+                .participantId(participant_id)
                 .week(week)
                 .build();
 

@@ -11,59 +11,59 @@ import java.util.List;
 public interface RoomReadUseCase {
 
     List<FindRoomResult> getUserRooms();
-    FindRoomResult getOneRoomInfo(Long room_id);
-    List<FindRankResult> getRank(Long room_id);
+    FindRoomResult getOneRoomInfo(Long roomId);
+    List<FindRankResult> getRank(Long roomId);
 
     @Getter
     @ToString
     @Builder
     class FindRoomResult {
-        private final Long room_id;
+        private final Long roomId;
         private final String title;
-        private final Integer max_user_num;
-        private final Integer current_user_num;
-        private final String start_date;
+        private final Integer maxUserNum;
+        private final Integer currentUserNum;
+        private final String startDate;
         private final Integer week;
-        private final Integer current_week;
-        private final Integer entry_fee;
-        private final String room_code;
+        private final Integer currentWeek;
+        private final Integer entryFee;
+        private final String roomCode;
         private final String account;
-        private final Integer total_entry_fee;
-        private final Integer rule_id;
-        private final Long participant_id;
+        private final Integer totalEntryFee;
+        private final Integer ruleId;
+        private final Long participantId;
 
-        public static FindRoomResult findByRoom(Room room, Long participant_id) {
+        public static FindRoomResult findByRoom(Room room, Long participantId) {
             return FindRoomResult.builder()
-                    .room_id(room.getRoomId())
+                    .roomId(room.getRoomId())
                     .title(room.getTitle())
-                    .max_user_num(room.getMaxUserNum())
-                    .current_user_num(room.getCurrentUserNum())
-                    .start_date(room.getStartDate().toString())
+                    .maxUserNum(room.getMaxUserNum())
+                    .currentUserNum(room.getCurrentUserNum())
+                    .startDate(room.getStartDate().toString())
                     .week(room.getWeek())
-                    .current_week(room.getCurrentWeek())
-                    .entry_fee(room.getEntryFee())
-                    .room_code(room.getRoomCode())
+                    .currentWeek(room.getCurrentWeek())
+                    .entryFee(room.getEntryFee())
+                    .roomCode(room.getRoomCode())
                     .account(room.getAccount())
-                    .total_entry_fee(room.getTotalEntryFee())
-                    .rule_id(room.getRuleId())
-                    .participant_id(participant_id)
+                    .totalEntryFee(room.getTotalEntryFee())
+                    .ruleId(room.getRuleId())
+                    .participantId(participantId)
                     .build();
         }
 
         public static FindRoomResult findByRoom(TryEnterView tryEnterView) {
             return FindRoomResult.builder()
-                    .room_id(tryEnterView.getTryEnterId().getRoomId())
+                    .roomId(tryEnterView.getTryEnterId().getRoomId())
                     .title(tryEnterView.getTitle())
-                    .max_user_num(tryEnterView.getMaxUserNum())
-                    .current_user_num(tryEnterView.getCurrentUserNum())
-                    .start_date(tryEnterView.getStartDate().toString())
+                    .maxUserNum(tryEnterView.getMaxUserNum())
+                    .currentUserNum(tryEnterView.getCurrentUserNum())
+                    .startDate(tryEnterView.getStartDate().toString())
                     .week(tryEnterView.getWeek())
-                    .current_week(tryEnterView.getCurrentWeek())
-                    .entry_fee(tryEnterView.getEntryFee())
-                    .room_code(tryEnterView.getRoomCode())
+                    .currentWeek(tryEnterView.getCurrentWeek())
+                    .entryFee(tryEnterView.getEntryFee())
+                    .roomCode(tryEnterView.getRoomCode())
                     .account(tryEnterView.getAccount())
-                    .total_entry_fee(tryEnterView.getTotalEntryFee())
-                    .rule_id(tryEnterView.getRuleId())
+                    .totalEntryFee(tryEnterView.getTotalEntryFee())
+                    .ruleId(tryEnterView.getRuleId())
                     .build();
         }
     }

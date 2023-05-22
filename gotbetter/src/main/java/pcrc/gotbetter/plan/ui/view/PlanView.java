@@ -22,14 +22,14 @@ public class PlanView {
 
     @Builder
     public PlanView(PlanReadUseCase.FindPlanResult planResult) {
-        this.plan_id = planResult.getPlan_id();
-        this.start_date = planResult.getStart_date();
-        this.target_date = planResult.getTarget_date();
+        this.plan_id = planResult.getPlanId();
+        this.start_date = planResult.getStartDate();
+        this.target_date = planResult.getTargetDate();
         this.score = planResult.getScore();
         this.week = planResult.getWeek();
-        this.three_days_passed = planResult.getThree_days_passed();
+        this.three_days_passed = planResult.getThreeDaysPassed();
         this.rejected = planResult.getRejected();
-        this.user_id = planResult.getUser_id();
-        this.room_id = planResult.getRoom_id();
+        this.user_id = planResult.getUserId();
+        this.room_id = planResult.getRoomId();
     }
 }

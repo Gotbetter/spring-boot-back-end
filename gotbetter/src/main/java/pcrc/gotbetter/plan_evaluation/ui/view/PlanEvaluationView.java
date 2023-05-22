@@ -17,9 +17,9 @@ public class PlanEvaluationView {
 
     @Builder
     public PlanEvaluationView(PlanEvaluationReadUseCase.FindPlanEvaluationResult planEvaluationResult) {
-        this.plan_id = planEvaluationResult.getPlan_id();
+        this.plan_id = planEvaluationResult.getPlanId();
         this.rejected = planEvaluationResult.getRejected();
-        this.dislike_count = planEvaluationResult.getDislike_count();
+        this.dislike_count = planEvaluationResult.getDislikeCount();
         this.checked = planEvaluationResult.getChecked();
     }
 }

@@ -10,7 +10,6 @@ import java.util.List;
 @Repository
 public interface DetailPlanEvalRepository
         extends JpaRepository<DetailPlanEval, DetailPlanEvalId>, DetailPlanEvalRepositoryQueryDSL {
-    List<DetailPlanEval> findByDetailPlanEvalIdDetailPlanId(Long detail_plan_id);
-    void deleteByDetailPlanEvalId(DetailPlanEvalId detailPlanEvalId);
-    void deleteByDetailPlanEvalIdDetailPlanId(Long detail_plan_id);
+    List<DetailPlanEval> findByDetailPlanEvalIdDetailPlanId(Long detailPlanId);
+    void deleteByDetailPlanEvalIdDetailPlanId(Long detailPlanId);
 }

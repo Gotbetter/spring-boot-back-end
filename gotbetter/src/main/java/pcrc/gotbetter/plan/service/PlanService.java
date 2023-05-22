@@ -33,10 +33,10 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
 
     @Override
     public List<FindPlanResult> createPlans(PlanCreateCommand command) {
-        EnteredView enteredView = validateEnteredView(command.getParticipant_id());
+        EnteredView enteredView = validateEnteredView(command.getParticipantId());
 
         validateSenderIsLeader(enteredView.getRoomId());
-        validateDuplicateCreatePlans(command.getParticipant_id());
+        validateDuplicateCreatePlans(command.getParticipantId());
 
         List<Plan> plans = new ArrayList<>();
         for (int i = 1;i <= enteredView.getWeek();i++) {
@@ -65,10 +65,10 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
 
     @Override
     public FindPlanResult getWeekPlan(PlanFindQuery query) {
-        EnteredView enteredView = validateEnteredView(query.getParticipant_id());
+        EnteredView enteredView = validateEnteredView(query.getParticipantId());
         validateSenderInRoom(enteredView.getRoomId());
 
-        Plan plan = planRepository.findWeekPlanOfUser(query.getParticipant_id(), query.getWeek());
+        Plan plan = planRepository.findWeekPlanOfUser(query.getParticipantId(), query.getWeek());
         if (plan == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
@@ -78,8 +78,8 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
     /**
      * validate
      */
-    private EnteredView validateEnteredView(Long participant_id) {
-        EnteredView enteredView = viewRepository.enteredByParticipantId(participant_id);
+    private EnteredView validateEnteredView(Long participantId) {
+        EnteredView enteredView = viewRepository.enteredByParticipantId(participantId);
 
         if (enteredView == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
@@ -87,22 +87,22 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
         return enteredView;
     }
 
-    private void validateSenderIsLeader(Long room_id) {
-        long user_id = getCurrentUserId();
-        if (!participantRepository.isMatchedLeader(user_id, room_id)) {
+    private void validateSenderIsLeader(Long roomId) {
+        long currentUserId = getCurrentUserId();
+        if (!participantRepository.isMatchedLeader(currentUserId, roomId)) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
     }
 
-    private void validateDuplicateCreatePlans(Long participant_id) {
-        if (planRepository.existsByParticipantId(participant_id)) {
+    private void validateDuplicateCreatePlans(Long participantId) {
+        if (planRepository.existsByParticipantId(participantId)) {
             throw new GotBetterException(MessageType.CONFLICT);
         }
     }
 
-    private void validateSenderInRoom(Long room_id) {
-        long user_id = getCurrentUserId();
-        if (!viewRepository.enteredExistByUserIdRoomId(user_id, room_id)) {
+    private void validateSenderInRoom(Long roomId) {
+        long currentUserId = getCurrentUserId();
+        if (!viewRepository.enteredExistByUserIdRoomId(currentUserId, roomId)) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
     }

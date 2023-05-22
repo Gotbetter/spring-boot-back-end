@@ -20,12 +20,12 @@ public class UserView {
 
     @Builder
     public UserView(UserReadUseCase.FindUserResult userResult) {
-        this.user_id = userResult.getUser_id();
-        this.auth_id = userResult.getAuth_id();
+        this.user_id = userResult.getUserId();
+        this.auth_id = userResult.getAuthId();
         this.username = userResult.getUsername();
         this.email = userResult.getEmail();
         this.profile = userResult.getProfile();
-        this.access_token = userResult.getAccess_token();
-        this.refresh_token = userResult.getRefresh_token();
+        this.access_token = userResult.getAccessToken();
+        this.refresh_token = userResult.getRefreshToken();
     }
 }

@@ -10,7 +10,7 @@ import java.io.IOException;
 public interface UserReadUseCase {
 
     FindUserResult loginUser(UserFindQuery query);
-    FindUserResult verifyId(String auth_id);
+    FindUserResult verifyId(String authId);
     FindUserResult getUserInfo() throws IOException;
 
     @EqualsAndHashCode(callSuper = false)
@@ -18,7 +18,7 @@ public interface UserReadUseCase {
     @ToString
     @Builder
     class UserFindQuery {
-        private final String auth_id;
+        private final String authId;
         private final String password;
     }
 
@@ -26,23 +26,23 @@ public interface UserReadUseCase {
     @ToString
     @Builder
     class FindUserResult {
-        private final Long user_id;
-        private final String auth_id;
+        private final Long userId;
+        private final String authId;
         private final String username;
         private final String email;
         private final String profile;
-        private final String access_token;
-        private final String refresh_token;
+        private final String accessToken;
+        private final String refreshToken;
 
         public static FindUserResult findByUser(User user, UserSet userSet, TokenInfo tokenInfo) {
             return FindUserResult.builder()
-                    .user_id(user.getUserId())
-                    .auth_id(userSet.getAuthId())
+                    .userId(user.getUserId())
+                    .authId(userSet.getAuthId())
                     .username(user.getUsername())
                     .email(user.getEmail())
                     .profile(user.getProfile())
-                    .access_token(tokenInfo.getAccessToken())
-                    .refresh_token(tokenInfo.getRefreshToken())
+                    .accessToken(tokenInfo.getAccessToken())
+                    .refreshToken(tokenInfo.getRefreshToken())
                     .build();
         }
     }

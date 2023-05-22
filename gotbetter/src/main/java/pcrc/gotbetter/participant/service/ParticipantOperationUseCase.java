@@ -7,7 +7,7 @@ import lombok.ToString;
 import pcrc.gotbetter.room.service.RoomReadUseCase;
 
 public interface ParticipantOperationUseCase {
-    RoomReadUseCase.FindRoomResult requestJoinRoom(String room_code);
+    RoomReadUseCase.FindRoomResult requestJoinRoom(String roomCode);
     ParticipantReadUseCase.FindParticipantResult approveJoinRoom(UserRoomAcceptedUpdateCommand command);
 
     @EqualsAndHashCode(callSuper = false)
@@ -15,7 +15,7 @@ public interface ParticipantOperationUseCase {
     @Getter
     @ToString
     class UserRoomAcceptedUpdateCommand {
-        private final Long user_id;
-        private final Long room_id;
+        private final Long userId;
+        private final Long roomId;
     }
 }

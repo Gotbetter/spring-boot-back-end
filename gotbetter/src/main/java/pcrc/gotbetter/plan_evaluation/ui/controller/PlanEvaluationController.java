@@ -29,7 +29,7 @@ public class PlanEvaluationController {
         log.info("\"CREATE A PLAN DISLIKE\"");
 
         var command = PlanEvaluationOperationUseCase.PlanEvaluationCommand.builder()
-                .plan_id(plan_id)
+                .planId(plan_id)
                 .build();
         PlanEvaluationReadUseCase.FindPlanEvaluationResult result = planEvaluationOperationUseCase.createPlanEvaluation(command);
         return ResponseEntity.created(null).body(PlanEvaluationView.builder().planEvaluationResult(result).build());
@@ -41,7 +41,7 @@ public class PlanEvaluationController {
         log.info("\"GET A PLAN DISLIKE LIST\"");
 
         var query = PlanEvaluationReadUseCase.PlanEvaluationFindQuery.builder()
-                .plan_id(plan_id)
+                .planId(plan_id)
                 .build();
         PlanEvaluationReadUseCase.FindPlanEvaluationResult result = planEvaluationReadUseCase.getPlanDislike(query);
 
@@ -55,7 +55,7 @@ public class PlanEvaluationController {
         log.info("\"DELETE A PLAN DISLIKE\"");
 
         var command = PlanEvaluationOperationUseCase.PlanEvaluationCommand.builder()
-                .plan_id(plan_id)
+                .planId(plan_id)
                 .build();
         planEvaluationOperationUseCase.deletePlanEvaluation(command);
     }

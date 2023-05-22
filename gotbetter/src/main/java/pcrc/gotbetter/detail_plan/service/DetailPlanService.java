@@ -40,10 +40,10 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 
     @Override
     public FindDetailPlanResult createDetailPlan(DetailPlanCreateCommand command) {
-        Plan plan = validatePlan(command.getPlan_id());
-        Long user_id = getCurrentUserId();
+        Plan plan = validatePlan(command.getPlanId());
+        Long currentUserId = getCurrentUserId();
 
-        if (!Objects.equals(user_id, plan.getParticipantInfo().getUserId())) {
+        if (!Objects.equals(currentUserId, plan.getParticipantInfo().getUserId())) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
         validateThreeDaysPassed(plan, roomRepository.findCurrentWeek(plan.getParticipantInfo().getRoomId()));
@@ -58,7 +58,7 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
                         .roomId(plan.getParticipantInfo().getRoomId())
                         .build())
                 .content(command.getContent())
-                .approve_comment(null)
+                .approveComment(null)
                 .complete(false)
                 .rejected(false)
                 .build();
@@ -68,15 +68,15 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
     }
 
     @Override
-    public List<FindDetailPlanResult> getDetailPlans(Long plan_id) {
-        Plan plan = validatePlan(plan_id);
-        Long user_id = getCurrentUserId();
+    public List<FindDetailPlanResult> getDetailPlans(Long planId) {
+        Plan plan = validatePlan(planId);
+        Long currentUserId = getCurrentUserId();
 
-        if (!viewRepository.enteredExistByUserIdRoomId(user_id, plan.getParticipantInfo().getRoomId())) {
+        if (!viewRepository.enteredExistByUserIdRoomId(currentUserId, plan.getParticipantInfo().getRoomId())) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
 
-        List<DetailPlan> detailPlans = detailPlanRepository.findByPlanId(plan_id);
+        List<DetailPlan> detailPlans = detailPlanRepository.findByPlanId(planId);
         List<FindDetailPlanResult> findDetailPlanResults = new ArrayList<>();
 
         for (DetailPlan d : detailPlans) {
@@ -84,7 +84,7 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
             Integer dislike_cnt = detailPlanEvals.size();
             boolean checked = false;
             for (DetailPlanEval de : detailPlanEvals) {
-                if (Objects.equals(de.getDetailPlanEvalId().getUserId(), user_id)) {
+                if (Objects.equals(de.getDetailPlanEvalId().getUserId(), currentUserId)) {
                     checked = true;
                     break;
                 }
@@ -96,62 +96,62 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 
     @Override
     public FindDetailPlanResult updateDetailPlan(DetailPlanUpdateCommand command) {
-        DetailPlan detailPlan = validateDetailPlan(command.getDetail_plan_id(), command.getPlan_id());
+        DetailPlan detailPlan = validateDetailPlan(command.getDetailPlanId(), command.getPlanId());
 
         validateThreeDaysPassed(validatePlan(detailPlan.getPlanId()),
                 roomRepository.findCurrentWeek(detailPlan.getParticipantInfo().getRoomId()));
 
-        detailPlanRepository.updateDetailContent(command.getDetail_plan_id(), command.getContent());
+        detailPlanRepository.updateDetailContent(command.getDetailPlanId(), command.getContent());
         // detail plan eval 삭제하고, 완료 사항도 삭제?
         List<DetailPlanEval> detailPlanEvals = detailPlanEvalRepository.findByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());
         return FindDetailPlanResult.builder()
-                .detail_plan_id(command.getDetail_plan_id())
+                .detailPlanId(command.getDetailPlanId())
                 .content(command.getContent())
                 .complete(detailPlan.getComplete())
-                .approve_comment(detailPlan.getApprove_comment() == null ? "" : detailPlan.getApprove_comment())
+                .approveComment(detailPlan.getApproveComment() == null ? "" : detailPlan.getApproveComment())
                 .rejected(detailPlan.getRejected())
-                .plan_id(detailPlan.getPlanId())
-                .detail_plan_dislike_count(detailPlanEvals.size())
-                .detail_plan_dislike_checked(false)
+                .planId(detailPlan.getPlanId())
+                .detailPlanDislikeCount(detailPlanEvals.size())
+                .detailPlanDislikeChecked(false)
                 .build();
     }
 
     @Override
     public void deleteDetailPlan(DetailPlanDeleteCommand command) {
-        DetailPlan detailPlan = validateDetailPlan(command.getDetail_plan_id(), command.getPlan_id());
+        DetailPlan detailPlan = validateDetailPlan(command.getDetailPlanId(), command.getPlanId());
 
         validateThreeDaysPassed(validatePlan(detailPlan.getPlanId()),
                 roomRepository.findCurrentWeek(detailPlan.getParticipantInfo().getRoomId()));
 
-        detailPlanRepository.deleteDetailPlan(command.getDetail_plan_id());
+        detailPlanRepository.deleteDetailPlan(command.getDetailPlanId());
     }
 
     /**
      * validate
      */
-    private Plan validatePlan(Long plan_id) {
-        return planRepository.findByPlanId(plan_id)
+    private Plan validatePlan(Long planId) {
+        return planRepository.findByPlanId(planId)
                 .orElseThrow(() -> {
                     throw new GotBetterException(MessageType.NOT_FOUND);
                 });
     }
 
-    private DetailPlan validateDetailPlan(Long detail_plan_id, Long plan_id) {
-        DetailPlan detailPlan = detailPlanRepository.findByDetailPlanId(detail_plan_id);
+    private DetailPlan validateDetailPlan(Long detailPlanId, Long planId) {
+        DetailPlan detailPlan = detailPlanRepository.findByDetailPlanId(detailPlanId);
 
         if (detailPlan == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
         Long user_id = getCurrentUserId();
-        if (!(Objects.equals(detailPlan.getPlanId(), plan_id)
+        if (!(Objects.equals(detailPlan.getPlanId(), planId)
                 && Objects.equals(detailPlan.getParticipantInfo().getUserId(), user_id))) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
         return detailPlan;
     }
 
-    private void validateThreeDaysPassed(Plan plan, Integer current_week) {
-        if (!Objects.equals(current_week, plan.getWeek())) {
+    private void validateThreeDaysPassed(Plan plan, Integer currentWeek) {
+        if (!Objects.equals(currentWeek, plan.getWeek())) {
             throw new GotBetterException(MessageType.FORBIDDEN_DATE);
         } else {
             if (plan.getStartDate().isAfter(LocalDate.now())

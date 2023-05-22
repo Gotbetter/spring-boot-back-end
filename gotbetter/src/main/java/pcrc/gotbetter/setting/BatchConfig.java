@@ -50,13 +50,13 @@ public class BatchConfig {
     public Job job() {
         log.info("\">>>>> Run Job <<<<<\"");
         return new JobBuilder("job", jobRepository)
-                .start(step_three_days_passed())
-                .next(step_week_pass())
-                .next(step_update_refund())
+                .start(stepThreeDaysPassed())
+                .next(stepWeekPass())
+                .next(stepUpdateRefund())
                 .build();
     }
 
-    private Step step_three_days_passed() {
+    private Step stepThreeDaysPassed() {
         return new StepBuilder("step_three_days_passed", jobRepository)
                 .tasklet((StepContribution contribution, ChunkContext chunkContext) -> {
                     log.info("\">>> step_three_days_passed <<<\"");
@@ -75,7 +75,7 @@ public class BatchConfig {
                 .build();
     }
 
-    private Step step_week_pass() {
+    private Step stepWeekPass() {
         return new StepBuilder("step_week_pass", jobRepository)
                 .tasklet((StepContribution contribution, ChunkContext chunkContext) -> {
                     log.info("\">>> step_week_pass <<<\"");
@@ -84,11 +84,11 @@ public class BatchConfig {
                     for (Room room : roomList) {
                         LocalDate lastDate = room.getStartDate().plusDays(7L * room.getCurrentWeek() - 1);
                         if (lastDate.isBefore(now)) {
-                            update_percent_sum(room.getRoomId(), room.getCurrentWeek());
-                            int next_week = room.getCurrentWeek() + 1;
-                            roomRepository.updateCurrentWeek(room.getRoomId(), next_week);
+                            updatePercentSum(room.getRoomId(), room.getCurrentWeek());
+                            int nextWeek = room.getCurrentWeek() + 1;
+                            roomRepository.updateCurrentWeek(room.getRoomId(), nextWeek);
                             log.info("room_id: " + room.getRoomId() + ", start_date: " + room.getStartDate()
-                                    + ", current_week/week: " + next_week + "/" + room.getWeek());
+                                    + ", current_week/week: " + nextWeek + "/" + room.getWeek());
                         }
                     }
                     return RepeatStatus.FINISHED;
@@ -96,7 +96,7 @@ public class BatchConfig {
                 .build();
     }
 
-    private Step step_update_refund() {
+    private Step stepUpdateRefund() {
         return new StepBuilder("step_update_refund", jobRepository)
                 .tasklet((StepContribution contribution, ChunkContext chunkContext) -> {
                     log.info("\">>> step_update_refund <<<\"");
@@ -105,7 +105,7 @@ public class BatchConfig {
                     for (Room room : roomList) {
                         LocalDate lastDate = room.getStartDate().plusDays(7L * room.getCurrentWeek());
                         if (lastDate.isEqual(now)) {
-                            update_percent_sum(room.getRoomId(), room.getCurrentWeek());
+                            updatePercentSum(room.getRoomId(), room.getCurrentWeek());
                             update_refund(room.getRoomId());
                         }
                     }
@@ -114,9 +114,9 @@ public class BatchConfig {
                 .build();
     }
 
-    private void update_percent_sum(Long room_id, Integer passedWeek) {
+    private void updatePercentSum(Long roomId, Integer passedWeek) {
         log.info("\"update percent sum\"");
-        List<Plan> planList = planRepository.findListByRoomId(room_id, passedWeek);
+        List<Plan> planList = planRepository.findListByRoomId(roomId, passedWeek);
         for (Plan plan : planList) {
             if (!plan.getRejected()) {
                 log.info("1. room_id: " + plan.getParticipantInfo().getRoomId()
@@ -138,9 +138,9 @@ public class BatchConfig {
         }
     }
 
-    private void update_refund(Long room_id) {
+    private void update_refund(Long roomId) {
         log.info("\"update refund\"");
-        List<EnteredView> enteredViewList = viewRepository.enteredListByRoomId(room_id);
+        List<EnteredView> enteredViewList = viewRepository.enteredListByRoomId(roomId);
         enteredViewList.sort((o1, o2) -> (int) (o2.getPercentSum() - o1.getPercentSum()));
         int rank = 1;
         for (EnteredView enteredView : enteredViewList) {

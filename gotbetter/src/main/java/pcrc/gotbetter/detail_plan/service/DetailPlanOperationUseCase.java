@@ -16,7 +16,7 @@ public interface DetailPlanOperationUseCase {
     @Getter
     @ToString
     class DetailPlanCreateCommand {
-        private final Long plan_id;
+        private final Long planId;
         private final String content;
     }
 
@@ -25,8 +25,8 @@ public interface DetailPlanOperationUseCase {
     @Getter
     @ToString
     class DetailPlanUpdateCommand {
-        private final Long detail_plan_id;
-        private final Long plan_id;
+        private final Long detailPlanId;
+        private final Long planId;
         private final String content;
     }
 
@@ -35,7 +35,7 @@ public interface DetailPlanOperationUseCase {
     @Getter
     @ToString
     class DetailPlanDeleteCommand {
-        private final Long detail_plan_id;
-        private final Long plan_id;
+        private final Long detailPlanId;
+        private final Long planId;
     }
 }

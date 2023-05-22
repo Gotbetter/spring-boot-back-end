@@ -10,26 +10,26 @@ public interface DetailPlanEvalReadUseCase {
     @ToString
     @Builder
     class FindDetailPlanEvalResult {
-        private final Long detail_plan_id;
+        private final Long detailPlanId;
         private final String content;
         private final Boolean complete;
-        private final String approve_comment;
+        private final String approveComment;
         private final Boolean rejected;
-        private final Long plan_id;
-        private final Integer detail_plan_dislike_count;
-        private final Boolean detail_plan_dislike_checked;
+        private final Long planId;
+        private final Integer detailPlanDislikeCount;
+        private final Boolean detailPlanDislikeChecked;
 
         public static FindDetailPlanEvalResult findByDetailPlanEval(DetailPlan detailPlan,
-                                                                    Integer dislike_count, Boolean checked) {
+                                                                    Integer dislikeCount, Boolean checked) {
             return FindDetailPlanEvalResult.builder()
-                    .detail_plan_id(detailPlan.getDetailPlanId())
+                    .detailPlanId(detailPlan.getDetailPlanId())
                     .content(detailPlan.getContent())
                     .complete(detailPlan.getComplete())
-                    .approve_comment(detailPlan.getApprove_comment())
+                    .approveComment(detailPlan.getApproveComment())
                     .rejected(detailPlan.getRejected())
-                    .plan_id(detailPlan.getPlanId())
-                    .detail_plan_dislike_count(dislike_count)
-                    .detail_plan_dislike_checked(checked)
+                    .planId(detailPlan.getPlanId())
+                    .detailPlanDislikeCount(dislikeCount)
+                    .detailPlanDislikeChecked(checked)
                     .build();
         }
     }

@@ -58,12 +58,12 @@ public class RoomController {
 
         var command = RoomOperationUseCase.RoomCreateCommand.builder()
                 .title(request.getTitle())
-                .max_user_num(request.getMax_user_num())
-                .start_date(request.getStart_date())
+                .maxUserNum(request.getMax_user_num())
+                .startDate(request.getStart_date())
                 .week(request.getWeek())
-                .current_week(request.getCurrent_week())
-                .entry_fee(request.getEntry_fee())
-                .rule_id(request.getRule_id())
+                .currentWeek(request.getCurrent_week())
+                .entryFee(request.getEntry_fee())
+                .ruleId(request.getRule_id())
                 .account(request.getAccount())
                 .build();
         RoomReadUseCase.FindRoomResult result = roomOperationUseCase.createRoom(command);
