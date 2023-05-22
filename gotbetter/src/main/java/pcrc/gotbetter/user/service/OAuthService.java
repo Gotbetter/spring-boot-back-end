@@ -1,8 +1,5 @@
-package pcrc.gotbetter.user.login_method.oauth;
+package pcrc.gotbetter.user.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.json.simple.parser.ParseException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pcrc.gotbetter.user.data_access.entity.SocialAccount;
 import pcrc.gotbetter.user.data_access.entity.User;
@@ -11,46 +8,32 @@ import pcrc.gotbetter.user.data_access.repository.UserRepository;
 import pcrc.gotbetter.user.login_method.jwt.config.JwtProvider;
 import pcrc.gotbetter.user.login_method.jwt.config.TokenInfo;
 import pcrc.gotbetter.user.login_method.login_type.ProviderType;
-import pcrc.gotbetter.user.login_method.oauth.google.GoogleOAuthToken;
-import pcrc.gotbetter.user.login_method.oauth.google.GoogleUser;
 
 @Service
-public class OAuthService {
-    private final OauthInterface oauthInterface;
+public class OAuthService implements OAuthOperationUseCase {
     private final UserRepository userRepository;
     private final SocialAccountRepository socialAccountRepository;
     private final JwtProvider jwtProvider;
 
-    @Autowired
-    public OAuthService(OauthInterface oauthInterface, UserRepository userRepository,
-                        SocialAccountRepository socialAccountRepository, JwtProvider jwtProvider) {
-        this.oauthInterface = oauthInterface;
+    public OAuthService(UserRepository userRepository, SocialAccountRepository socialAccountRepository, JwtProvider jwtProvider) {
         this.userRepository = userRepository;
         this.socialAccountRepository = socialAccountRepository;
         this.jwtProvider = jwtProvider;
     }
 
-    public String forCodeUrl() {
-        return oauthInterface.getOAuthRedirectURL();
-    }
-
-    public TokenInfo oAuthLogin (String code) throws JsonProcessingException, ParseException {
-        // get access token
-        GoogleOAuthToken googleOAuthToken = oauthInterface.requestAccessToken(code);
-        // get user info
-        GoogleUser googleUser = oauthInterface.requestUserInfo(googleOAuthToken);
-
+    @Override
+    public TokenInfo oAuthLogin(OAuthLoginCommand command) {
         Long userId;
         // 유저 정보 저장 (insert or select)
-        if (socialAccountRepository.existsByProviderTypeAndProviderId(ProviderType.GOOGLE, googleUser.id)) {
-            User findUser = userRepository.findByEmail(googleUser.email);
+        if (socialAccountRepository.existsByProviderTypeAndProviderId(ProviderType.GOOGLE, command.getId())) {
+            User findUser = userRepository.findByEmail(command.getEmail());
             userId = findUser.getUserId();
         } else {
-            User findUser = userRepository.findByEmail(googleUser.email);
+            User findUser = userRepository.findByEmail(command.getEmail());
             if (findUser == null) {
                 findUser = User.builder()
-                        .username(googleUser.name)
-                        .email(googleUser.email)
+                        .username(command.getName())
+                        .email(command.getEmail())
 //                        .profile()
                         .build();
                 userRepository.save(findUser);
@@ -58,7 +41,7 @@ public class OAuthService {
             SocialAccount saveSocialAccount = SocialAccount.builder()
                     .userId(findUser.getUserId())
                     .providerType(ProviderType.GOOGLE)
-                    .providerId(googleUser.id)
+                    .providerId(command.getId())
                     .build();
             socialAccountRepository.save(saveSocialAccount);
             userId = findUser.getUserId();

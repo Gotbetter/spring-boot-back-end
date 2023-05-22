@@ -15,6 +15,7 @@ import pcrc.gotbetter.room.service.RoomReadUseCase;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
+import pcrc.gotbetter.user.data_access.repository.UserSetRepository;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -30,15 +31,18 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
     private final ParticipateRepository participateRepository;
     private final RoomRepository roomRepository;
     private final ViewRepository viewRepository;
+    private final UserSetRepository userSetRepository;
 
     @Autowired
     public ParticipantService(ParticipantRepository participantRepository,
                               ParticipateRepository participateRepository,
-                              RoomRepository roomRepository, ViewRepository viewRepository) {
+                              RoomRepository roomRepository, ViewRepository viewRepository,
+                              UserSetRepository userSetRepository) {
         this.participantRepository = participantRepository;
         this.participateRepository = participateRepository;
         this.roomRepository = roomRepository;
         this.viewRepository = viewRepository;
+        this.userSetRepository = userSetRepository;
     }
 
     @Override
@@ -70,14 +74,16 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
             validateUserInRoom(room_id, false);
             List<EnteredView> enteredViewList = viewRepository.enteredListByRoomId(room_id);
             for (EnteredView p : enteredViewList) {
-                result.add(FindParticipantResult.findByParticipant(p));
+                String authId = validateUserSetAuthId(p.getUserId());
+                result.add(FindParticipantResult.findByParticipant(p, authId));
             }
         } else {
             validateUserInRoom(room_id, true);
             List<TryEnterView> tryEnterViewList = viewRepository
                     .tryEnterListByUserIdRoomId(null, room_id, false);
             for (TryEnterView p : tryEnterViewList) {
-                result.add(FindParticipantResult.findByParticipant(p, -1L, false));
+                String authId = validateUserSetAuthId(p.getTryEnterId().getUserId());
+                result.add(FindParticipantResult.findByParticipant(p, -1L, false, authId));
             }
         }
         return result;
@@ -106,8 +112,9 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
         participantRepository.save(participant);
         participantRepository.updateParticipateAccepted(targetUserInfo.getTryEnterId().getUserId(), targetUserInfo.getTryEnterId().getRoomId());
         roomRepository.updatePlusTotalEntryFeeAndCurrentNum(command.getRoom_id(), targetUserInfo.getEntryFee());
+        String authId = validateUserSetAuthId(targetUserInfo.getTryEnterId().getUserId());
         return FindParticipantResult.findByParticipant(targetUserInfo,
-                participant.getParticipantId(), null);
+                participant.getParticipantId(), null, authId);
     }
 
     @Override
@@ -171,5 +178,13 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
         if (need_leader && !enteredView.getAuthority()) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
+    }
+
+    private String validateUserSetAuthId(Long userId) {
+        String authId = userSetRepository.findAuthIdByUserId(userId);
+        if (authId == null) {
+            throw new GotBetterException(MessageType.NOT_FOUND);
+        }
+        return authId;
     }
 }

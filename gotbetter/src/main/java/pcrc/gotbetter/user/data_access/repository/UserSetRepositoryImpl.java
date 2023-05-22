@@ -52,6 +52,15 @@ public class UserSetRepositoryImpl implements UserSetRepositoryQueryDSL {
                 .fetchFirst();
     }
 
+    @Override
+    public String findAuthIdByUserId(Long userId) {
+        return queryFactory
+                .select(userSet.authId)
+                .from(userSet)
+                .where(eqUserId(userId))
+                .fetchFirst();
+    }
+
     /**
      * userSet eq
      */

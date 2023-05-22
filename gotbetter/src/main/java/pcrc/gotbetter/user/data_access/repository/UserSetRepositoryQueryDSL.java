@@ -10,4 +10,5 @@ public interface UserSetRepositoryQueryDSL {
     Boolean existsByAuthId(String authId);
     UserSet findByUserId(Long userId);
     UserSet findByAuthId(String authId);
+    String findAuthIdByUserId(Long userId);
 }

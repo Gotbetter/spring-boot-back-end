@@ -52,8 +52,8 @@ public class SecurityConfig implements WebMvcConfigurer {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        String[] uriPost = {"/users", "/users/verify", "/users/login", "/users/reissue"};
-        String[] uriGet = {"/rules", "/oauth/redirect", "/oauth"};
+        String[] uriPost = {"/users", "/users/verify", "/users/login", "/users/reissue", "/oauth"};
+        String[] uriGet = {"/rules"};
 
         http.cors().configurationSource(corsConfigurationSource());
         http.httpBasic().disable()
