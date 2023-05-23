@@ -29,6 +29,7 @@ public class UserRepositoryImpl implements UserRepositoryQueryDSL {
     }
 
     @Override
+    @Transactional
     public void updateUsername(Long userId, String username) {
         queryFactory
                 .update(user)
