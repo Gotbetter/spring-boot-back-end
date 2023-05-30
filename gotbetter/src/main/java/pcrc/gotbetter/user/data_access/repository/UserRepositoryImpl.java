@@ -39,6 +39,16 @@ public class UserRepositoryImpl implements UserRepositoryQueryDSL {
     }
 
     @Override
+    @Transactional
+    public void updateFcmToken(Long userId, String fcmToken) {
+        queryFactory
+            .update(user)
+            .where(eqUserId(userId))
+            .set(user.fcmToken, fcmToken)
+            .execute();
+    }
+
+    @Override
     public Long findUserIdByEmail(String email) {
         return queryFactory
                 .select(user.userId)
