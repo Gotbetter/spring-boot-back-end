@@ -6,6 +6,7 @@ public interface UserRepositoryQueryDSL {
     // insert, update, delete
     void updateRefreshToken(Long userId, String refreshToken);
     void updateUsername(Long userId, String username);
+    void updateFcmToken(Long userId, String fcmToken);
 
     // select
     Long findUserIdByEmail(String email);
