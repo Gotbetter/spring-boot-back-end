@@ -1,13 +1,19 @@
 package pcrc.gotbetter.plan.data_access.repository;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.transaction.annotation.Transactional;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 import static pcrc.gotbetter.plan.data_access.entity.QPlan.plan;
+import static pcrc.gotbetter.room.data_access.entity.QRoom.*;
 
 public class PlanRepositoryImpl implements PlanRepositoryQueryDSL{
     private final JPAQueryFactory queryFactory;
@@ -61,6 +67,43 @@ public class PlanRepositoryImpl implements PlanRepositoryQueryDSL{
                 .selectFrom(plan)
                 .where(eqRoomId(roomId), eqWeek(passedWeek))
                 .fetch();
+    }
+
+    @Override
+    public List<HashMap<String, Object>> findPushNotification() {
+        List<Tuple> tuples = queryFactory
+            .select(room.roomId, room.title, room.startDate, room.week, room.currentWeek,
+                plan.participantInfo.userId, plan.startDate, plan.threeDaysPassed)
+            .from(room)
+            .leftJoin(plan).on(room.roomId.eq(plan.participantInfo.roomId))
+            .where(room.currentWeek.eq(plan.week))
+            .fetch();
+        List<HashMap<String, Object>> result = new ArrayList<>();
+        LocalDate now = LocalDate.now();
+        for (Tuple tuple: tuples) {
+            Integer week = tuple.get(room.week);
+            Integer currentWeek = tuple.get(room.currentWeek);
+            LocalDate startDate = tuple.get(room.startDate);
+            if (Objects.equals(week, currentWeek)) {
+                assert startDate != null;
+                assert currentWeek != null;
+                LocalDate lastDate = startDate.plusDays(7L * currentWeek - 1);
+                if (now.isAfter(lastDate)) {
+                    continue;
+                }
+            }
+            HashMap<String, Object> hashMap = new HashMap<>();
+            hashMap.put("roomId", tuple.get(room.roomId));
+            hashMap.put("title", tuple.get(room.title));
+            hashMap.put("startDate", tuple.get(room.startDate));
+            hashMap.put("week", tuple.get(room.week));
+            hashMap.put("currentWeek", tuple.get(room.currentWeek));
+            hashMap.put("userId", tuple.get(plan.participantInfo.userId));
+            hashMap.put("planStartDate", tuple.get(plan.startDate));
+            hashMap.put("threeDaysPassed", tuple.get(plan.threeDaysPassed));
+            result.add(hashMap);
+        }
+        return result;
     }
 
     /**
