@@ -34,6 +34,7 @@ public class Room {
     @Column(name = "room_code")
     private String roomCode;
     private String account;
+    private String description;
     @Column(name = "total_entry_fee")
     private Integer totalEntryFee;
     @Column(name = "rule_id")
@@ -42,7 +43,7 @@ public class Room {
     @Builder
     public Room(Long roomId, String title, Integer maxUserNum, Integer currentUserNum,
                 LocalDate startDate, Integer week, Integer currentWeek,
-                Integer entryFee, String roomCode, String account,
+                Integer entryFee, String roomCode, String account, String description,
                 Integer totalEntryFee, Integer ruleId) {
         this.roomId = roomId;
         this.title = title;
@@ -54,6 +55,7 @@ public class Room {
         this.entryFee = entryFee;
         this.roomCode = roomCode;
         this.account = account;
+        this.description = description;
         this.totalEntryFee = totalEntryFee;
         this.ruleId = ruleId;
     }

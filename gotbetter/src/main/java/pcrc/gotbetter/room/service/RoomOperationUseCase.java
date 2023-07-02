@@ -22,5 +22,6 @@ public interface RoomOperationUseCase {
         private final Integer entryFee;
         private final Integer ruleId;
         private final String account;
+        private final String description;
     }
 }

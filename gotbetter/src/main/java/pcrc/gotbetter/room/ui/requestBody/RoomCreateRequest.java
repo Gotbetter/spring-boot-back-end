@@ -26,4 +26,5 @@ public class RoomCreateRequest {
     private Integer rule_id;
     @NotNull @NotBlank
     private String account;
+    private String description;
 }

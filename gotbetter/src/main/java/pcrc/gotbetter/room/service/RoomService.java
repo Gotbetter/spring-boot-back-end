@@ -47,10 +47,6 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 
         for (TryEnterView t : tryEnterViewList) {
             result.add(FindRoomResult.findByRoom(t));
-//            result.add(FindRoomResult.builder()
-//                    .room_id(t.getTryEnterId().getRoomId())
-//                    .title(t.getTitle())
-//                    .build());
         }
         return result;
     }
@@ -86,6 +82,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
                 .entryFee(command.getEntryFee())
                 .roomCode(roomCode)
                 .account(command.getAccount())
+                .description(command.getDescription())
                 .totalEntryFee(command.getEntryFee())
                 .ruleId(command.getRuleId())
                 .build();
