@@ -28,6 +28,7 @@ public interface RoomReadUseCase {
         private final Integer entryFee;
         private final String roomCode;
         private final String account;
+        private final String description;
         private final Integer totalEntryFee;
         private final Integer ruleId;
         private final Long participantId;
@@ -44,6 +45,7 @@ public interface RoomReadUseCase {
                     .entryFee(room.getEntryFee())
                     .roomCode(room.getRoomCode())
                     .account(room.getAccount())
+                    .description(room.getDescription() == null ? "" : room.getDescription())
                     .totalEntryFee(room.getTotalEntryFee())
                     .ruleId(room.getRuleId())
                     .participantId(participantId)
@@ -62,6 +64,7 @@ public interface RoomReadUseCase {
                     .entryFee(tryEnterView.getEntryFee())
                     .roomCode(tryEnterView.getRoomCode())
                     .account(tryEnterView.getAccount())
+                    .description(tryEnterView.getDescription() == null ? "" : tryEnterView.getDescription())
                     .totalEntryFee(tryEnterView.getTotalEntryFee())
                     .ruleId(tryEnterView.getRuleId())
                     .build();

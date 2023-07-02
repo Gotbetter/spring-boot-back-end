@@ -20,6 +20,7 @@ public class RoomView {
     private final Integer entry_fee;
     private final String room_code;
     private final String account;
+    private final String description;
     private final Integer total_entry_fee;
     private final Integer rule_id;
     private final Long participant_id;
@@ -36,6 +37,7 @@ public class RoomView {
         this.entry_fee = roomResult.getEntryFee();
         this.room_code = roomResult.getRoomCode();
         this.account = roomResult.getAccount();
+        this.description = roomResult.getDescription();
         this.total_entry_fee = roomResult.getTotalEntryFee();
         this.rule_id = roomResult.getRuleId();
         this.participant_id = roomResult.getParticipantId();
