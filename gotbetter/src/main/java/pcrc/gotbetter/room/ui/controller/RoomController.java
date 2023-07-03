@@ -65,6 +65,7 @@ public class RoomController {
                 .entryFee(request.getEntry_fee())
                 .ruleId(request.getRule_id())
                 .account(request.getAccount())
+                .roomCategoryCode(request.getRoom_category_code())
                 .description(request.getDescription())
                 .build();
         RoomReadUseCase.FindRoomResult result = roomOperationUseCase.createRoom(command);

@@ -3,6 +3,9 @@ package pcrc.gotbetter.room.service;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pcrc.gotbetter.common.data_access.entity.CommonCode;
+import pcrc.gotbetter.common.data_access.entity.CommonCodeId;
+import pcrc.gotbetter.common.data_access.repository.CommonCodeRepository;
 import pcrc.gotbetter.participant.data_access.entity.Participant;
 import pcrc.gotbetter.participant.data_access.entity.Participate;
 import pcrc.gotbetter.participant.data_access.entity.ParticipateId;
@@ -28,14 +31,17 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     private final ParticipateRepository participateRepository;
     private final ParticipantRepository participantRepository;
     private final ViewRepository viewRepository;
+    private final CommonCodeRepository commonCodeRepository;
 
     @Autowired
     public RoomService(RoomRepository roomRepository, ParticipateRepository participateRepository,
-                       ParticipantRepository participantRepository, ViewRepository viewRepository) {
+                       ParticipantRepository participantRepository, ViewRepository viewRepository,
+                       CommonCodeRepository commonCodeRepository) {
         this.roomRepository = roomRepository;
         this.participateRepository = participateRepository;
         this.participantRepository = participantRepository;
         this.viewRepository = viewRepository;
+        this.commonCodeRepository = commonCodeRepository;
     }
 
     @Override
@@ -44,9 +50,16 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
         List<FindRoomResult> result = new ArrayList<>();
         List<TryEnterView> tryEnterViewList = viewRepository
                 .tryEnterListByUserIdRoomId(currentUserId, null, true);
+        // room_category 리스트 가져오기
+        List<CommonCode> roomCategories = commonCodeRepository.findRoomCategories();
+        HashMap<String, CommonCode> roomCategoriesMap = new HashMap<>();
+        for (CommonCode roomCategory : roomCategories) {
+            roomCategoriesMap.put(roomCategory.getCommonCodeId().getCode(), roomCategory);
+        }
 
         for (TryEnterView t : tryEnterViewList) {
-            result.add(FindRoomResult.findByRoom(t));
+            CommonCode roomCategoryInfo = roomCategoriesMap.get(t.getRoomCategory());
+            result.add(FindRoomResult.findByRoom(t, roomCategoryInfo.getCodeDescription()));
         }
         return result;
     }
@@ -59,7 +72,8 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
         if (tryEnterView == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
-        return FindRoomResult.findByRoom(tryEnterView);
+        CommonCode roomCategoryInfo = findRoomCategoryInfo(tryEnterView.getRoomCategory());
+        return FindRoomResult.findByRoom(tryEnterView, roomCategoryInfo.getCodeDescription());
     }
 
     @Override
@@ -69,8 +83,20 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
         LocalDate startDate = LocalDate.parse(command.getStartDate(), DateTimeFormatter.ISO_DATE);
 
         if (startDate.isBefore(LocalDate.now())) {
+            throw new GotBetterException(MessageType.FORBIDDEN_DATE);
+        }
+
+        // category
+        CommonCode roomCategoryInfo = findRoomCategoryInfo(command.getRoomCategoryCode());
+
+        // ruleId가 디비에 있는지 확인 - 일단은 이것만
+        if (!commonCodeRepository.existsByCommonCodeId(CommonCodeId.builder()
+                .groupCode("RULE").code(command.getRuleId()).build())) {
+            System.out.println("22");
             throw new GotBetterException(MessageType.BAD_REQUEST);
         }
+
+        // ruleId가 커스텀된 것일 때 적용
 
         Room room = Room.builder()
                 .title(command.getTitle())
@@ -82,6 +108,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
                 .entryFee(command.getEntryFee())
                 .roomCode(roomCode)
                 .account(command.getAccount())
+                .roomCategory(roomCategoryInfo.getCommonCodeId().getCode())
                 .description(command.getDescription())
                 .totalEntryFee(command.getEntryFee())
                 .ruleId(command.getRuleId())
@@ -105,7 +132,8 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
                 .build();
         participantRepository.save(participant);
 
-        return FindRoomResult.findByRoom(room, participant.getParticipantId());
+        return FindRoomResult.findByRoom(room, participant.getParticipantId(),
+                roomCategoryInfo.getCodeDescription());
     }
 
     @Override
@@ -189,5 +217,17 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
             roomCode = RandomStringUtils.random(randomStrLen, useLetters, useNumbers);
         } while (roomRepository.existByRoomCode(roomCode));
         return roomCode;
+    }
+
+    private CommonCode findRoomCategoryInfo(String roomCategoryCode) {
+        if (roomCategoryCode == null) {
+            return commonCodeRepository.findRoomCategoryInfo("ETC");
+        } else {
+            CommonCode roomCategoryInfo = commonCodeRepository.findRoomCategoryInfo(roomCategoryCode);
+            if (roomCategoryInfo == null) {
+                throw new GotBetterException(MessageType.BAD_REQUEST);
+            }
+            return roomCategoryInfo;
+        }
     }
 }

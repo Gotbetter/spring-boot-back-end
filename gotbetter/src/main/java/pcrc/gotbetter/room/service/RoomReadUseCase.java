@@ -28,12 +28,13 @@ public interface RoomReadUseCase {
         private final Integer entryFee;
         private final String roomCode;
         private final String account;
+        private final String roomCategory;
         private final String description;
         private final Integer totalEntryFee;
-        private final Integer ruleId;
+        private final String ruleId;
         private final Long participantId;
 
-        public static FindRoomResult findByRoom(Room room, Long participantId) {
+        public static FindRoomResult findByRoom(Room room, Long participantId, String roomCategory) {
             return FindRoomResult.builder()
                     .roomId(room.getRoomId())
                     .title(room.getTitle())
@@ -45,6 +46,7 @@ public interface RoomReadUseCase {
                     .entryFee(room.getEntryFee())
                     .roomCode(room.getRoomCode())
                     .account(room.getAccount())
+                    .roomCategory(roomCategory)
                     .description(room.getDescription() == null ? "" : room.getDescription())
                     .totalEntryFee(room.getTotalEntryFee())
                     .ruleId(room.getRuleId())
@@ -52,7 +54,7 @@ public interface RoomReadUseCase {
                     .build();
         }
 
-        public static FindRoomResult findByRoom(TryEnterView tryEnterView) {
+        public static FindRoomResult findByRoom(TryEnterView tryEnterView, String roomCategory) {
             return FindRoomResult.builder()
                     .roomId(tryEnterView.getTryEnterId().getRoomId())
                     .title(tryEnterView.getTitle())
@@ -64,6 +66,7 @@ public interface RoomReadUseCase {
                     .entryFee(tryEnterView.getEntryFee())
                     .roomCode(tryEnterView.getRoomCode())
                     .account(tryEnterView.getAccount())
+                    .roomCategory(roomCategory)
                     .description(tryEnterView.getDescription() == null ? "" : tryEnterView.getDescription())
                     .totalEntryFee(tryEnterView.getTotalEntryFee())
                     .ruleId(tryEnterView.getRuleId())

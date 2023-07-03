@@ -20,8 +20,9 @@ public interface RoomOperationUseCase {
         private final Integer week;
         private final Integer currentWeek;
         private final Integer entryFee;
-        private final Integer ruleId;
+        private final String ruleId;
         private final String account;
+        private final String roomCategoryCode;
         private final String description;
     }
 }
