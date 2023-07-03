@@ -37,9 +37,10 @@ public class TryEnterView {
     @Column(name = "room_code")
     private String roomCode;
     private String account;
+    @Column(name = "room_category")
+    private String roomCategory;
     private String description;
     @Column(name = "total_entry_fee")
     private Integer totalEntryFee;
-    @Column(name = "rule_id")
-    private Integer ruleId;
+    private String rule;
 }

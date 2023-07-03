@@ -63,8 +63,9 @@ public class RoomController {
                 .week(request.getWeek())
                 .currentWeek(request.getCurrent_week())
                 .entryFee(request.getEntry_fee())
-                .ruleId(request.getRule_id())
+                .ruleCode(request.getRule_code())
                 .account(request.getAccount())
+                .roomCategoryCode(request.getRoom_category_code())
                 .description(request.getDescription())
                 .build();
         RoomReadUseCase.FindRoomResult result = roomOperationUseCase.createRoom(command);
