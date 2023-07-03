@@ -7,7 +7,6 @@ import java.util.List;
 
 public interface CommonCodeRepositoryQueryDSL {
     // select
-    Boolean existsByCommonCodeId(CommonCodeId commonCodeId);
-    CommonCode findRoomCategoryInfo(String roomCategory);
-    List<CommonCode> findRoomCategories();
+    CommonCode findByCommonCodeId(CommonCodeId commonCodeId);
+    List<CommonCode> findListByGroupCode(String groupCode);
 }

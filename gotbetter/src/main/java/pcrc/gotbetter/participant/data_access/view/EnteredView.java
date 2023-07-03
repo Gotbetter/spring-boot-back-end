@@ -48,6 +48,5 @@ public class EnteredView {
     private String account;
     @Column(name = "total_entry_fee")
     private Integer totalEntryFee;
-    @Column(name = "rule_id")
-    private Integer ruleId;
+    private String rule;
 }

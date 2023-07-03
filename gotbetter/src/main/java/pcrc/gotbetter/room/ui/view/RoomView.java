@@ -23,7 +23,7 @@ public class RoomView {
     private final String room_category;
     private final String description;
     private final Integer total_entry_fee;
-    private final String rule_id;
+    private final String rule;
     private final Long participant_id;
 
     @Builder
@@ -41,7 +41,7 @@ public class RoomView {
         this.room_category = roomResult.getRoomCategory();
         this.description = roomResult.getDescription();
         this.total_entry_fee = roomResult.getTotalEntryFee();
-        this.rule_id = roomResult.getRuleId();
+        this.rule = roomResult.getRule();
         this.participant_id = roomResult.getParticipantId();
     }
 }

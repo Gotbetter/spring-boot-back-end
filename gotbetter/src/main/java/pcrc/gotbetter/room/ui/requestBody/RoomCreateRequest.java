@@ -23,7 +23,7 @@ public class RoomCreateRequest {
     @NotNull
     private Integer entry_fee;
     @NotNull @NotBlank
-    private String rule_id;
+    private String rule_code;
     @NotNull @NotBlank
     private String account;
     private String room_category_code;

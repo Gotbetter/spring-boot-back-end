@@ -18,28 +18,19 @@ public class CommonCodeRepositoryImpl implements CommonCodeRepositoryQueryDSL {
     }
 
     @Override
-    public Boolean existsByCommonCodeId(CommonCodeId commonCodeId) {
-        Integer exists =  queryFactory
-                .selectOne()
-                .from(commonCode)
-                .where(eqCommonCodeId(commonCodeId))
-                .fetchFirst();
-        return exists != null;
-    }
-
-    @Override
-    public CommonCode findRoomCategoryInfo(String roomCategory) {
+    public CommonCode findByCommonCodeId(CommonCodeId commonCodeId) {
         return queryFactory
                 .selectFrom(commonCode)
-                .where(eqGroupCode("ROOM_CATEGORY"), eqCode(roomCategory))
+                .where(eqGroupCode(commonCodeId.getGroupCode()),
+                        eqCode(commonCodeId.getCode()))
                 .fetchFirst();
     }
 
     @Override
-    public List<CommonCode> findRoomCategories() {
+    public List<CommonCode> findListByGroupCode(String groupCode) {
         return queryFactory
                 .selectFrom(commonCode)
-                .where(eqGroupCode("ROOM_CATEGORY"))
+                .where(eqGroupCode(groupCode))
                 .orderBy(commonCode.order.asc())
                 .fetch();
     }

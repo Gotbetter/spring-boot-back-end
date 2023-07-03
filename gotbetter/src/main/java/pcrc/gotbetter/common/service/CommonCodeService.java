@@ -30,7 +30,7 @@ public class CommonCodeService implements CommonCodeReadUseCase {
     @Override
     public List<FindCommonCodeResult> getRoomCategories() throws IOException {
         List<FindCommonCodeResult> results = new ArrayList<>();
-        List<CommonCode> roomCategories = commonCodeRepository.findRoomCategories();
+        List<CommonCode> roomCategories = commonCodeRepository.findListByGroupCode("ROOM_CATEGORY");
 
         for (CommonCode c : roomCategories) {
             String imageBytes;
@@ -49,6 +49,17 @@ public class CommonCodeService implements CommonCodeReadUseCase {
                     .attribute1(imageBytes)
                     .build();
             results.add(FindCommonCodeResult.findByCommonCode(roomCategory));
+        }
+        return results;
+    }
+
+    @Override
+    public List<FindCommonCodeResult> getRules() {
+        List<FindCommonCodeResult> results = new ArrayList<>();
+        List<CommonCode> rules = commonCodeRepository.findListByGroupCode("RULE");
+
+        for (CommonCode c : rules) {
+            results.add(FindCommonCodeResult.findByCommonCode(c));
         }
         return results;
     }

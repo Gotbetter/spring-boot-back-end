@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pcrc.gotbetter.common.service.CommonCodeReadUseCase;
 import pcrc.gotbetter.common.ui.view.RoomCategoryView;
+import pcrc.gotbetter.common.ui.view.RuleView;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,6 +38,16 @@ public class CommonCodeController {
         return ResponseEntity.ok(roomCategoryViews);
     }
 
-//    @GetMapping(value = "/rules")
-//    public ResponseEntity<void> ruleList() {}
+    @GetMapping(value = "/rules")
+    public ResponseEntity<List<RuleView>> ruleList() {
+        log.info("\"GET ROOM RULES\"");
+
+        List<CommonCodeReadUseCase.FindCommonCodeResult> result = commonCodeReadUseCase.getRules();
+        List<RuleView> ruleViews = new ArrayList<>();
+
+        for (CommonCodeReadUseCase.FindCommonCodeResult r : result) {
+            ruleViews.add(RuleView.builder().commonCodeResult(r).build());
+        }
+        return ResponseEntity.ok(ruleViews);
+    }
 }

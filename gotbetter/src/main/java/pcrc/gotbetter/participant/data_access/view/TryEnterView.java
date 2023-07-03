@@ -42,6 +42,5 @@ public class TryEnterView {
     private String description;
     @Column(name = "total_entry_fee")
     private Integer totalEntryFee;
-    @Column(name = "rule_id")
-    private String ruleId;
+    private String rule;
 }

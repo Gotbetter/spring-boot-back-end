@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface CommonCodeReadUseCase {
     List<FindCommonCodeResult> getRoomCategories() throws IOException;
+    List<FindCommonCodeResult> getRules();
 
     @Getter
     @ToString
