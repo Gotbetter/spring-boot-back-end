@@ -30,6 +30,11 @@ public class JwtAuthenticationEntryPointHandler implements AuthenticationEntryPo
             return;
         }
 
+        if (exception.equals("UnauthorizedException")) {
+            setResponse(response, "UNAUTHORIZED", MessageType.UNAUTHORIZED);
+            return;
+        }
+
         //토큰이 만료된 경우 예외처리
         if (exception.equals("ExpiredJwtException")) {
             setResponse(response, "ExpiredJwtException", MessageType.ExpiredJwtException);
@@ -43,7 +48,7 @@ public class JwtAuthenticationEntryPointHandler implements AuthenticationEntryPo
 
         // 이후 모든 exception은 illegal로 돌릴지./....
         if (exception.equals("IllegalArgumentException") || exception.equals("UnsupportedJwtException")) {
-            setResponse(response, "IllegalArgumentJwtException", MessageType.MalformedJwtException);
+            setResponse(response, "IllegalArgumentJwtException", MessageType.IllegalArgumentJwtException);
             return;
         }
 

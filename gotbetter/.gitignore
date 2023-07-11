@@ -38,7 +38,7 @@ out/
 
 application-security.properties
 
-keystore.p12
+#keystore.p12
 
 **/src/test/
 

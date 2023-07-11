@@ -78,15 +78,15 @@ public class JwtProvider {
             Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
             return true;
         } catch (SecurityException exception) {
-            request.setAttribute("exception", "Invalid JWT signature");
+            request.setAttribute("exception", "UnauthorizedException"); // Invalid JWT signature
         } catch (MalformedJwtException exception) {
-            request.setAttribute("exception", "Invalid JWT token"); // JWT가 올바르게 구성되지 않았을 때
+            request.setAttribute("exception", "MalformedJwtException"); // JWT가 올바르게 구성되지 않았을 때 Invalid JWT token
         } catch (ExpiredJwtException exception) {
-            request.setAttribute("exception", "Expired Jwt token"); // 토큰 만료
+            request.setAttribute("exception", "ExpiredJwtException"); // 토큰 만료 Expired Jwt token
         } catch (UnsupportedJwtException exception) {
-            request.setAttribute("exception", "Unsupported Jwt token"); // 예상하는 형식과 일치하지 않는 특정 형식이나 구성의 JWT일 경우
+            request.setAttribute("exception", "UnsupportedJwtException"); // 예상하는 형식과 일치하지 않는 특정 형식이나 구성의 JWT일 경우 Unsupported Jwt token
         } catch (JwtException | IllegalArgumentException exception) {
-            request.setAttribute("exception", "Jwt token compact of handler are invalid");
+            request.setAttribute("exception", "IllegalArgumentException"); // Jwt token compact of handler are invalid
         }
         return false;
     }
