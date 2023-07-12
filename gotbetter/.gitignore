@@ -42,4 +42,14 @@ application-security.properties
 
 **/src/test/
 
-resources/**/*
+**/resources/
+
+**/sql/
+
+**/src/main/generated/
+
+**/google-services.json
+
+**/naver-intellij-formatter.xml
+
+**/oauth/OAuth2Provider.java
