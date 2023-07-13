@@ -6,4 +6,9 @@ import pcrc.gotbetter.user.data_access.entity.UserSet;
 
 @Repository
 public interface UserSetRepository extends JpaRepository<UserSet, Long>, UserSetRepositoryQueryDSL {
+
+	UserSet findByAuthId(String authId);
+
+	UserSet findByUserId(Long userId);
+
 }

@@ -4,7 +4,6 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.util.StringUtils;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import pcrc.gotbetter.user.data_access.entity.UserSet;
 
 import static pcrc.gotbetter.user.data_access.entity.QUserSet.userSet;
 
@@ -34,22 +33,6 @@ public class UserSetRepositoryImpl implements UserSetRepositoryQueryDSL {
                 .where(eqAuthId(authId))
                 .fetchFirst();
         return existsUser != null;
-    }
-
-    @Override
-    public UserSet findByUserId(Long userId) {
-        return queryFactory
-                .selectFrom(userSet)
-                .where(eqUserId(userId))
-                .fetchFirst();
-    }
-
-    @Override
-    public UserSet findByAuthId(String authId) {
-        return queryFactory
-                .selectFrom(userSet)
-                .where(eqAuthId(authId))
-                .fetchFirst();
     }
 
     @Override
