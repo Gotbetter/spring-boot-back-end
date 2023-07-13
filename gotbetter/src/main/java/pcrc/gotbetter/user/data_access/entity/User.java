@@ -3,6 +3,7 @@ package pcrc.gotbetter.user.data_access.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 
 import pcrc.gotbetter.setting.BaseTimeEntity;
 import pcrc.gotbetter.user.login_method.login_type.RoleType;
@@ -12,6 +13,7 @@ import pcrc.gotbetter.user.login_method.login_type.RoleType;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
+@DynamicUpdate
 public class User extends BaseTimeEntity {
 
     @Id
@@ -40,11 +42,22 @@ public class User extends BaseTimeEntity {
     @Builder
     public User(Long userId, String username,
                 String email, String profile,
-                RoleType roleType) {
+                RoleType roleType, String refreshToken,
+                String fcmToken) {
         this.userId = userId;
         this.username = username;
         this.email = email;
         this.profile = profile;
         this.roleType = roleType;
+        this.refreshToken = refreshToken;
+        this.fcmToken = fcmToken;
+    }
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public void updateUsername(String username) {
+        this.username = username;
     }
 }

@@ -23,14 +23,14 @@ import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
 @Service
 public class UserService implements UserOperationUseCase, UserReadUseCase {
 
-    private final PasswordEncoder passwordEncoder;
-    private final JwtProvider jwtProvider;
-    private final UserRepository userRepository;
-    private final UserSetRepository userSetRepository;
     @Value("${local.default.profile.path}")
     String DEFAULT_PROFILE_LOCAL_PATH;
     @Value("${server.default.profile.path}")
     String DEFAULT_PROFILE_SERVER_PATH;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtProvider jwtProvider;
+    private final UserRepository userRepository;
+    private final UserSetRepository userSetRepository;
 
     @Autowired
     public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository,
@@ -45,38 +45,35 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
     public FindUserResult createUser(UserCreateCommand command) {
         // authId 이미 있는지 검사
         validateUserAuthId(command.getAuthId());
-        // email 있는지 확인하고 있으면 userset확인하고 이것도 있으면 존재하는 유저라고 판단
-        Long userId = validateUserEmail(command.getEmail());
+        // email이 있는지 확인하고, userset에 연결된 계정이 있는지 확인
+        User findUser = userRepository.findByEmail(command.getEmail());
 
-        if (userId != null) {
-            validateAlreadyJoin(userId);
-            // username update
-            userRepository.updateUsername(userId, command.getUsername());
+        if (findUser != null) {
+            // 이미 가입한 유저인지 검사
+            if (userSetRepository.existsByUserId(findUser.getUserId())) {
+                throw new GotBetterException(MessageType.CONFLICT);
+            }
+            // 소셜 로그인으로 가입되어 있는 경우
+            findUser.updateUsername(command.getUsername());
+            userRepository.save(findUser);
         } else {
+            // 아무것도 가입되어있지 않은 경우
             User saveUser = User.builder()
-                    .username(command.getUsername())
-                    .email(command.getEmail())
-                    .build();
+                .username(command.getUsername())
+                .email(command.getEmail())
+                .build();
             userRepository.save(saveUser);
-            userId = saveUser.getUserId();
+            findUser = saveUser;
         }
 
         String encodePassword = passwordEncoder.encode(command.getPassword());
         UserSet savedUserSet = UserSet.builder()
-                .userId(userId)
+                .userId(findUser.getUserId())
                 .authId(command.getAuthId())
                 .password(encodePassword)
                 .build();
         userSetRepository.save(savedUserSet);
-
-        User returnUser = User.builder()
-                .username(command.getUsername())
-                .email(command.getEmail())
-                .build();
-        UserSet userSet = UserSet.builder()
-                .authId(command.getAuthId())
-                .build();
-        return FindUserResult.findByUser(returnUser, userSet, TokenInfo.builder().build());
+        return FindUserResult.findByUser(findUser, savedUserSet, TokenInfo.builder().build());
     }
 
     @Override
@@ -94,8 +91,14 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
         UserSet findUserSet = validateFindUserSet(query);
         // jwt
         TokenInfo tokenInfo = jwtProvider.generateToken(findUserSet.getUserId().toString());
+        // User 테이블에서 User 객체 가져오기
+        User findUser = userRepository.findByUserId(findUserSet.getUserId()).orElseThrow(() -> {
+            throw new GotBetterException(MessageType.NOT_FOUND);
+        });
 
-        userRepository.updateRefreshToken(findUserSet.getUserId(), tokenInfo.getRefreshToken());
+        findUser.updateRefreshToken(tokenInfo.getRefreshToken());
+        userRepository.save(findUser);
+
         return FindUserResult.findByUser(User.builder().build(), UserSet.builder().build(), tokenInfo);
     }
 
@@ -120,7 +123,7 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
                 .profile(bytes)
                 .build();
         UserSet userSet = UserSet.builder()
-                .authId(findUserSet != null ? findUserSet.getAuthId() : "")
+                .authId(findUserSet != null ? findUserSet.getAuthId() : "") // 소셜 로그인으로만 가입되어있는 경우
                 .build();
         return FindUserResult.findByUser(user, userSet, TokenInfo.builder().build());
     }
@@ -128,13 +131,16 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
     /**
      * validate
      */
+    private void validateUserAuthId(String authId) {
+        if (userSetRepository.existsByAuthId(authId)) {
+            throw new GotBetterException(MessageType.CONFLICT);
+        }
+    }
+
     private UserSet validateFindUserSet(UserFindQuery query) {
         UserSet findUserSet = userSetRepository.findByAuthId(query.getAuthId());
 
-        if (findUserSet == null) {
-            throw new GotBetterException(MessageType.NOT_FOUND);
-        }
-        if (!passwordEncoder.matches(query.getPassword(), findUserSet.getPassword())) {
+        if (findUserSet == null || !passwordEncoder.matches(query.getPassword(), findUserSet.getPassword())) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
         return findUserSet;
@@ -145,21 +151,5 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
         return userRepository.findByUserId(currentUserId).orElseThrow(() -> {
             throw new GotBetterException(MessageType.NOT_FOUND);
         });
-    }
-
-    private Long validateUserEmail(String email) {
-        return userRepository.findUserIdByEmail(email);
-    }
-
-    private void validateAlreadyJoin(Long userId) {
-        if (userSetRepository.existsByUserId(userId)) {
-            throw new GotBetterException(MessageType.CONFLICT);
-        }
-    }
-
-    private void validateUserAuthId(String authId) {
-        if (userSetRepository.existsByAuthId(authId)) {
-            throw new GotBetterException(MessageType.CONFLICT);
-        }
     }
 }
