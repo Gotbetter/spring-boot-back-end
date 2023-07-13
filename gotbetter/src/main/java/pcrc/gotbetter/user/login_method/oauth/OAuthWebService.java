@@ -1,9 +1,14 @@
 package pcrc.gotbetter.user.login_method.oauth;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import pcrc.gotbetter.setting.http_api.GotBetterException;
+import pcrc.gotbetter.setting.http_api.MessageType;
 import pcrc.gotbetter.user.data_access.entity.SocialAccount;
 import pcrc.gotbetter.user.data_access.entity.User;
 import pcrc.gotbetter.user.data_access.repository.SocialAccountRepository;
@@ -40,32 +45,43 @@ public class OAuthWebService {
         // get user info
         GoogleUser googleUser = oauthInterface.requestUserInfo(googleOAuthToken);
 
-        Long userId;
-        // 유저 정보 저장 (insert or select)
-        if (socialAccountRepository.existsByProviderTypeAndProviderId(ProviderType.GOOGLE, googleUser.id)) {
-            User findUser = userRepository.findByEmail(googleUser.email);
-            userId = findUser.getUserId();
-        } else {
-            User findUser = userRepository.findByEmail(googleUser.email);
+        User findUser = userRepository.findByEmail(googleUser.email);
+        SocialAccount findSocialAccount = socialAccountRepository.findByTypeAndId(ProviderType.GOOGLE, googleUser.id);
+
+        if ((findUser == null && findSocialAccount == null)
+            || (findUser != null && findSocialAccount == null)) {
+            // 아예 아무것도 안 한 경우 or 자체 로그인을 한 경우
             if (findUser == null) {
+                // 처음 소셜 로그인 하는 경우
                 findUser = User.builder()
-                        .username(googleUser.name)
-                        .email(googleUser.email)
-//                        .profile()
-                        .build();
+                    .username(googleUser.name)
+                    .email(googleUser.email)
+                    //                        .profile()
+                    .build();
                 userRepository.save(findUser);
             }
             SocialAccount saveSocialAccount = SocialAccount.builder()
-                    .userId(findUser.getUserId())
-                    .providerType(ProviderType.GOOGLE)
-                    .providerId(googleUser.id)
-                    .build();
+                .userId(findUser.getUserId())
+                .providerType(ProviderType.GOOGLE)
+                .providerId(googleUser.id)
+                .build();
             socialAccountRepository.save(saveSocialAccount);
-            userId = findUser.getUserId();
+        } else if (findUser != null) {
+            // 소셜 로그인을 한 적이 있는 경우
+            if (!Objects.equals(findUser.getUserId(), findSocialAccount.getUserId())) {
+                throw new GotBetterException(MessageType.BAD_REQUEST);
+            }
+        } else {
+            // 문제있음
+            throw new GotBetterException(MessageType.BAD_REQUEST);
         }
+
         // 토큰 만들기
-        TokenInfo tokenInfo = jwtProvider.generateToken(userId.toString());
-        userRepository.updateRefreshToken(userId, tokenInfo.getRefreshToken());
+        TokenInfo tokenInfo = jwtProvider.generateToken(findUser.getUserId().toString());
+
+        findUser.updateRefreshToken(tokenInfo.getRefreshToken());
+        userRepository.save(findUser);
+
         return tokenInfo;
     }
 }

@@ -60,4 +60,8 @@ public class User extends BaseTimeEntity {
     public void updateUsername(String username) {
         this.username = username;
     }
+
+    public void updateFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
+    }
 }
