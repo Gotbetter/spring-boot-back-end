@@ -1,9 +1,10 @@
 package pcrc.gotbetter.user.data_access.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
+
+import pcrc.gotbetter.setting.BaseTimeEntity;
 import pcrc.gotbetter.user.login_method.login_type.RoleType;
 
 @Entity
@@ -11,22 +12,22 @@ import pcrc.gotbetter.user.login_method.login_type.RoleType;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
-public class User {
+public class User extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @NotNull
+    @Column(nullable = false)
     private String username;
 
-    @NotNull
+    @Column(nullable = false)
     private String email;
 
     private String profile;
 
-    @Column(name = "role_type", length = 20)
+    @Column(name = "role_type", length = 20, nullable = false)
     @Enumerated(EnumType.STRING)
     private RoleType roleType;
 
