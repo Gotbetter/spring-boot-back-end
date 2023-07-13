@@ -3,7 +3,6 @@ package pcrc.gotbetter.push_notification.service;
 import static pcrc.gotbetter.setting.security.SecurityUtil.*;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +22,9 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import pcrc.gotbetter.push_notification.FCMMessageDto;
+import pcrc.gotbetter.setting.http_api.GotBetterException;
+import pcrc.gotbetter.setting.http_api.MessageType;
+import pcrc.gotbetter.user.data_access.entity.User;
 import pcrc.gotbetter.user.data_access.repository.UserRepository;
 
 @Slf4j
@@ -44,7 +46,12 @@ public class FCMService implements FCMOperationUseCase {
 	@Override
 	public void storeToken(FCMStoreCommand command) {
 		Long currentUserId = getCurrentUserId();
-		userRepository.updateFcmToken(currentUserId, command.getFcmToken());
+		User findUser = userRepository.findByUserId(currentUserId).orElseThrow(() -> {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		});
+
+		findUser.updateFcmToken(command.getFcmToken());
+		userRepository.save(findUser);
 	}
 
 	@Override

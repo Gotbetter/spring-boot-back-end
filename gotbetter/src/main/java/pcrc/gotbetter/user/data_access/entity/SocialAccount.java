@@ -1,12 +1,13 @@
 package pcrc.gotbetter.user.data_access.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
+
 import pcrc.gotbetter.user.login_method.login_type.ProviderType;
 
 @Entity
@@ -14,23 +15,21 @@ import pcrc.gotbetter.user.login_method.login_type.ProviderType;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
+@DynamicUpdate
 public class SocialAccount {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "social_account_id")
+    @Column(name = "social_account_id", nullable = false)
     private Long socialAccountId;
 
-    @Column(name = "user_id")
-    @NotNull
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "provider_type")
+    @Column(name = "provider_type", nullable = false)
     @Enumerated(EnumType.STRING)
-    @NotNull
     private ProviderType providerType;
 
-    @Column(name = "provider_id")
-    @NotNull
+    @Column(name = "provider_id", nullable = false)
     private String providerId;
 
     @Builder

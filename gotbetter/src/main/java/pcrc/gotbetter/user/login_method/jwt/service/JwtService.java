@@ -35,7 +35,8 @@ public class JwtService {
         long diffDays = compareDate(jwtProvider.parseClaims(refreshToken).getExpiration());
         TokenInfo tokenInfo = jwtProvider.generateToken(user.getUserId().toString());
         if (diffDays < 30) {
-            userRepository.updateRefreshToken(user.getUserId(), tokenInfo.getRefreshToken());
+            user.updateRefreshToken(tokenInfo.getRefreshToken());
+            userRepository.save(user);
         } else {
             tokenInfo.setRefreshToken(refreshToken);
         }

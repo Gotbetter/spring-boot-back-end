@@ -1,6 +1,11 @@
 package pcrc.gotbetter.user.service;
 
+import java.util.Objects;
+
 import org.springframework.stereotype.Service;
+
+import pcrc.gotbetter.setting.http_api.GotBetterException;
+import pcrc.gotbetter.setting.http_api.MessageType;
 import pcrc.gotbetter.user.data_access.entity.SocialAccount;
 import pcrc.gotbetter.user.data_access.entity.User;
 import pcrc.gotbetter.user.data_access.repository.SocialAccountRepository;
@@ -11,9 +16,9 @@ import pcrc.gotbetter.user.login_method.login_type.ProviderType;
 
 @Service
 public class OAuthService implements OAuthOperationUseCase {
+    private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
     private final SocialAccountRepository socialAccountRepository;
-    private final JwtProvider jwtProvider;
 
     public OAuthService(UserRepository userRepository, SocialAccountRepository socialAccountRepository, JwtProvider jwtProvider) {
         this.userRepository = userRepository;
@@ -23,32 +28,43 @@ public class OAuthService implements OAuthOperationUseCase {
 
     @Override
     public TokenInfo oAuthLogin(OAuthLoginCommand command) {
-        Long userId;
-        // 유저 정보 저장 (insert or select)
-        if (socialAccountRepository.existsByProviderTypeAndProviderId(ProviderType.GOOGLE, command.getId())) {
-            User findUser = userRepository.findByEmail(command.getEmail());
-            userId = findUser.getUserId();
-        } else {
-            User findUser = userRepository.findByEmail(command.getEmail());
+        User findUser = userRepository.findByEmail(command.getEmail());
+        SocialAccount findSocialAccount = socialAccountRepository.findByTypeAndId(ProviderType.GOOGLE, command.getId());
+
+        if ((findUser == null && findSocialAccount == null)
+            || (findUser != null && findSocialAccount == null)) {
+            // 아예 아무것도 안 한 경우 or 자체 로그인을 한 경우
             if (findUser == null) {
+                // 처음 소셜 로그인 하는 경우
                 findUser = User.builder()
-                        .username(command.getName())
-                        .email(command.getEmail())
-//                        .profile()
-                        .build();
+                    .username(command.getName())
+                    .email(command.getEmail())
+                    //                        .profile()
+                    .build();
                 userRepository.save(findUser);
             }
             SocialAccount saveSocialAccount = SocialAccount.builder()
-                    .userId(findUser.getUserId())
-                    .providerType(ProviderType.GOOGLE)
-                    .providerId(command.getId())
-                    .build();
+                .userId(findUser.getUserId())
+                .providerType(ProviderType.GOOGLE)
+                .providerId(command.getId())
+                .build();
             socialAccountRepository.save(saveSocialAccount);
-            userId = findUser.getUserId();
+        } else if (findUser != null) {
+            // 소셜 로그인을 한 적이 있는 경우
+            if (!Objects.equals(findUser.getUserId(), findSocialAccount.getUserId())) {
+                throw new GotBetterException(MessageType.BAD_REQUEST);
+            }
+        } else {
+            // 문제있음
+            throw new GotBetterException(MessageType.BAD_REQUEST);
         }
+
         // 토큰 만들기
-        TokenInfo tokenInfo = jwtProvider.generateToken(userId.toString());
-        userRepository.updateRefreshToken(userId, tokenInfo.getRefreshToken());
+        TokenInfo tokenInfo = jwtProvider.generateToken(findUser.getUserId().toString());
+
+        findUser.updateRefreshToken(tokenInfo.getRefreshToken());
+        userRepository.save(findUser);
+
         return tokenInfo;
     }
 }

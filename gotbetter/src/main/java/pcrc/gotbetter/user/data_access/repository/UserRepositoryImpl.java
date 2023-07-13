@@ -4,7 +4,6 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import static pcrc.gotbetter.user.data_access.entity.QUser.user;
 
@@ -19,26 +18,6 @@ public class UserRepositoryImpl implements UserRepositoryQueryDSL {
     @Autowired
     public UserRepositoryImpl(JPAQueryFactory queryFactory) {
         this.queryFactory = queryFactory;
-    }
-
-    @Override
-    @Transactional
-    public void updateRefreshToken(Long userId, String refreshToken) {
-        queryFactory
-                .update(user)
-                .where(eqUserId(userId))
-                .set(user.refreshToken, refreshToken)
-                .execute();
-    }
-
-    @Override
-    @Transactional
-    public void updateFcmToken(Long userId, String fcmToken) {
-        queryFactory
-            .update(user)
-            .where(eqUserId(userId))
-            .set(user.fcmToken, fcmToken)
-            .execute();
     }
 
     @Override
