@@ -1,5 +1,6 @@
 package pcrc.gotbetter.setting;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
@@ -12,11 +13,12 @@ import java.time.LocalDateTime;
 @Getter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-public class BaseTimeEntity {
+public abstract class BaseTimeEntity {
 
     @CreatedDate
-    private LocalDateTime createdDate;
+    @Column(updatable = false)
+    private LocalDateTime created_date;
 
     @LastModifiedDate
-    private LocalDateTime updatedDate;
+    private LocalDateTime updated_date;
 }
