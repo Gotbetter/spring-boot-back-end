@@ -8,6 +8,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import pcrc.gotbetter.setting.BaseTimeEntity;
+
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -17,7 +19,7 @@ import org.hibernate.annotations.DynamicUpdate;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
 @DynamicUpdate
-public class UserSet {
+public class UserSet extends BaseTimeEntity {
     @Id
     @Column(name = "user_id", nullable = false)
     private Long userId;

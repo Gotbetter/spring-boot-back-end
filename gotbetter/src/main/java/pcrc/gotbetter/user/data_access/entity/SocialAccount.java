@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
+import pcrc.gotbetter.setting.BaseTimeEntity;
 import pcrc.gotbetter.user.login_method.login_type.ProviderType;
 
 @Entity
@@ -16,7 +17,7 @@ import pcrc.gotbetter.user.login_method.login_type.ProviderType;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
 @DynamicUpdate
-public class SocialAccount {
+public class SocialAccount extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "social_account_id", nullable = false)
