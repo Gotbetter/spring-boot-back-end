@@ -27,12 +27,34 @@ public class RoomController {
         this.roomReadUseCase = roomReadUseCase;
     }
 
+    @PostMapping(value = "")
+    public ResponseEntity<RoomView> createNewRoom(@Valid @RequestBody RoomCreateRequest request) {
+
+        log.info("\"CREATE A ROOM\"");
+
+        var command = RoomOperationUseCase.RoomCreateCommand.builder()
+            .title(request.getTitle())
+            .maxUserNum(request.getMax_user_num())
+            .startDate(request.getStart_date())
+            .week(request.getWeek())
+            .currentWeek(request.getCurrent_week())
+            .entryFee(request.getEntry_fee())
+            .ruleCode(request.getRule_code())
+            .account(request.getAccount())
+            .roomCategoryCode(request.getRoom_category_code())
+            .description(request.getDescription())
+            .build();
+        RoomReadUseCase.FindRoomResult result = roomOperationUseCase.createRoom(command);
+
+        return ResponseEntity.created(null).body(RoomView.builder().roomResult(result).build());
+    }
+
     @GetMapping(value = "")
     public ResponseEntity<List<RoomView>> showIncludedRooms() {
 
         log.info("\"GET USER'S ROOMS\"");
 
-        List<RoomReadUseCase.FindRoomResult> result = roomReadUseCase.getUserRooms();
+        List<RoomReadUseCase.FindRoomResult> result = roomReadUseCase.getUserRoomList();
 
         List<RoomView> roomViews = new ArrayList<>();
         for (RoomReadUseCase.FindRoomResult r : result) {
@@ -49,28 +71,6 @@ public class RoomController {
         RoomReadUseCase.FindRoomResult result = roomReadUseCase.getOneRoomInfo(room_id);
 
         return ResponseEntity.ok(RoomView.builder().roomResult(result).build());
-    }
-
-    @PostMapping(value = "")
-    public ResponseEntity<RoomView> createNewRoom(@Valid @RequestBody RoomCreateRequest request) {
-
-        log.info("\"CREATE A ROOM\"");
-
-        var command = RoomOperationUseCase.RoomCreateCommand.builder()
-                .title(request.getTitle())
-                .maxUserNum(request.getMax_user_num())
-                .startDate(request.getStart_date())
-                .week(request.getWeek())
-                .currentWeek(request.getCurrent_week())
-                .entryFee(request.getEntry_fee())
-                .ruleCode(request.getRule_code())
-                .account(request.getAccount())
-                .roomCategoryCode(request.getRoom_category_code())
-                .description(request.getDescription())
-                .build();
-        RoomReadUseCase.FindRoomResult result = roomOperationUseCase.createRoom(command);
-
-        return ResponseEntity.created(null).body(RoomView.builder().roomResult(result).build());
     }
 
     @GetMapping(value = "/{room_id}/rank")

@@ -86,7 +86,8 @@ public class BatchConfig {
                         if (lastDate.isBefore(now)) {
                             updatePercentSum(room.getRoomId(), room.getCurrentWeek());
                             int nextWeek = room.getCurrentWeek() + 1;
-                            roomRepository.updateCurrentWeek(room.getRoomId(), nextWeek);
+                            room.updateCurrentWeekToNext();
+                            roomRepository.save(room);
                             log.info("room_id: " + room.getRoomId() + ", start_date: " + room.getStartDate()
                                     + ", current_week/week: " + nextWeek + "/" + room.getWeek());
                         }

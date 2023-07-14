@@ -38,14 +38,6 @@ public class CommonCodeRepositoryImpl implements CommonCodeRepositoryQueryDSL {
     /**
      * eq
      */
-    private BooleanExpression eqCommonCodeId(CommonCodeId commonCodeId) {
-        if (StringUtils.isNullOrEmpty(String.valueOf(commonCodeId.getGroupCode()))
-                || StringUtils.isNullOrEmpty(String.valueOf(commonCodeId.getCode()))) {
-            return null;
-        }
-        return commonCode.commonCodeId.eq(commonCodeId);
-    }
-
     private BooleanExpression eqGroupCode(String groupCode) {
         if (StringUtils.isNullOrEmpty(String.valueOf(groupCode))) {
             return null;
