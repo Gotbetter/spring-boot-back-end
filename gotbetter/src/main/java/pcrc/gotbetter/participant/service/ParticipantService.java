@@ -111,7 +111,12 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
                 .build();
         participantRepository.save(participant);
         participantRepository.updateParticipateAccepted(targetUserInfo.getTryEnterId().getUserId(), targetUserInfo.getTryEnterId().getRoomId());
-        roomRepository.updatePlusTotalEntryFeeAndCurrentNum(command.getRoomId(), targetUserInfo.getEntryFee());
+        // 방 정보 중 totalEntryFee와 currentUserNum 업데이트
+        Room roomInfo = roomRepository.findByRoomId(command.getRoomId()).orElseThrow(() -> {
+            throw new GotBetterException(MessageType.NOT_FOUND);
+        });
+        roomInfo.updateTotalEntryFeeAndCurrentUserNum(targetUserInfo.getEntryFee());
+        roomRepository.save(roomInfo);
         String authId = validateUserSetAuthId(targetUserInfo.getTryEnterId().getUserId());
         return FindParticipantResult.findByParticipant(targetUserInfo,
                 participant.getParticipantId(), null, authId);

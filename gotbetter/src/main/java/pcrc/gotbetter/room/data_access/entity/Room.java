@@ -65,4 +65,13 @@ public class Room extends BaseTimeEntity {
         this.totalEntryFee = totalEntryFee;
         this.rule = rule;
     }
+
+    public void updateCurrentWeekToNext() {
+        this.currentWeek += 1;
+    }
+
+    public void updateTotalEntryFeeAndCurrentUserNum(Integer fee) {
+        this.totalEntryFee += fee;
+        this.currentUserNum += 1;
+    }
 }

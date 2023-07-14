@@ -4,7 +4,6 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.util.StringUtils;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 import pcrc.gotbetter.room.data_access.entity.Room;
 
 import java.util.List;
@@ -18,27 +17,6 @@ public class RoomRepositoryImpl implements RoomRepositoryQueryDSL{
     @Autowired
     public RoomRepositoryImpl(JPAQueryFactory queryFactory) {
         this.queryFactory = queryFactory;
-    }
-
-    @Override
-    @Transactional
-    public void updatePlusTotalEntryFeeAndCurrentNum(Long roomId, Integer fee) {
-        queryFactory
-                .update(room)
-                .set(room.totalEntryFee, room.totalEntryFee.add(fee))
-                .set(room.currentUserNum, room.currentUserNum.add(1))
-                .where(roomEqRoomId(roomId))
-                .execute();
-    }
-
-    @Override
-    @Transactional
-    public void updateCurrentWeek(Long roomId, Integer changeWeek) {
-        queryFactory
-                .update(room)
-                .set(room.currentWeek, changeWeek)
-                .where(roomEqRoomId(roomId))
-                .execute();
     }
 
     @Override

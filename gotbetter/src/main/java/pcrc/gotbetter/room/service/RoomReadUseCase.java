@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface RoomReadUseCase {
 
-    List<FindRoomResult> getUserRooms();
+    List<FindRoomResult> getUserRoomList();
     FindRoomResult getOneRoomInfo(Long roomId);
     List<FindRankResult> getRank(Long roomId);
 

@@ -6,7 +6,9 @@ import pcrc.gotbetter.common.data_access.entity.CommonCodeId;
 import java.util.List;
 
 public interface CommonCodeRepositoryQueryDSL {
-    // select
+
     CommonCode findByCommonCodeId(CommonCodeId commonCodeId);
+
     List<CommonCode> findListByGroupCode(String groupCode);
+
 }
