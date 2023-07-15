@@ -4,8 +4,8 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.transaction.annotation.Transactional;
 
+import static pcrc.gotbetter.participant.data_access.entity.QJoinRequest.joinRequest;
 import static pcrc.gotbetter.participant.data_access.entity.QParticipant.participant;
-import static pcrc.gotbetter.participant.data_access.entity.QParticipate.participate;
 
 public class ParticipantRepositoryImpl implements ParticipantRepositoryQueryDSL {
 
@@ -19,9 +19,9 @@ public class ParticipantRepositoryImpl implements ParticipantRepositoryQueryDSL 
     @Transactional
     public void updateParticipateAccepted(Long userId, Long roomId) {
         queryFactory
-                .update(participate)
-                .where(participateEqRoomId(roomId), participateEqUserId(userId))
-                .set(participate.accepted, true)
+                .update(joinRequest)
+                .where(joinRequestEqRoomId(roomId), joinRequestEqUserId(userId))
+                .set(joinRequest.accepted, true)
                 .execute();
     }
 
@@ -50,7 +50,8 @@ public class ParticipantRepositoryImpl implements ParticipantRepositoryQueryDSL 
         Integer exists =  queryFactory
                 .selectOne()
                 .from(participant)
-                .where(participantEqUserId(userId), participantEqRoomId(roomId),
+                .where(participantEqUserId(userId),
+                        participantEqRoomId(roomId),
                         participant.authority.eq(true))
                 .fetchFirst();
         return exists != null;
@@ -74,11 +75,11 @@ public class ParticipantRepositoryImpl implements ParticipantRepositoryQueryDSL 
     /**
      * participate eq
      */
-    private BooleanExpression participateEqUserId(Long userId) {
-        return userId == null ? null : participate.participateId.userId.eq(userId);
+    private BooleanExpression joinRequestEqUserId(Long userId) {
+        return userId == null ? null : joinRequest.joinRequestId.userId.eq(userId);
     }
 
-    private BooleanExpression participateEqRoomId(Long roomId) {
-        return roomId == null ? null : participate.participateId.roomId.eq(roomId);
+    private BooleanExpression joinRequestEqRoomId(Long roomId) {
+        return roomId == null ? null : joinRequest.joinRequestId.roomId.eq(roomId);
     }
 }

@@ -3,19 +3,19 @@ package pcrc.gotbetter.participant.data_access.view;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.hibernate.annotations.Immutable;
-import pcrc.gotbetter.participant.data_access.entity.ParticipateId;
+import pcrc.gotbetter.participant.data_access.entity.JoinRequestId;
 
 import java.time.LocalDate;
 
 @Entity
 @Immutable
-@Table(name = "ParticipateView")
+@Table(name = "join_request_view")
 @Getter
 public class TryEnterView {
     private Boolean accepted;
 
     @EmbeddedId
-    ParticipateId tryEnterId;
+    JoinRequestId tryEnterId;
 
     @Column(name = "username")
     private String usernameNick;

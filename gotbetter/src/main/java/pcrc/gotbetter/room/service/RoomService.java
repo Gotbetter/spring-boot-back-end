@@ -6,14 +6,14 @@ import org.springframework.stereotype.Service;
 import pcrc.gotbetter.common.data_access.entity.CommonCode;
 import pcrc.gotbetter.common.data_access.entity.CommonCodeId;
 import pcrc.gotbetter.common.data_access.repository.CommonCodeRepository;
+import pcrc.gotbetter.participant.data_access.entity.JoinRequestId;
 import pcrc.gotbetter.participant.data_access.entity.Participant;
-import pcrc.gotbetter.participant.data_access.entity.Participate;
-import pcrc.gotbetter.participant.data_access.entity.ParticipateId;
+import pcrc.gotbetter.participant.data_access.entity.JoinRequest;
 import pcrc.gotbetter.participant.data_access.repository.ViewRepository;
 import pcrc.gotbetter.participant.data_access.view.EnteredView;
 import pcrc.gotbetter.participant.data_access.view.TryEnterView;
 import pcrc.gotbetter.room.data_access.entity.Room;
-import pcrc.gotbetter.participant.data_access.repository.ParticipateRepository;
+import pcrc.gotbetter.participant.data_access.repository.JoinRequestRepository;
 import pcrc.gotbetter.room.data_access.repository.RoomRepository;
 import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
@@ -28,17 +28,17 @@ import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
 @Service
 public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     private final RoomRepository roomRepository;
-    private final ParticipateRepository participateRepository;
+    private final JoinRequestRepository joinRequestRepository;
     private final ParticipantRepository participantRepository;
     private final ViewRepository viewRepository;
     private final CommonCodeRepository commonCodeRepository;
 
     @Autowired
-    public RoomService(RoomRepository roomRepository, ParticipateRepository participateRepository,
+    public RoomService(RoomRepository roomRepository, JoinRequestRepository joinRequestRepository,
         ParticipantRepository participantRepository, ViewRepository viewRepository,
         CommonCodeRepository commonCodeRepository) {
         this.roomRepository = roomRepository;
-        this.participateRepository = participateRepository;
+        this.joinRequestRepository = joinRequestRepository;
         this.participantRepository = participantRepository;
         this.viewRepository = viewRepository;
         this.commonCodeRepository = commonCodeRepository;
@@ -82,20 +82,20 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
             .build();
         roomRepository.save(room);
 
-        // participate 데이터 insert
-        Participate participate = Participate.builder()
-            .participateId(ParticipateId.builder()
+        // join request 데이터 insert
+        JoinRequest joinRequest = JoinRequest.builder()
+            .joinRequestId(JoinRequestId.builder()
                 .userId(currentUserId)
                 .roomId(room.getRoomId())
                 .build())
             .accepted(true)
             .build();
-        participateRepository.save(participate);
+        joinRequestRepository.save(joinRequest);
 
         // participant 데이터 insert
         Participant participant = Participant.builder()
-            .userId(participate.getParticipateId().getUserId())
-            .roomId(participate.getParticipateId().getRoomId())
+            .userId(joinRequest.getJoinRequestId().getUserId())
+            .roomId(joinRequest.getJoinRequestId().getRoomId())
             .authority(true)
             .refund(0)
             .build();

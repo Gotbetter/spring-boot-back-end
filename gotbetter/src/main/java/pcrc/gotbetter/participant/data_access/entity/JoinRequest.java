@@ -11,19 +11,19 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
-@Table(name = "Participate")
+@Table(name = "join_request")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
 @DynamicUpdate
-public class Participate extends BaseTimeEntity {
+public class JoinRequest extends BaseTimeEntity {
     @EmbeddedId
-    private ParticipateId participateId;
+    private JoinRequestId joinRequestId;
     private Boolean accepted;
 
     @Builder
-    public Participate(ParticipateId participateId, Boolean accepted) {
-        this.participateId = participateId;
+    public JoinRequest(JoinRequestId joinRequestId, Boolean accepted) {
+        this.joinRequestId = joinRequestId;
         this.accepted = accepted;
     }
 }

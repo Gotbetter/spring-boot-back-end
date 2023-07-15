@@ -12,14 +12,14 @@ import java.io.Serializable;
 @Data
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ParticipateId implements Serializable {
+public class JoinRequestId implements Serializable {
     @Column(name = "user_id")
     private Long userId;
     @Column(name = "room_id")
     private Long roomId;
 
     @Builder
-    public ParticipateId(Long userId, Long roomId) {
+    public JoinRequestId(Long userId, Long roomId) {
         this.userId = userId;
         this.roomId = roomId;
     }
