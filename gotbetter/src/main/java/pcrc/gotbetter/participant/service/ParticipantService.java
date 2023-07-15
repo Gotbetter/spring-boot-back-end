@@ -159,7 +159,7 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 
     private Long validateAbleToJoinRoom(Room room) {
         Long currentUserId = getCurrentUserId();
-        Optional<JoinRequest> participate = joinRequestRepository.findByParticipateId(
+        Optional<JoinRequest> participate = joinRequestRepository.findByJoinRequestId(
                 JoinRequestId.builder()
                         .userId(currentUserId)
                         .roomId(room.getRoomId()).build()
