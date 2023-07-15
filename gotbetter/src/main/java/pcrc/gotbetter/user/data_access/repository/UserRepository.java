@@ -7,7 +7,7 @@ import pcrc.gotbetter.user.data_access.entity.User;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long>, UserRepositoryQueryDSL {
+public interface UserRepository extends JpaRepository<User, Long>, UserQueryRepository {
 
     Optional<User> findByUserId(Long userId);
 

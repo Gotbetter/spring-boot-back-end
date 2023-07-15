@@ -1,6 +1,6 @@
 package pcrc.gotbetter.plan_evaluation.data_access.repository;
 
-public interface PlanEvaluationRepositoryQueryDSL {
+public interface PlanEvaluationQueryRepository {
     // insert, update, delete
     void deletePlanEvaluation(Long planId, Long participantId);
 

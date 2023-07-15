@@ -10,7 +10,7 @@ import pcrc.gotbetter.user.login_method.login_type.ProviderType;
 
 import static pcrc.gotbetter.user.data_access.entity.QSocialAccount.socialAccount;
 
-public class SocialAccountRepositoryImpl implements SocialAccountRepositoryQueryDSL{
+public class SocialAccountRepositoryImpl implements SocialAccountQueryRepository {
     private final JPAQueryFactory queryFactory;
 
     @Autowired

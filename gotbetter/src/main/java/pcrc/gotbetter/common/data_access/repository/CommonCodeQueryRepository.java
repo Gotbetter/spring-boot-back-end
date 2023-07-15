@@ -5,7 +5,7 @@ import pcrc.gotbetter.common.data_access.entity.CommonCodeId;
 
 import java.util.List;
 
-public interface CommonCodeRepositoryQueryDSL {
+public interface CommonCodeQueryRepository {
 
     CommonCode findByCommonCodeId(CommonCodeId commonCodeId);
 

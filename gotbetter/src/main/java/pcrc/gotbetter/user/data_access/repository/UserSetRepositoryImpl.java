@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import static pcrc.gotbetter.user.data_access.entity.QUserSet.userSet;
 
-public class UserSetRepositoryImpl implements UserSetRepositoryQueryDSL {
+public class UserSetRepositoryImpl implements UserSetQueryRepository {
     private final JPAQueryFactory queryFactory;
 
     @Autowired

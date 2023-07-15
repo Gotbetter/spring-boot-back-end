@@ -8,7 +8,7 @@ import pcrc.gotbetter.plan_evaluation.data_access.entity.PlanEvaluationId;
 import java.util.List;
 
 @Repository
-public interface PlanEvaluationRepository extends JpaRepository<PlanEvaluation, PlanEvaluationId>, PlanEvaluationRepositoryQueryDSL {
+public interface PlanEvaluationRepository extends JpaRepository<PlanEvaluation, PlanEvaluationId>, PlanEvaluationQueryRepository {
     List<PlanEvaluation> findByPlanEvaluationIdPlanId(Long planId);
     void deleteByPlanEvaluationIdPlanId(Long planId);
 }

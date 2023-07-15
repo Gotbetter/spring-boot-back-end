@@ -10,7 +10,7 @@ import java.util.List;
 
 import static pcrc.gotbetter.common.data_access.entity.QCommonCode.commonCode;
 
-public class CommonCodeRepositoryImpl implements CommonCodeRepositoryQueryDSL {
+public class CommonCodeRepositoryImpl implements CommonCodeQueryRepository {
     private final JPAQueryFactory queryFactory;
 
     public CommonCodeRepositoryImpl(JPAQueryFactory queryFactory) {

@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 import pcrc.gotbetter.user.data_access.entity.SocialAccount;
 
 @Repository
-public interface SocialAccountRepository extends JpaRepository<SocialAccount, Long>, SocialAccountRepositoryQueryDSL {
+public interface SocialAccountRepository extends JpaRepository<SocialAccount, Long>, SocialAccountQueryRepository {
 }

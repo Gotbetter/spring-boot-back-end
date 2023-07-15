@@ -11,7 +11,7 @@ import java.util.HashMap;
 
 import static pcrc.gotbetter.detail_plan.data_access.entity.QDetailPlan.detailPlan;
 
-public class DetailPlanRepositoryImpl implements DetailPlanRepositoryQueryDSL {
+public class DetailPlanRepositoryImpl implements DetailPlanQueryRepository {
     private final JPAQueryFactory queryFactory;
     private final EntityManager em;
 

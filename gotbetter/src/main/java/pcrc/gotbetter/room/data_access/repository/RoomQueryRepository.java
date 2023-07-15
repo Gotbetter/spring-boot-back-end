@@ -4,7 +4,7 @@ import pcrc.gotbetter.room.data_access.entity.Room;
 
 import java.util.List;
 
-public interface RoomRepositoryQueryDSL {
+public interface RoomQueryRepository {
 
     List<Room> findListUnderWeek();
 

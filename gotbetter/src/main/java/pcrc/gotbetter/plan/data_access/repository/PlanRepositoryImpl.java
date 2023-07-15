@@ -13,9 +13,9 @@ import java.util.List;
 import java.util.Objects;
 
 import static pcrc.gotbetter.plan.data_access.entity.QPlan.plan;
-import static pcrc.gotbetter.room.data_access.entity.QRoom.*;
+import static pcrc.gotbetter.room.data_access.entity.QRoom.room;
 
-public class PlanRepositoryImpl implements PlanRepositoryQueryDSL{
+public class PlanRepositoryImpl implements PlanQueryRepository {
     private final JPAQueryFactory queryFactory;
 
     public PlanRepositoryImpl(JPAQueryFactory queryFactory) {

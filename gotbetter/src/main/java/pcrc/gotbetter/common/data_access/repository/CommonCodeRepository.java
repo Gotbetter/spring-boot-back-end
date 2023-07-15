@@ -6,6 +6,6 @@ import pcrc.gotbetter.common.data_access.entity.CommonCode;
 import pcrc.gotbetter.common.data_access.entity.CommonCodeId;
 
 @Repository
-public interface CommonCodeRepository extends JpaRepository<CommonCode, CommonCodeId>, CommonCodeRepositoryQueryDSL {
+public interface CommonCodeRepository extends JpaRepository<CommonCode, CommonCodeId>, CommonCodeQueryRepository {
 
 }

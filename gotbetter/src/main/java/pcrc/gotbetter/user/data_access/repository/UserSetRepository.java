@@ -5,7 +5,7 @@ import org.springframework.stereotype.Repository;
 import pcrc.gotbetter.user.data_access.entity.UserSet;
 
 @Repository
-public interface UserSetRepository extends JpaRepository<UserSet, Long>, UserSetRepositoryQueryDSL {
+public interface UserSetRepository extends JpaRepository<UserSet, Long>, UserSetQueryRepository {
 
 	UserSet findByAuthId(String authId);
 

@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import static pcrc.gotbetter.participant.data_access.entity.QJoinRequest.joinRequest;
 import static pcrc.gotbetter.participant.data_access.entity.QParticipant.participant;
 
-public class ParticipantRepositoryImpl implements ParticipantRepositoryQueryDSL {
+public class ParticipantRepositoryImpl implements ParticipantQueryRepository {
 
     private final JPAQueryFactory queryFactory;
 

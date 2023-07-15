@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class UserRepositoryImpl implements UserRepositoryQueryDSL {
+public class UserRepositoryImpl implements UserQueryRepository {
 
     private final JPAQueryFactory queryFactory;
 
