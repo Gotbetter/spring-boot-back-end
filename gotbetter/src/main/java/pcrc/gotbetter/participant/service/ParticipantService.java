@@ -2,14 +2,14 @@ package pcrc.gotbetter.participant.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pcrc.gotbetter.participant.data_access.entity.JoinRequest;
+import pcrc.gotbetter.participant.data_access.entity.JoinRequestId;
 import pcrc.gotbetter.participant.data_access.entity.Participant;
-import pcrc.gotbetter.participant.data_access.entity.Participate;
-import pcrc.gotbetter.participant.data_access.entity.ParticipateId;
 import pcrc.gotbetter.participant.data_access.repository.ViewRepository;
 import pcrc.gotbetter.participant.data_access.view.EnteredView;
 import pcrc.gotbetter.participant.data_access.view.TryEnterView;
 import pcrc.gotbetter.room.data_access.entity.Room;
-import pcrc.gotbetter.participant.data_access.repository.ParticipateRepository;
+import pcrc.gotbetter.participant.data_access.repository.JoinRequestRepository;
 import pcrc.gotbetter.room.data_access.repository.RoomRepository;
 import pcrc.gotbetter.room.service.RoomReadUseCase;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
@@ -28,36 +28,37 @@ import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
 @Service
 public class ParticipantService implements ParticipantOperationUseCase, ParticipantReadUseCase {
     private final ParticipantRepository participantRepository;
-    private final ParticipateRepository participateRepository;
+    private final JoinRequestRepository joinRequestRepository;
     private final RoomRepository roomRepository;
     private final ViewRepository viewRepository;
     private final UserSetRepository userSetRepository;
 
     @Autowired
     public ParticipantService(ParticipantRepository participantRepository,
-                              ParticipateRepository participateRepository,
+                              JoinRequestRepository joinRequestRepository,
                               RoomRepository roomRepository, ViewRepository viewRepository,
                               UserSetRepository userSetRepository) {
         this.participantRepository = participantRepository;
-        this.participateRepository = participateRepository;
+        this.joinRequestRepository = joinRequestRepository;
         this.roomRepository = roomRepository;
         this.viewRepository = viewRepository;
         this.userSetRepository = userSetRepository;
     }
 
     @Override
-    public RoomReadUseCase.FindRoomResult requestJoinRoom(String roomCode) {
-        Room room = validateRoomWithRoomCode(roomCode);
-        Long currentUserId = validateAbleToJoinRoom(room);
+    public RoomReadUseCase.FindRoomResult requestJoinRoom(String roomCode) { // 방 입장 (멤버x)
+        Room room = validateRoomWithRoomCode(roomCode); // 방 코드에 해당하는 방이 있는지 확인
+        Long currentUserId = validateAbleToJoinRoom(room); // 해당 방에 사용자가 입장할 수 있는지 확인
 
-        Participate participate = Participate.builder()
-                .participateId(ParticipateId.builder()
+        // 승인 요청
+        JoinRequest joinRequest = JoinRequest.builder()
+                .joinRequestId(JoinRequestId.builder()
                         .userId(currentUserId)
                         .roomId(room.getRoomId())
                         .build())
                 .accepted(false)
                 .build();
-        participateRepository.save(participate);
+        joinRequestRepository.save(joinRequest);
 
         return RoomReadUseCase.FindRoomResult.builder()
                 .roomId(room.getRoomId())
@@ -70,15 +71,15 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
     public List<FindParticipantResult> getMemberListInARoom(Long roomId, Boolean accepted) {
         List<FindParticipantResult> result = new ArrayList<>();
 
-        if (accepted) {
-            validateUserInRoom(roomId, false);
+        if (accepted) { // (방장 포함 일반 멤버) 방에 속한 멤버들 조회
+            validateUserInRoom(roomId, false); // 방에 속한 멤버인지 검증
             List<EnteredView> enteredViewList = viewRepository.enteredListByRoomId(roomId);
             for (EnteredView p : enteredViewList) {
                 String authId = validateUserSetAuthId(p.getUserId());
                 result.add(FindParticipantResult.findByParticipant(p, authId));
             }
-        } else {
-            validateUserInRoom(roomId, true);
+        } else { // (방장만) 승인 대기 중인 사용자 조회
+            validateUserInRoom(roomId, true); // 방장인지 검증
             List<TryEnterView> tryEnterViewList = viewRepository
                     .tryEnterListByUserIdRoomId(null, roomId, false);
             for (TryEnterView p : tryEnterViewList) {
@@ -90,19 +91,20 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
     }
 
     @Override
-    public FindParticipantResult approveJoinRoom(UserRoomAcceptedUpdateCommand command) {
-        validateUserInRoom(command.getRoomId(), true);
-
+    public FindParticipantResult approveJoinRoom(UserRoomAcceptedUpdateCommand command) { // (방장) 방 입장 승인
+        validateUserInRoom(command.getRoomId(), true); // 방장인지 검증
+        // 승인하려는 사용자 정보
         TryEnterView targetUserInfo = viewRepository.tryEnterByUserIdRoomId(
                 command.getUserId(), command.getRoomId(), false);
 
         if (targetUserInfo == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
-        // 방 인원 수 체크 추가
+        // 방의 인원이 만원인지 확인
         if (Objects.equals(targetUserInfo.getMaxUserNum(), targetUserInfo.getCurrentUserNum())) {
             throw new GotBetterException(MessageType.CONFLICT_MAX);
         }
+        // 방 승인
         Participant participant = Participant.builder()
                 .userId(targetUserInfo.getTryEnterId().getUserId())
                 .roomId(targetUserInfo.getTryEnterId().getRoomId())
@@ -110,6 +112,8 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
                 .refund(0)
                 .build();
         participantRepository.save(participant);
+        //
+        // 사용자 방 요청을 수락했으므로 accepted를 true로 변경
         participantRepository.updateParticipateAccepted(targetUserInfo.getTryEnterId().getUserId(), targetUserInfo.getTryEnterId().getRoomId());
         // 방 정보 중 totalEntryFee와 currentUserNum 업데이트
         Room roomInfo = roomRepository.findByRoomId(command.getRoomId()).orElseThrow(() -> {
@@ -117,18 +121,21 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
         });
         roomInfo.updateTotalEntryFeeAndCurrentUserNum(targetUserInfo.getEntryFee());
         roomRepository.save(roomInfo);
+        // 리턴
         String authId = validateUserSetAuthId(targetUserInfo.getTryEnterId().getUserId());
         return FindParticipantResult.findByParticipant(targetUserInfo,
                 participant.getParticipantId(), null, authId);
     }
 
     @Override
-    public Integer getMyRefund(Long participantId) {
+    public Integer getMyRefund(Long participantId) { // 마지막 주차 끝난 후 조회 가능
+        // 방의 멤버인지 확인
         EnteredView enteredView = viewRepository.enteredByParticipantId(participantId);
 
         if (enteredView == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
+        // 마지막 주차가 종료됐는지 확인
         if (!Objects.equals(enteredView.getWeek(), enteredView.getCurrentWeek())) {
             throw new GotBetterException(MessageType.FORBIDDEN_DATE);
         } else {
@@ -138,7 +145,6 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
                 throw new GotBetterException(MessageType.FORBIDDEN_DATE);
             }
         }
-
         return enteredView.getRefund();
     }
 
@@ -153,20 +159,22 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 
     private Long validateAbleToJoinRoom(Room room) {
         Long currentUserId = getCurrentUserId();
-        Optional<Participate> participate = participateRepository.findByParticipateId(
-                ParticipateId.builder()
+        Optional<JoinRequest> participate = joinRequestRepository.findByParticipateId(
+                JoinRequestId.builder()
                         .userId(currentUserId)
                         .roomId(room.getRoomId()).build()
         );
 
-        if (participate.isPresent()) { // 이미 방에 참여했는지 승인요청만보냈 상태인지 분리
-            if (participate.get().getAccepted()) {
+        if (participate.isPresent()) {
+            if (participate.get().getAccepted()) { // 이미 방에 참여했는지 확인
                 throw new GotBetterException(MessageType.CONFLICT_JOIN);
             }
-            else {
+            else { // 아직 방에 참여 승인 받지 않았지만 승인 요청을 보내놓은 상태
                 throw new GotBetterException(MessageType.CONFLICT);
             }
         }
+        // 방에 참여하지 않았고, 승인 요청도 보내놓은 상태가 아닌 경우
+        // 방의 인원이 만원인지 확인
         if (room.getCurrentUserNum() >= room.getMaxUserNum()) {
             throw new GotBetterException(MessageType.CONFLICT_MAX);
         }
@@ -177,10 +185,10 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
         long currentUserId = getCurrentUserId();
         EnteredView enteredView = viewRepository.enteredByUserIdRoomId(currentUserId, roomId);
 
-        if (enteredView == null) {
+        if (enteredView == null) { // 사용자가 방에 속해 있지 않은 경우 (오류)
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
-        if (needLeader && !enteredView.getAuthority()) {
+        if (needLeader && !enteredView.getAuthority()) { // 방장의 권한이 필요하지만 해당 방의 방장이 아닌 경우 (오류)
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
     }

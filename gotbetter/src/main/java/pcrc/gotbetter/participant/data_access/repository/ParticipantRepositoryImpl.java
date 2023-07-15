@@ -50,7 +50,8 @@ public class ParticipantRepositoryImpl implements ParticipantRepositoryQueryDSL 
         Integer exists =  queryFactory
                 .selectOne()
                 .from(participant)
-                .where(participantEqUserId(userId), participantEqRoomId(roomId),
+                .where(participantEqUserId(userId),
+                        participantEqRoomId(roomId),
                         participant.authority.eq(true))
                 .fetchFirst();
         return exists != null;
