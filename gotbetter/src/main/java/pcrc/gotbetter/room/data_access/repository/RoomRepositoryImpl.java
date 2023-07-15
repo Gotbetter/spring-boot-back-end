@@ -10,7 +10,7 @@ import java.util.List;
 
 import static pcrc.gotbetter.room.data_access.entity.QRoom.room;
 
-public class RoomRepositoryImpl implements RoomRepositoryQueryDSL{
+public class RoomRepositoryImpl implements RoomQueryRepository {
 
     private final JPAQueryFactory queryFactory;
 

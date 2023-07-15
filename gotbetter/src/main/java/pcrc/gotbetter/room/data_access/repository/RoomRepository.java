@@ -7,7 +7,7 @@ import pcrc.gotbetter.room.data_access.entity.Room;
 import java.util.Optional;
 
 @Repository
-public interface RoomRepository extends JpaRepository<Room, Long>, RoomRepositoryQueryDSL {
+public interface RoomRepository extends JpaRepository<Room, Long>, RoomQueryRepository {
 
     Optional<Room> findByRoomCode(String roomCode);
 

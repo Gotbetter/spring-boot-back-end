@@ -6,7 +6,7 @@ import jakarta.transaction.Transactional;
 
 import static pcrc.gotbetter.plan_evaluation.data_access.entity.QPlanEvaluation.planEvaluation;
 
-public class PlanEvaluationRepositoryImpl implements PlanEvaluationRepositoryQueryDSL {
+public class PlanEvaluationRepositoryImpl implements PlanEvaluationQueryRepository {
     private final JPAQueryFactory queryFactory;
 
     public PlanEvaluationRepositoryImpl(JPAQueryFactory queryFactory) {

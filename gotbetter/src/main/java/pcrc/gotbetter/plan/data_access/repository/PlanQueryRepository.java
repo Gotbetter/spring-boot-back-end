@@ -5,7 +5,7 @@ import pcrc.gotbetter.plan.data_access.entity.Plan;
 import java.util.HashMap;
 import java.util.List;
 
-public interface PlanRepositoryQueryDSL {
+public interface PlanQueryRepository {
     // insert, update, delete
     void updateRejected(Long planId, Boolean change);
     void updateThreeDaysPassed(Long planId);

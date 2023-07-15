@@ -7,7 +7,7 @@ import pcrc.gotbetter.detail_plan.data_access.entity.DetailPlan;
 import java.util.List;
 
 @Repository
-public interface DetailPlanRepository extends JpaRepository<DetailPlan, Long>, DetailPlanRepositoryQueryDSL {
+public interface DetailPlanRepository extends JpaRepository<DetailPlan, Long>, DetailPlanQueryRepository {
     List<DetailPlan> findByPlanId(Long planId);
     void deleteByPlanId(Long planId);
 }

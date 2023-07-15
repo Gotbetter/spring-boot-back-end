@@ -21,28 +21,32 @@ import java.time.LocalDate;
 public class Room extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "room_id")
+    @Column(name = "room_id", nullable = false)
     private Long roomId;
+    @Column(nullable = false)
     private String title;
-    @Column(name = "max_user_num")
+    @Column(name = "max_user_num", nullable = false)
     private Integer maxUserNum;
-    @Column(name = "current_user_num")
+    @Column(name = "current_user_num", nullable = false)
     private Integer currentUserNum;
-    @Column(name = "start_date")
+    @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
+    @Column(nullable = false)
     private Integer week;
-    @Column(name = "current_week")
+    @Column(name = "current_week", nullable = false)
     private Integer currentWeek;
-    @Column(name = "entry_fee")
+    @Column(name = "entry_fee", nullable = false)
     private Integer entryFee;
-    @Column(name = "room_code")
+    @Column(name = "room_code", nullable = false)
     private String roomCode;
+    @Column(nullable = false)
     private String account;
-    @Column(name = "room_category")
+    @Column(name = "room_category", nullable = false)
     private String roomCategory;
     private String description;
-    @Column(name = "total_entry_fee")
+    @Column(name = "total_entry_fee", nullable = false)
     private Integer totalEntryFee;
+    @Column(nullable = false)
     private String rule;
 
     @Builder

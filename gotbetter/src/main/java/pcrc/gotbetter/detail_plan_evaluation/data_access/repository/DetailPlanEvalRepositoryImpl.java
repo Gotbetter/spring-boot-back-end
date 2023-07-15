@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static pcrc.gotbetter.detail_plan_evaluation.data_access.entity.QDetailPlanEval.detailPlanEval;
 
-public class DetailPlanEvalRepositoryImpl implements DetailPlanEvalRepositoryQueryDSL {
+public class DetailPlanEvalRepositoryImpl implements DetailPlanEvalQueryRepository {
     private final JPAQueryFactory queryFactory;
 
     public DetailPlanEvalRepositoryImpl(JPAQueryFactory queryFactory) {
