@@ -6,6 +6,8 @@ import pcrc.gotbetter.participant.data_access.entity.JoinRequestId;
 
 import java.util.Optional;
 
-public interface JoinRequestRepository extends JpaRepository<JoinRequest, JoinRequestId> {
+public interface JoinRequestRepository extends JpaRepository<JoinRequest, JoinRequestId>, JoinRequestQueryRepository {
+
     Optional<JoinRequest> findByJoinRequestId(JoinRequestId joinRequestId);
+
 }

@@ -4,7 +4,6 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.transaction.annotation.Transactional;
 
-import static pcrc.gotbetter.participant.data_access.entity.QJoinRequest.joinRequest;
 import static pcrc.gotbetter.participant.data_access.entity.QParticipant.participant;
 
 public class ParticipantRepositoryImpl implements ParticipantQueryRepository {
@@ -13,16 +12,6 @@ public class ParticipantRepositoryImpl implements ParticipantQueryRepository {
 
     public ParticipantRepositoryImpl(JPAQueryFactory queryFactory) {
         this.queryFactory = queryFactory;
-    }
-
-    @Override
-    @Transactional
-    public void updateParticipateAccepted(Long userId, Long roomId) {
-        queryFactory
-                .update(joinRequest)
-                .where(joinRequestEqRoomId(roomId), joinRequestEqUserId(userId))
-                .set(joinRequest.accepted, true)
-                .execute();
     }
 
     @Override
@@ -70,16 +59,5 @@ public class ParticipantRepositoryImpl implements ParticipantQueryRepository {
 
     private BooleanExpression participantEqParticipantId(Long participantId) {
         return participantId == null ? null : participant.participantId.eq(participantId);
-    }
-
-    /**
-     * participate eq
-     */
-    private BooleanExpression joinRequestEqUserId(Long userId) {
-        return userId == null ? null : joinRequest.joinRequestId.userId.eq(userId);
-    }
-
-    private BooleanExpression joinRequestEqRoomId(Long roomId) {
-        return roomId == null ? null : joinRequest.joinRequestId.roomId.eq(roomId);
     }
 }

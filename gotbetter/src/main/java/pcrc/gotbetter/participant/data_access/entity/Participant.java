@@ -19,15 +19,17 @@ import org.hibernate.annotations.DynamicUpdate;
 public class Participant extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "participant_id")
+    @Column(name = "participant_id", nullable = false)
     private Long participantId;
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private Long userId;
-    @Column(name = "room_id")
+    @Column(name = "room_id", nullable = false)
     private Long roomId;
+    @Column(nullable = false)
     private Boolean authority;
-    @Column(name = "percent_sum")
+    @Column(name = "percent_sum", nullable = false)
     private Float percentSum;
+    @Column(nullable = false)
     private Integer refund;
 
     @Builder

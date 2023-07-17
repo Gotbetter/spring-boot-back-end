@@ -19,11 +19,16 @@ import org.hibernate.annotations.DynamicUpdate;
 public class JoinRequest extends BaseTimeEntity {
     @EmbeddedId
     private JoinRequestId joinRequestId;
+    @Column(nullable = false)
     private Boolean accepted;
 
     @Builder
     public JoinRequest(JoinRequestId joinRequestId, Boolean accepted) {
         this.joinRequestId = joinRequestId;
         this.accepted = accepted;
+    }
+
+    public void updateAcceptedToJoin() {
+        this.accepted = true;
     }
 }

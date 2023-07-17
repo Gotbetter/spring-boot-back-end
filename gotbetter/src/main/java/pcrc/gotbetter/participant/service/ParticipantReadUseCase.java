@@ -3,8 +3,8 @@ package pcrc.gotbetter.participant.service;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
+import pcrc.gotbetter.participant.data_access.repository.JoinRequestDto;
 import pcrc.gotbetter.participant.data_access.view.EnteredView;
-import pcrc.gotbetter.participant.data_access.view.TryEnterView;
 
 import java.util.List;
 
@@ -36,17 +36,17 @@ public interface ParticipantReadUseCase {
                     .build();
         }
 
-        public static FindParticipantResult findByParticipant(TryEnterView view, Long participantId,
-                                                              Boolean authority, String authId) {
+        public static FindParticipantResult findByParticipant(JoinRequestDto joinRequestResultDTO,
+            Long participantId, Boolean authority) {
             return FindParticipantResult.builder()
-                    .participantId(participantId)
-                    .userId(view.getTryEnterId().getUserId())
-                    .authId(authId)
-                    .username(view.getUsernameNick())
-                    .email(view.getEmail())
-                    .profile(view.getProfile())
-                    .authority(authority)
-                    .build();
+                .participantId(participantId)
+                .userId(joinRequestResultDTO.getUser().getUserId())
+                .authId(joinRequestResultDTO.getUserSet().getAuthId())
+                .username(joinRequestResultDTO.getUser().getUsername())
+                .email(joinRequestResultDTO.getUser().getEmail())
+                .profile(joinRequestResultDTO.getUser().getProfile())
+                .authority(authority)
+                .build();
         }
     }
 }

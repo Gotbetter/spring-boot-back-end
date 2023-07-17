@@ -13,9 +13,9 @@ import java.io.Serializable;
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class JoinRequestId implements Serializable {
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private Long userId;
-    @Column(name = "room_id")
+    @Column(name = "room_id", nullable = false)
     private Long roomId;
 
     @Builder
