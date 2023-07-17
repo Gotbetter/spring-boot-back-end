@@ -6,7 +6,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
+
 import pcrc.gotbetter.participant.data_access.entity.ParticipantInfo;
+import pcrc.gotbetter.setting.BaseTimeEntity;
 
 import java.time.LocalDate;
 
@@ -15,7 +18,8 @@ import java.time.LocalDate;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
-public class Plan {
+@DynamicUpdate
+public class Plan extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "plan_id")
