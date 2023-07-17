@@ -9,7 +9,7 @@ import pcrc.gotbetter.common.data_access.repository.CommonCodeRepository;
 import pcrc.gotbetter.participant.data_access.entity.JoinRequestId;
 import pcrc.gotbetter.participant.data_access.entity.Participant;
 import pcrc.gotbetter.participant.data_access.entity.JoinRequest;
-import pcrc.gotbetter.participant.data_access.repository.JoinRequestDto;
+import pcrc.gotbetter.participant.data_access.dto.JoinRequestDto;
 import pcrc.gotbetter.participant.data_access.repository.ViewRepository;
 import pcrc.gotbetter.participant.data_access.view.EnteredView;
 import pcrc.gotbetter.room.data_access.entity.Room;
@@ -153,6 +153,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
 
+        // participant - room - user
         List<EnteredView> enteredViewList = viewRepository.enteredListByRoomId(roomId);
         List<FindRankResult> findRankResultList = new ArrayList<>();
 

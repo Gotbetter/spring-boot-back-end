@@ -3,7 +3,7 @@ package pcrc.gotbetter.room.service;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
-import pcrc.gotbetter.participant.data_access.repository.JoinRequestDto;
+import pcrc.gotbetter.participant.data_access.dto.JoinRequestDto;
 import pcrc.gotbetter.room.data_access.entity.Room;
 
 import java.util.List;

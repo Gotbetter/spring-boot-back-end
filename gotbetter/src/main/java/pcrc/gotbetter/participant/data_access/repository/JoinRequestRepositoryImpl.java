@@ -9,7 +9,9 @@ import java.util.List;
 import static pcrc.gotbetter.participant.data_access.entity.QJoinRequest.joinRequest;
 import static pcrc.gotbetter.room.data_access.entity.QRoom.room;
 import static pcrc.gotbetter.user.data_access.entity.QUser.user;
-import static pcrc.gotbetter.user.data_access.entity.QUserSet.*;
+import static pcrc.gotbetter.user.data_access.entity.QUserSet.userSet;
+
+import pcrc.gotbetter.participant.data_access.dto.JoinRequestDto;
 
 public class JoinRequestRepositoryImpl implements JoinRequestQueryRepository {
 
