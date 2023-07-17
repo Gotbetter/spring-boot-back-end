@@ -1,5 +1,6 @@
 package pcrc.gotbetter.plan.data_access.repository;
 
+import pcrc.gotbetter.plan.data_access.dto.PlanDto;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
 
 import java.util.HashMap;
@@ -15,4 +16,7 @@ public interface PlanQueryRepository {
     Boolean existsByParticipantId(Long participantId);
     List<Plan> findListByRoomId(Long roomId, Integer passedWeek);
     List<HashMap<String, Object>> findPushNotification();
+
+    // join
+    PlanDto findPlanJoinRoom(Long planId);
 }

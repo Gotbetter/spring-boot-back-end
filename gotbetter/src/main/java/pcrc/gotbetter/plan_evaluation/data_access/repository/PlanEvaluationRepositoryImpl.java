@@ -2,7 +2,6 @@ package pcrc.gotbetter.plan_evaluation.data_access.repository;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import jakarta.transaction.Transactional;
 
 import static pcrc.gotbetter.plan_evaluation.data_access.entity.QPlanEvaluation.planEvaluation;
 
@@ -11,16 +10,6 @@ public class PlanEvaluationRepositoryImpl implements PlanEvaluationQueryReposito
 
     public PlanEvaluationRepositoryImpl(JPAQueryFactory queryFactory) {
         this.queryFactory = queryFactory;
-    }
-
-    @Override
-    @Transactional
-    public void deletePlanEvaluation(Long planId, Long participantId) {
-        queryFactory
-                .delete(planEvaluation)
-                .where(planEvaluationEqPlanId(planId),
-                        planEvaluationEqParticipantId(participantId))
-                .execute();
     }
 
     @Override

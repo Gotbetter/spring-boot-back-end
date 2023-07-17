@@ -2,11 +2,13 @@ package pcrc.gotbetter.plan.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import pcrc.gotbetter.participant.data_access.dto.ParticipantDto;
+import pcrc.gotbetter.participant.data_access.entity.Participant;
 import pcrc.gotbetter.participant.data_access.entity.ParticipantInfo;
-import pcrc.gotbetter.participant.data_access.repository.ViewRepository;
-import pcrc.gotbetter.participant.data_access.view.EnteredView;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
 import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
+import pcrc.gotbetter.room.data_access.entity.Room;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
@@ -20,34 +22,37 @@ import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
 public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
     private final PlanRepository planRepository;
     private final ParticipantRepository participantRepository;
-    private final ViewRepository viewRepository;
 
     @Autowired
     public PlanService(PlanRepository planRepository,
-                       ParticipantRepository participantRepository,
-                       ViewRepository viewRepository) {
+                       ParticipantRepository participantRepository) {
         this.planRepository = planRepository;
         this.participantRepository = participantRepository;
-        this.viewRepository = viewRepository;
     }
 
     @Override
-    public List<FindPlanResult> createPlans(PlanCreateCommand command) {
-        EnteredView enteredView = validateEnteredView(command.getParticipantId());
+    public List<FindPlanResult> createPlans(PlanCreateCommand command) { // (방장) 자신 및 멤버들의 플랜 틀 생성
+        // 사용자가 방의 멤버인지 확인
+        ParticipantDto participantRoom = validateParticipantRoom(command.getParticipantId());
+        Participant participantInfo = participantRoom.getParticipant();
+        Room roomInfo = participantRoom.getRoom();
 
-        validateSenderIsLeader(enteredView.getRoomId());
+        // 방장인지 확인
+        validateSenderIsLeader(roomInfo.getRoomId());
+        // 이미 존재하는지 확인
         validateDuplicateCreatePlans(command.getParticipantId());
 
+        // 플랜 틀 생성
         List<Plan> plans = new ArrayList<>();
-        for (int i = 1;i <= enteredView.getWeek();i++) {
+        for (int i = 1;i <= roomInfo.getWeek();i++) {
             Plan plan = Plan.builder()
                     .participantInfo(ParticipantInfo.builder()
-                            .participantId(enteredView.getParticipantId())
-                            .userId(enteredView.getUserId())
-                            .roomId(enteredView.getRoomId())
+                            .participantId(participantInfo.getParticipantId())
+                            .userId(participantInfo.getUserId())
+                            .roomId(participantInfo.getRoomId())
                             .build())
-                    .startDate(enteredView.getStartDate().plusDays((i - 1) * 7L))
-                    .targetDate(enteredView.getStartDate().plusDays(i * 7L - 1))
+                    .startDate(roomInfo.getStartDate().plusDays((i - 1) * 7L))
+                    .targetDate(roomInfo.getStartDate().plusDays(i * 7L - 1))
                     .score(0.0F)
                     .week(i)
                     .threeDaysPassed(false)
@@ -55,8 +60,10 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
                     .build();
             plans.add(plan);
         }
+
         List<Plan> planList = planRepository.saveAll(plans);
         List<FindPlanResult> results = new ArrayList<>();
+
         for (Plan plan : planList) {
             results.add(FindPlanResult.findByPlan(plan));
         }
@@ -65,9 +72,12 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
 
     @Override
     public FindPlanResult getWeekPlan(PlanFindQuery query) {
-        EnteredView enteredView = validateEnteredView(query.getParticipantId());
-        validateSenderInRoom(enteredView.getRoomId());
+        // 사용자가 방의 멤버인지 확인
+        Participant participant = validateParticipant(query.getParticipantId());
+        // 요청한 사용자가 방의 멤버인지 확인
+        validateSenderInRoom(participant.getRoomId());
 
+        // 요청한 주차의 플랜 조회
         Plan plan = planRepository.findWeekPlanOfUser(query.getParticipantId(), query.getWeek());
         if (plan == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
@@ -78,13 +88,13 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
     /**
      * validate
      */
-    private EnteredView validateEnteredView(Long participantId) {
-        EnteredView enteredView = viewRepository.enteredByParticipantId(participantId);
+    private ParticipantDto validateParticipantRoom(Long participantId) {
+        ParticipantDto participantDto = participantRepository.findRoom(participantId);
 
-        if (enteredView == null) {
+        if (participantDto == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
-        return enteredView;
+        return participantDto;
     }
 
     private void validateSenderIsLeader(Long roomId) {
@@ -100,9 +110,19 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
         }
     }
 
+    private Participant validateParticipant(Long participantId) {
+        Participant participant = participantRepository.findByParticipantId(participantId);
+
+        if (participant == null) {
+            throw new GotBetterException(MessageType.NOT_FOUND);
+        }
+        return participant;
+    }
+
     private void validateSenderInRoom(Long roomId) {
         long currentUserId = getCurrentUserId();
-        if (!viewRepository.enteredExistByUserIdRoomId(currentUserId, roomId)) {
+
+        if (!participantRepository.existsByUserIdAndRoomId(currentUserId, roomId)) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
     }

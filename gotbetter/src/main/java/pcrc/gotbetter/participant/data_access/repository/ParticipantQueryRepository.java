@@ -13,5 +13,9 @@ public interface ParticipantQueryRepository {
 
     Participant findByUserIdAndRoomId(Long userId, Long roomId);
 
+    Boolean existsByUserIdAndRoomId(Long userId, Long roomId);
+
     List<ParticipantDto> findUserInfoList(Long roomId);
+
+    ParticipantDto findRoom(Long participantId);
 }
