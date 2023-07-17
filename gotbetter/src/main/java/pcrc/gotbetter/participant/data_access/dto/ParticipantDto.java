@@ -36,6 +36,12 @@ public class ParticipantDto {
 		this.authId = authId;
 	}
 
+	// plan
+	public ParticipantDto(Participant participant, Room room) {
+		this.participant = participant;
+		this.room = room;
+	}
+
 	// DetailPlanEvalService
 	// public ParticipantDto(Long participantId, Long roomId,
 	// 	Integer currentUserNum, Integer currentWeek, Long userId) {

@@ -7,4 +7,6 @@ import pcrc.gotbetter.participant.data_access.entity.Participant;
 @Repository
 public interface ParticipantRepository extends JpaRepository<Participant, Long>, ParticipantQueryRepository {
 
+	Participant findByParticipantId(Long participantId);
+
 }

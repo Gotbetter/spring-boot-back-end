@@ -1,10 +1,19 @@
 package pcrc.gotbetter.participant.data_access.repository;
 
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 import static pcrc.gotbetter.participant.data_access.entity.QParticipant.participant;
+import static pcrc.gotbetter.room.data_access.entity.QRoom.*;
+import static pcrc.gotbetter.user.data_access.entity.QUser.user;
+import static pcrc.gotbetter.user.data_access.entity.QUserSet.userSet;
+
+import java.util.List;
+
+import pcrc.gotbetter.participant.data_access.dto.ParticipantDto;
+import pcrc.gotbetter.participant.data_access.entity.Participant;
 
 public class ParticipantRepositoryImpl implements ParticipantQueryRepository {
 
@@ -44,6 +53,50 @@ public class ParticipantRepositoryImpl implements ParticipantQueryRepository {
                         participant.authority.eq(true))
                 .fetchFirst();
         return exists != null;
+    }
+
+    @Override
+    public Participant findByUserIdAndRoomId(Long userId, Long roomId) {
+        return queryFactory
+            .selectFrom(participant)
+            .where(participantEqUserId(userId),
+                participantEqRoomId(roomId))
+            .fetchFirst();
+    }
+
+    @Override
+    public Boolean existsByUserIdAndRoomId(Long userId, Long roomId) {
+        Integer exists =  queryFactory
+            .selectOne()
+            .from(participant)
+            .where(participantEqUserId(userId),
+                participantEqRoomId(roomId))
+            .fetchFirst();
+        return exists != null;
+    }
+
+    @Override
+    public List<ParticipantDto> findUserInfoList(Long roomId) {
+        return queryFactory
+            .select(Projections.constructor(ParticipantDto.class,
+                participant.participantId, participant.authority,
+                user, userSet.authId))
+            .from(participant)
+            .leftJoin(user).on(participant.userId.eq(user.userId)).fetchJoin()
+            .leftJoin(userSet).on(participant.userId.eq(userSet.userId)).fetchJoin()
+            .where(participantEqRoomId(roomId))
+            .fetch();
+    }
+
+    @Override
+    public ParticipantDto findRoom(Long participantId) {
+        return queryFactory
+            .select(Projections.constructor(ParticipantDto.class,
+                participant, room))
+            .from(participant)
+            .leftJoin(room).on(participant.roomId.eq(room.roomId)).fetchJoin()
+            .where(participantEqParticipantId(participantId))
+            .fetchFirst();
     }
 
     /**
