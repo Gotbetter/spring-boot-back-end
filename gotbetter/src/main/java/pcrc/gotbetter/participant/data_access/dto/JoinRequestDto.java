@@ -1,4 +1,4 @@
-package pcrc.gotbetter.participant.data_access.repository;
+package pcrc.gotbetter.participant.data_access.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
