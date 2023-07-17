@@ -105,7 +105,12 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
 
         validateDate(planInfo, roomInfo.getCurrentWeek());
         if (planEvaluationRepository.existsEval(planInfo.getPlanId(), participant.getParticipantId())) {
-            planEvaluationRepository.deletePlanEvaluation(planInfo.getPlanId(), participant.getParticipantId());
+            planEvaluationRepository.deleteById(PlanEvaluationId.builder()
+                    .planId(planInfo.getPlanId())
+                    .participantId(participant.getParticipantId())
+                    .userId(participant.getUserId())
+                    .roomId(participant.getRoomId())
+                .build());
             return;
         }
         throw new GotBetterException(MessageType.NOT_FOUND);
