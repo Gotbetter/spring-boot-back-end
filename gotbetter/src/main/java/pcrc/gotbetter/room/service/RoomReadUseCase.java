@@ -3,7 +3,7 @@ package pcrc.gotbetter.room.service;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
-import pcrc.gotbetter.participant.data_access.view.TryEnterView;
+import pcrc.gotbetter.participant.data_access.repository.JoinRequestDto;
 import pcrc.gotbetter.room.data_access.entity.Room;
 
 import java.util.List;
@@ -54,23 +54,23 @@ public interface RoomReadUseCase {
                     .build();
         }
 
-        public static FindRoomResult findByRoom(TryEnterView tryEnterView, String roomCategory, String rule) {
+        public static FindRoomResult findByRoom(JoinRequestDto joinRequestDto, String roomCategory, String rule) {
             return FindRoomResult.builder()
-                    .roomId(tryEnterView.getTryEnterId().getRoomId())
-                    .title(tryEnterView.getTitle())
-                    .maxUserNum(tryEnterView.getMaxUserNum())
-                    .currentUserNum(tryEnterView.getCurrentUserNum())
-                    .startDate(tryEnterView.getStartDate().toString())
-                    .week(tryEnterView.getWeek())
-                    .currentWeek(tryEnterView.getCurrentWeek())
-                    .entryFee(tryEnterView.getEntryFee())
-                    .roomCode(tryEnterView.getRoomCode())
-                    .account(tryEnterView.getAccount())
-                    .roomCategory(roomCategory)
-                    .description(tryEnterView.getDescription() == null ? "" : tryEnterView.getDescription())
-                    .totalEntryFee(tryEnterView.getTotalEntryFee())
-                    .rule(rule)
-                    .build();
+                .roomId(joinRequestDto.getRoom().getRoomId())
+                .title(joinRequestDto.getRoom().getTitle())
+                .maxUserNum(joinRequestDto.getRoom().getMaxUserNum())
+                .currentUserNum(joinRequestDto.getRoom().getCurrentUserNum())
+                .startDate(joinRequestDto.getRoom().getStartDate().toString())
+                .week(joinRequestDto.getRoom().getWeek())
+                .currentWeek(joinRequestDto.getRoom().getCurrentWeek())
+                .entryFee(joinRequestDto.getRoom().getEntryFee())
+                .roomCode(joinRequestDto.getRoom().getRoomCode())
+                .account(joinRequestDto.getRoom().getAccount())
+                .roomCategory(roomCategory)
+                .description(joinRequestDto.getRoom().getDescription() == null ? "" : joinRequestDto.getRoom().getDescription())
+                .totalEntryFee(joinRequestDto.getRoom().getTotalEntryFee())
+                .rule(rule)
+                .build();
         }
     }
 

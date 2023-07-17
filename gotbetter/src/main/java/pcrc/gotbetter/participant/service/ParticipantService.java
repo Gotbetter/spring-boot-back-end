@@ -5,9 +5,9 @@ import org.springframework.stereotype.Service;
 import pcrc.gotbetter.participant.data_access.entity.JoinRequest;
 import pcrc.gotbetter.participant.data_access.entity.JoinRequestId;
 import pcrc.gotbetter.participant.data_access.entity.Participant;
+import pcrc.gotbetter.participant.data_access.repository.JoinRequestDto;
 import pcrc.gotbetter.participant.data_access.repository.ViewRepository;
 import pcrc.gotbetter.participant.data_access.view.EnteredView;
-import pcrc.gotbetter.participant.data_access.view.TryEnterView;
 import pcrc.gotbetter.room.data_access.entity.Room;
 import pcrc.gotbetter.participant.data_access.repository.JoinRequestRepository;
 import pcrc.gotbetter.room.data_access.repository.RoomRepository;
@@ -80,11 +80,9 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
             }
         } else { // (방장만) 승인 대기 중인 사용자 조회
             validateUserInRoom(roomId, true); // 방장인지 검증
-            List<TryEnterView> tryEnterViewList = viewRepository
-                    .tryEnterListByUserIdRoomId(null, roomId, false);
-            for (TryEnterView p : tryEnterViewList) {
-                String authId = validateUserSetAuthId(p.getTryEnterId().getUserId());
-                result.add(FindParticipantResult.findByParticipant(p, -1L, false, authId));
+            List<JoinRequestDto> joinRequestList = joinRequestRepository.findJoinRequestList(null, roomId, false);
+            for (JoinRequestDto joinRequest : joinRequestList) {
+                result.add(FindParticipantResult.findByParticipant(joinRequest, -1L, false));
             }
         }
         return result;
@@ -94,37 +92,37 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
     public FindParticipantResult approveJoinRoom(UserRoomAcceptedUpdateCommand command) { // (방장) 방 입장 승인
         validateUserInRoom(command.getRoomId(), true); // 방장인지 검증
         // 승인하려는 사용자 정보
-        TryEnterView targetUserInfo = viewRepository.tryEnterByUserIdRoomId(
-                command.getUserId(), command.getRoomId(), false);
+        JoinRequestDto joinRequestDto = joinRequestRepository.findJoinRequest(
+            command.getUserId(), command.getRoomId(), false);
 
-        if (targetUserInfo == null) {
+        if (joinRequestDto == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
+
+        JoinRequest joinRequestInfo = joinRequestDto.getJoinRequest();
+        Room roomInfo = joinRequestDto.getRoom();
+
         // 방의 인원이 만원인지 확인
-        if (Objects.equals(targetUserInfo.getMaxUserNum(), targetUserInfo.getCurrentUserNum())) {
+        if (Objects.equals(roomInfo.getMaxUserNum(), roomInfo.getCurrentUserNum())) {
             throw new GotBetterException(MessageType.CONFLICT_MAX);
         }
         // 방 승인
         Participant participant = Participant.builder()
-                .userId(targetUserInfo.getTryEnterId().getUserId())
-                .roomId(targetUserInfo.getTryEnterId().getRoomId())
-                .authority(false)
-                .refund(0)
-                .build();
+            .userId(joinRequestInfo.getJoinRequestId().getUserId())
+            .roomId(joinRequestInfo.getJoinRequestId().getRoomId())
+            .authority(false)
+            .refund(0)
+            .build();
         participantRepository.save(participant);
-        //
         // 사용자 방 요청을 수락했으므로 accepted를 true로 변경
-        participantRepository.updateParticipateAccepted(targetUserInfo.getTryEnterId().getUserId(), targetUserInfo.getTryEnterId().getRoomId());
-        // 방 정보 중 totalEntryFee와 currentUserNum 업데이트
-        Room roomInfo = roomRepository.findByRoomId(command.getRoomId()).orElseThrow(() -> {
-            throw new GotBetterException(MessageType.NOT_FOUND);
-        });
-        roomInfo.updateTotalEntryFeeAndCurrentUserNum(targetUserInfo.getEntryFee());
+        joinRequestInfo.updateAcceptedToJoin();
+        joinRequestRepository.save(joinRequestInfo);
+        // 방의 전체 입장비와 인원수 변경
+        roomInfo.updateTotalEntryFeeAndCurrentUserNum(roomInfo.getEntryFee());
         roomRepository.save(roomInfo);
-        // 리턴
-        String authId = validateUserSetAuthId(targetUserInfo.getTryEnterId().getUserId());
-        return FindParticipantResult.findByParticipant(targetUserInfo,
-                participant.getParticipantId(), null, authId);
+        // 프로필 수정 추가해야함.
+        return FindParticipantResult.findByParticipant(joinRequestDto,
+            participant.getParticipantId(), null);
     }
 
     @Override

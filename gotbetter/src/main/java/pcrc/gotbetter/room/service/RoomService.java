@@ -9,9 +9,9 @@ import pcrc.gotbetter.common.data_access.repository.CommonCodeRepository;
 import pcrc.gotbetter.participant.data_access.entity.JoinRequestId;
 import pcrc.gotbetter.participant.data_access.entity.Participant;
 import pcrc.gotbetter.participant.data_access.entity.JoinRequest;
+import pcrc.gotbetter.participant.data_access.repository.JoinRequestDto;
 import pcrc.gotbetter.participant.data_access.repository.ViewRepository;
 import pcrc.gotbetter.participant.data_access.view.EnteredView;
-import pcrc.gotbetter.participant.data_access.view.TryEnterView;
 import pcrc.gotbetter.room.data_access.entity.Room;
 import pcrc.gotbetter.participant.data_access.repository.JoinRequestRepository;
 import pcrc.gotbetter.room.data_access.repository.RoomRepository;
@@ -110,9 +110,8 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     public List<FindRoomResult> getUserRoomList() {
         Long currentUserId = getCurrentUserId();
         List<FindRoomResult> result = new ArrayList<>();
-        // 유저가 속한 방 리스트
-        List<TryEnterView> tryEnterViewList = viewRepository
-                .tryEnterListByUserIdRoomId(currentUserId, null, true);
+        // 유저가 속한 방 리스트 - JoinRequest 대신 Participant에서 사용 가능 - room 정보
+        List<JoinRequestDto> joinRequestDtoList = joinRequestRepository.findJoinRequestList(currentUserId, null, true);
         // common code 모든 데이터 (ROOM_CATEGORY + RULE)
         List<CommonCode> commonCodes = commonCodeRepository.findListByGroupCode("");
         HashMap<String, CommonCode> commonCodeHashMap = new HashMap<>();
@@ -121,10 +120,10 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
             commonCodeHashMap.put(commonCode.getCommonCodeId().getGroupCode()
                     + "/" + commonCode.getCommonCodeId().getCode(), commonCode);
         }
-        for (TryEnterView t : tryEnterViewList) {
-            CommonCode roomCategoryInfo = commonCodeHashMap.get("ROOM_CATEGORY/" + t.getRoomCategory());
-            CommonCode ruleInfo = commonCodeHashMap.get("RULE/" + t.getRule());
-            result.add(FindRoomResult.findByRoom(t, roomCategoryInfo.getCodeDescription(),
+        for (JoinRequestDto joinRequest : joinRequestDtoList) {
+            CommonCode roomCategoryInfo = commonCodeHashMap.get("ROOM_CATEGORY/" + joinRequest.getRoom().getRoomCategory());
+            CommonCode ruleInfo = commonCodeHashMap.get("RULE/" + joinRequest.getRoom().getRule());
+            result.add(FindRoomResult.findByRoom(joinRequest, roomCategoryInfo.getCodeDescription(),
                     ruleInfo.getCodeDescription()));
         }
         return result;
@@ -134,17 +133,17 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     public FindRoomResult getOneRoomInfo(Long roomId) {
         Long currentUserId = getCurrentUserId();
         // 유저가 속한 방 정보
-        TryEnterView tryEnterView = viewRepository.tryEnterByUserIdRoomId(currentUserId, roomId, true);
+        JoinRequestDto joinRequestDto = joinRequestRepository.findJoinRequest(currentUserId, roomId, true);
 
-        if (tryEnterView == null) {
+        if (joinRequestDto == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
         // 카테고리 정보
-        CommonCode roomCategoryInfo = findRoomCategoryInfo(tryEnterView.getRoomCategory());
+        CommonCode roomCategoryInfo = findRoomCategoryInfo(joinRequestDto.getRoom().getRoomCategory());
         // rule 정보 - 고정된 규칙
-        CommonCode ruleInfo = findRuleInfo(tryEnterView.getRule());
-        return FindRoomResult.findByRoom(tryEnterView,
-                roomCategoryInfo.getCodeDescription(), ruleInfo.getCodeDescription());
+        CommonCode ruleInfo = findRuleInfo(joinRequestDto.getRoom().getRule());
+        return FindRoomResult.findByRoom(joinRequestDto,
+            roomCategoryInfo.getCodeDescription(), ruleInfo.getCodeDescription());
     }
 
     @Override
