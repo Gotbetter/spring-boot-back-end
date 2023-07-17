@@ -1,9 +1,12 @@
 package pcrc.gotbetter.plan.data_access.repository;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.transaction.annotation.Transactional;
+
+import pcrc.gotbetter.plan.data_access.dto.PlanDto;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
 
 import java.time.LocalDate;
@@ -104,6 +107,16 @@ public class PlanRepositoryImpl implements PlanQueryRepository {
             result.add(hashMap);
         }
         return result;
+    }
+
+    @Override
+    public PlanDto findPlanJoinRoom(Long planId) {
+        return queryFactory
+            .select(Projections.constructor(PlanDto.class, plan, room))
+            .from(plan)
+            .leftJoin(room).on(plan.participantInfo.roomId.eq(room.roomId)).fetchJoin()
+            .where(eqPlanId(planId))
+            .fetchFirst();
     }
 
     /**
