@@ -1,15 +1,17 @@
 package pcrc.gotbetter.detail_plan.data_access.repository;
 
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
-import jakarta.transaction.Transactional;
+import pcrc.gotbetter.detail_plan.data_access.dto.DetailPlanDto;
 import pcrc.gotbetter.detail_plan.data_access.entity.DetailPlan;
 
 import java.util.HashMap;
 
 import static pcrc.gotbetter.detail_plan.data_access.entity.QDetailPlan.detailPlan;
+import static pcrc.gotbetter.room.data_access.entity.QRoom.room;
 
 public class DetailPlanRepositoryImpl implements DetailPlanQueryRepository {
     private final JPAQueryFactory queryFactory;
@@ -18,58 +20,6 @@ public class DetailPlanRepositoryImpl implements DetailPlanQueryRepository {
     public DetailPlanRepositoryImpl(JPAQueryFactory queryFactory, EntityManager em) {
         this.queryFactory = queryFactory;
         this.em = em;
-    }
-
-    @Override
-    @Transactional
-    public void updateDetailContent(Long detailPlanId, String content) {
-        queryFactory
-                .update(detailPlan)
-                .set(detailPlan.content, content)
-                .where(detailPlanEqDetailPlanId(detailPlanId))
-                .execute();
-    }
-
-    @Override
-    @Transactional
-    public void updateRejected(Long detailPlanId, Boolean rejected) {
-        queryFactory
-                .update(detailPlan)
-                .set(detailPlan.rejected, rejected)
-                .where(detailPlanEqDetailPlanId(detailPlanId))
-                .execute();
-    }
-
-    @Override
-    @Transactional
-    public void updateDetailPlanCompleted(Long detailPlanId, String approveComment) {
-        queryFactory
-                .update(detailPlan)
-                .set(detailPlan.complete, true)
-                .set(detailPlan.approveComment, approveComment)
-                .where(detailPlanEqDetailPlanId(detailPlanId))
-                .execute();
-    }
-
-    @Override
-    @Transactional
-    public void updateDetailPlanUndo(Long detailPlanId, Boolean rejected) {
-        queryFactory
-                .update(detailPlan)
-                .set(detailPlan.complete, false)
-                .setNull(detailPlan.approveComment)
-                .set(detailPlan.rejected, rejected)
-                .where(detailPlanEqDetailPlanId(detailPlanId))
-                .execute();
-    }
-
-    @Override
-    @Transactional
-    public void deleteDetailPlan(Long detailPlanId) {
-        queryFactory
-                .delete(detailPlan)
-                .where(detailPlanEqDetailPlanId(detailPlanId))
-                .execute();
     }
 
     @Override
@@ -101,6 +51,16 @@ public class DetailPlanRepositoryImpl implements DetailPlanQueryRepository {
                 .selectFrom(detailPlan)
                 .where(detailPlanEqDetailPlanId(detailPlanId))
                 .fetchFirst();
+    }
+
+    @Override
+    public DetailPlanDto findByDetailJoinRoom(Long detailPlanId) {
+        return queryFactory
+            .select(Projections.constructor(DetailPlanDto.class, detailPlan, room))
+            .from(detailPlan)
+            .leftJoin(room).on(detailPlan.participantInfo.roomId.eq(room.roomId)).fetchJoin()
+            .where(detailPlanEqDetailPlanId(detailPlanId))
+            .fetchFirst();
     }
 
     /**

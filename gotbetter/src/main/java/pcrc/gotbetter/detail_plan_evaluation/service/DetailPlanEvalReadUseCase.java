@@ -21,11 +21,16 @@ public interface DetailPlanEvalReadUseCase {
 
         public static FindDetailPlanEvalResult findByDetailPlanEval(DetailPlan detailPlan,
                                                                     Integer dislikeCount, Boolean checked) {
+            String comment = detailPlan.getApproveComment();
+            if (comment == null) {
+                comment = "";
+            }
+
             return FindDetailPlanEvalResult.builder()
                     .detailPlanId(detailPlan.getDetailPlanId())
                     .content(detailPlan.getContent())
                     .complete(detailPlan.getComplete())
-                    .approveComment(detailPlan.getApproveComment())
+                    .approveComment(comment)
                     .rejected(detailPlan.getRejected())
                     .planId(detailPlan.getPlanId())
                     .detailPlanDislikeCount(dislikeCount)

@@ -89,7 +89,7 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
      * validate
      */
     private ParticipantDto validateParticipantRoom(Long participantId) {
-        ParticipantDto participantDto = participantRepository.findRoom(participantId);
+        ParticipantDto participantDto = participantRepository.findParticipantRoom(participantId);
 
         if (participantDto == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);

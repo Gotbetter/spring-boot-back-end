@@ -23,14 +23,6 @@ public class ViewRepository {
                 .fetchFirst();
     }
 
-    public EnteredView enteredByUserIdRoomId(Long userId, Long roomId) {
-        return queryFactory
-                .selectFrom(enteredView)
-                .where(enteredView.userId.eq(userId),
-                        enteredView.roomId.eq(roomId))
-                .fetchFirst();
-    }
-
     public List<EnteredView> enteredListByRoomId(Long roomId) {
         return queryFactory
                 .selectFrom(enteredView)

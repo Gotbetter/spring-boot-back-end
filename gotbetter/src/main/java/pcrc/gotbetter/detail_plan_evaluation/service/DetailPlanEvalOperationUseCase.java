@@ -6,8 +6,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 public interface DetailPlanEvalOperationUseCase {
-    DetailPlanEvalReadUseCase.FindDetailPlanEvalResult createDetailPlanEvaluation(DetailPlanEvaluationCommand command)
-        throws InterruptedException;
+    DetailPlanEvalReadUseCase.FindDetailPlanEvalResult createDetailPlanEvaluation(DetailPlanEvaluationCommand command);
     DetailPlanEvalReadUseCase.FindDetailPlanEvalResult deleteDetailPlanEvaluation(DetailPlanEvaluationCommand command);
 
     @EqualsAndHashCode(callSuper = false)

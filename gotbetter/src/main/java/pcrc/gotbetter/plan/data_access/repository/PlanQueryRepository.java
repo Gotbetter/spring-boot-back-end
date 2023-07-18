@@ -8,7 +8,6 @@ import java.util.List;
 
 public interface PlanQueryRepository {
     // insert, update, delete
-    void updateRejected(Long planId, Boolean change);
     void updateThreeDaysPassed(Long planId);
 
     // select
