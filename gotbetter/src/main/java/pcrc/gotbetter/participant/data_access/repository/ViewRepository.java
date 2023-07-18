@@ -16,13 +16,6 @@ public class ViewRepository {
         this.queryFactory = queryFactory;
     }
 
-    public EnteredView enteredByParticipantId(Long participantId) {
-        return queryFactory
-                .selectFrom(enteredView)
-                .where(enteredView.participantId.eq(participantId))
-                .fetchFirst();
-    }
-
     public List<EnteredView> enteredListByRoomId(Long roomId) {
         return queryFactory
                 .selectFrom(enteredView)
