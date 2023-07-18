@@ -41,20 +41,5 @@ public interface DetailPlanReadUseCase {
                     .detailPlanDislikeChecked(checked)
                     .build();
         }
-
-        public static FindDetailPlanResult findByDetailPlanEval(DetailPlan detailPlan,
-                                                                String approveComment, Boolean complete,
-                                                                Integer dislikeCount, Boolean checked) {
-            return FindDetailPlanResult.builder()
-                    .detailPlanId(detailPlan.getDetailPlanId())
-                    .content(detailPlan.getContent())
-                    .complete(complete)
-                    .approveComment(approveComment)
-                    .rejected(false)
-                    .planId(detailPlan.getPlanId())
-                    .detailPlanDislikeCount(dislikeCount)
-                    .detailPlanDislikeChecked(checked)
-                    .build();
-        }
     }
 }

@@ -1,15 +1,19 @@
 package pcrc.gotbetter.detail_plan.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import pcrc.gotbetter.detail_plan.data_access.dto.DetailPlanDto;
 import pcrc.gotbetter.detail_plan.data_access.entity.DetailPlan;
 import pcrc.gotbetter.detail_plan.data_access.repository.DetailPlanRepository;
 import pcrc.gotbetter.detail_plan_evaluation.data_access.entity.DetailPlanEval;
 import pcrc.gotbetter.detail_plan_evaluation.data_access.repository.DetailPlanEvalRepository;
 import pcrc.gotbetter.participant.data_access.entity.ParticipantInfo;
-import pcrc.gotbetter.participant.data_access.repository.ViewRepository;
+import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
+import pcrc.gotbetter.plan.data_access.dto.PlanDto;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
 import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
-import pcrc.gotbetter.room.data_access.repository.RoomRepository;
+import pcrc.gotbetter.room.data_access.entity.Room;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 
@@ -25,30 +29,31 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
     private final DetailPlanRepository detailPlanRepository;
     private final PlanRepository planRepository;
     private final DetailPlanEvalRepository detailPlanEvalRepository;
-    private final RoomRepository roomRepository;
-    private final ViewRepository viewRepository;
+    private final ParticipantRepository participantRepository;
 
     public DetailPlanService(DetailPlanRepository detailPlanRepository, PlanRepository planRepository,
-                             DetailPlanEvalRepository detailPlanEvalRepository, RoomRepository roomRepository,
-                             ViewRepository viewRepository) {
+                             DetailPlanEvalRepository detailPlanEvalRepository,
+                             ParticipantRepository participantRepository) {
         this.detailPlanRepository = detailPlanRepository;
         this.planRepository = planRepository;
         this.detailPlanEvalRepository = detailPlanEvalRepository;
-        this.roomRepository = roomRepository;
-        this.viewRepository = viewRepository;
+        this.participantRepository = participantRepository;
     }
 
     @Override
     public FindDetailPlanResult createDetailPlan(DetailPlanCreateCommand command) {
-        Plan plan = validatePlan(command.getPlanId());
+        PlanDto planDto = validatePlanRoom(command.getPlanId());
+        Plan plan = planDto.getPlan();
+        Room room = planDto.getRoom();
         Long currentUserId = getCurrentUserId();
 
         if (!Objects.equals(currentUserId, plan.getParticipantInfo().getUserId())) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
-        validateThreeDaysPassed(plan, roomRepository.findCurrentWeek(plan.getParticipantInfo().getRoomId()));
+        validateThreeDaysPassed(plan.getPlanId(), room.getCurrentWeek());
         if (plan.getRejected()) {
-            planRepository.updateRejected(plan.getPlanId(), false);
+            plan.updateRejected(false);
+            planRepository.save(plan);
         }
         DetailPlan detailPlan = DetailPlan.builder()
                 .planId(plan.getPlanId())
@@ -63,8 +68,10 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
                 .rejected(false)
                 .build();
         detailPlanRepository.save(detailPlan);
-        List<DetailPlanEval> detailPlanEvals = detailPlanEvalRepository.findByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());
-        return FindDetailPlanResult.findByDetailPlan(detailPlan, detailPlanEvals.size(), false);
+
+        Integer detailPlanEvalSize = detailPlanEvalRepository.countByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());
+
+        return FindDetailPlanResult.findByDetailPlan(detailPlan, detailPlanEvalSize, false);
     }
 
     @Override
@@ -72,10 +79,11 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
         Plan plan = validatePlan(planId);
         Long currentUserId = getCurrentUserId();
 
-        if (!viewRepository.enteredExistByUserIdRoomId(currentUserId, plan.getParticipantInfo().getRoomId())) {
+        if (!participantRepository.existsByUserIdAndRoomId(currentUserId, plan.getParticipantInfo().getRoomId())) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
 
+        /** Todo detailPlanEval - detailPlan 좀 더 생각해보기 */
         List<DetailPlan> detailPlans = detailPlanRepository.findByPlanId(planId);
         List<FindDetailPlanResult> findDetailPlanResults = new ArrayList<>();
 
@@ -96,34 +104,28 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 
     @Override
     public FindDetailPlanResult updateDetailPlan(DetailPlanUpdateCommand command) {
-        DetailPlan detailPlan = validateDetailPlan(command.getDetailPlanId(), command.getPlanId());
+        DetailPlanDto detailPlanDto = validateDetailPlanRoom(command.getDetailPlanId(), command.getPlanId());
+        DetailPlan detailPlan = detailPlanDto.getDetailPlan();
+        Room room = detailPlanDto.getRoom();
 
-        validateThreeDaysPassed(validatePlan(detailPlan.getPlanId()),
-                roomRepository.findCurrentWeek(detailPlan.getParticipantInfo().getRoomId()));
+        validateThreeDaysPassed(detailPlan.getPlanId(), room.getCurrentWeek());
+        detailPlan.updateContent(command.getContent());
+        detailPlanRepository.save(detailPlan);
+        /** Todo detail plan eval 삭제하고, 완료 사항도 삭제? => ?? */
+        Integer detailPlanEvalSize = detailPlanEvalRepository.countByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());
 
-        detailPlanRepository.updateDetailContent(command.getDetailPlanId(), command.getContent());
-        // detail plan eval 삭제하고, 완료 사항도 삭제?
-        List<DetailPlanEval> detailPlanEvals = detailPlanEvalRepository.findByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());
-        return FindDetailPlanResult.builder()
-                .detailPlanId(command.getDetailPlanId())
-                .content(command.getContent())
-                .complete(detailPlan.getComplete())
-                .approveComment(detailPlan.getApproveComment() == null ? "" : detailPlan.getApproveComment())
-                .rejected(detailPlan.getRejected())
-                .planId(detailPlan.getPlanId())
-                .detailPlanDislikeCount(detailPlanEvals.size())
-                .detailPlanDislikeChecked(false)
-                .build();
+        return FindDetailPlanResult.findByDetailPlan(detailPlan, detailPlanEvalSize, false);
     }
 
     @Override
+    @Transactional
     public void deleteDetailPlan(DetailPlanDeleteCommand command) {
-        DetailPlan detailPlan = validateDetailPlan(command.getDetailPlanId(), command.getPlanId());
+        DetailPlanDto detailPlanDto = validateDetailPlanRoom(command.getDetailPlanId(), command.getPlanId());
+        DetailPlan detailPlan = detailPlanDto.getDetailPlan();
+        Room room = detailPlanDto.getRoom();
 
-        validateThreeDaysPassed(validatePlan(detailPlan.getPlanId()),
-                roomRepository.findCurrentWeek(detailPlan.getParticipantInfo().getRoomId()));
-
-        detailPlanRepository.deleteDetailPlan(command.getDetailPlanId());
+        validateThreeDaysPassed(detailPlan.getPlanId(), room.getCurrentWeek());
+        detailPlanRepository.deleteByDetailPlanId(detailPlan.getDetailPlanId());
     }
 
     /**
@@ -136,21 +138,35 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
                 });
     }
 
-    private DetailPlan validateDetailPlan(Long detailPlanId, Long planId) {
-        DetailPlan detailPlan = detailPlanRepository.findByDetailPlanId(detailPlanId);
+    private DetailPlanDto validateDetailPlanRoom(Long detailPlanId, Long planId) {
+        DetailPlanDto detailPlanDto = detailPlanRepository.findByDetailJoinRoom(detailPlanId);
 
-        if (detailPlan == null) {
+        if (detailPlanDto == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
+
+        DetailPlan detailPlan = detailPlanDto.getDetailPlan();
         Long user_id = getCurrentUserId();
+
         if (!(Objects.equals(detailPlan.getPlanId(), planId)
-                && Objects.equals(detailPlan.getParticipantInfo().getUserId(), user_id))) {
+            && Objects.equals(detailPlan.getParticipantInfo().getUserId(), user_id))) {
             throw new GotBetterException(MessageType.FORBIDDEN);
         }
-        return detailPlan;
+        return detailPlanDto;
     }
 
-    private void validateThreeDaysPassed(Plan plan, Integer currentWeek) {
+    private PlanDto validatePlanRoom(Long planId) {
+        PlanDto planDto = planRepository.findPlanJoinRoom(planId);
+
+        if (planDto == null) {
+            throw new GotBetterException(MessageType.NOT_FOUND);
+        }
+        return planDto;
+    }
+
+    private void validateThreeDaysPassed(Long planId, Integer currentWeek) {
+        Plan plan = validatePlan(planId);
+
         if (!Objects.equals(currentWeek, plan.getWeek())) {
             throw new GotBetterException(MessageType.FORBIDDEN_DATE);
         } else {

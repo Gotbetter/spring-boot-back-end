@@ -11,5 +11,10 @@ import java.util.List;
 public interface DetailPlanEvalRepository
         extends JpaRepository<DetailPlanEval, DetailPlanEvalId>, DetailPlanEvalQueryRepository {
     List<DetailPlanEval> findByDetailPlanEvalIdDetailPlanId(Long detailPlanId);
+
+    Integer countByDetailPlanEvalIdDetailPlanId(Long detailPlanId);
+
     void deleteByDetailPlanEvalIdDetailPlanId(Long detailPlanId);
+
+    void deleteByDetailPlanEvalId(DetailPlanEvalId detailPlanEvalId);
 }

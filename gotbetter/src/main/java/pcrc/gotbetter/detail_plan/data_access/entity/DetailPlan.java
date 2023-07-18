@@ -45,4 +45,23 @@ public class DetailPlan extends BaseTimeEntity {
         this.approveComment = approveComment;
         this.rejected = rejected;
     }
+
+    public void updateContent(String content) {
+        this.content = content;
+    }
+
+    public void updateRejected(Boolean rejected) {
+        this.rejected = rejected;
+    }
+
+    public void updateDetailPlanCompleted(String approveComment) {
+        this.complete = true;
+        this.approveComment = approveComment;
+    }
+
+    public void updateDetailPlanUndo(Boolean rejected) {
+        this.complete = false;
+        this.approveComment = null;
+        this.rejected = rejected;
+    }
 }

@@ -27,16 +27,6 @@ public class PlanRepositoryImpl implements PlanQueryRepository {
 
     @Override
     @Transactional
-    public void updateRejected(Long planId, Boolean change) {
-        queryFactory
-                .update(plan)
-                .set(plan.rejected, change)
-                .where(eqPlanId(planId))
-                .execute();
-    }
-
-    @Override
-    @Transactional
     public void updateThreeDaysPassed(Long planId) {
         queryFactory
                 .update(plan)

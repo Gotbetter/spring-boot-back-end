@@ -2,7 +2,6 @@ package pcrc.gotbetter.detail_plan_evaluation.data_access.repository;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import org.springframework.transaction.annotation.Transactional;
 
 import static pcrc.gotbetter.detail_plan_evaluation.data_access.entity.QDetailPlanEval.detailPlanEval;
 
@@ -11,15 +10,6 @@ public class DetailPlanEvalRepositoryImpl implements DetailPlanEvalQueryReposito
 
     public DetailPlanEvalRepositoryImpl(JPAQueryFactory queryFactory) {
         this.queryFactory = queryFactory;
-    }
-
-    @Override
-    @Transactional
-    public void deleteDetailPlanEval(Long detailPlanId, Long participantId) {
-        queryFactory.delete(detailPlanEval)
-                .where(detailPlanEvalEqDetailPlanId(detailPlanId),
-                        detailPlanEvalEqParticipantId(participantId))
-                .execute();
     }
 
     @Override

@@ -89,7 +89,7 @@ public class ParticipantRepositoryImpl implements ParticipantQueryRepository {
     }
 
     @Override
-    public ParticipantDto findRoom(Long participantId) {
+    public ParticipantDto findParticipantRoom(Long participantId) {
         return queryFactory
             .select(Projections.constructor(ParticipantDto.class,
                 participant, room))
