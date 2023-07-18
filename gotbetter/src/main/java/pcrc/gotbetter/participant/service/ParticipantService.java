@@ -8,8 +8,6 @@ import pcrc.gotbetter.participant.data_access.entity.JoinRequest;
 import pcrc.gotbetter.participant.data_access.entity.JoinRequestId;
 import pcrc.gotbetter.participant.data_access.entity.Participant;
 import pcrc.gotbetter.participant.data_access.dto.JoinRequestDto;
-import pcrc.gotbetter.participant.data_access.repository.ViewRepository;
-import pcrc.gotbetter.participant.data_access.view.EnteredView;
 import pcrc.gotbetter.room.data_access.entity.Room;
 import pcrc.gotbetter.participant.data_access.repository.JoinRequestRepository;
 import pcrc.gotbetter.room.data_access.repository.RoomRepository;
@@ -31,16 +29,14 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
     private final ParticipantRepository participantRepository;
     private final JoinRequestRepository joinRequestRepository;
     private final RoomRepository roomRepository;
-    private final ViewRepository viewRepository;
 
     @Autowired
     public ParticipantService(ParticipantRepository participantRepository,
                               JoinRequestRepository joinRequestRepository,
-                              RoomRepository roomRepository, ViewRepository viewRepository) {
+                              RoomRepository roomRepository) {
         this.participantRepository = participantRepository;
         this.joinRequestRepository = joinRequestRepository;
         this.roomRepository = roomRepository;
-        this.viewRepository = viewRepository;
     }
 
     @Override
@@ -124,24 +120,27 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 
     @Override
     public Integer getMyRefund(Long participantId) { // 마지막 주차 끝난 후 조회 가능
-        // participant - room
-        // 방의 멤버인지 확인
-        EnteredView enteredView = viewRepository.enteredByParticipantId(participantId);
+        ParticipantDto participantDto = participantRepository.findParticipantRoom(participantId);
 
-        if (enteredView == null) {
+        // 방의 멤버인지 확인
+        if (participantDto == null || !Objects.equals(participantDto.getParticipant().getUserId(), getCurrentUserId())) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
+
+        Participant participant = participantDto.getParticipant();
+        Room room = participantDto.getRoom();
+
         // 마지막 주차가 종료됐는지 확인
-        if (!Objects.equals(enteredView.getWeek(), enteredView.getCurrentWeek())) {
+        if (!Objects.equals(room.getWeek(), room.getCurrentWeek())) {
             throw new GotBetterException(MessageType.FORBIDDEN_DATE);
         } else {
             LocalDate now = LocalDate.now();
-            LocalDate lastDate = enteredView.getStartDate().plusDays(7L * enteredView.getCurrentWeek() - 1);
+            LocalDate lastDate = room.getStartDate().plusDays(7L * room.getCurrentWeek() - 1);
             if (!now.isAfter(lastDate)) {
                 throw new GotBetterException(MessageType.FORBIDDEN_DATE);
             }
         }
-        return enteredView.getRefund();
+        return participant.getRefund();
     }
 
     /**

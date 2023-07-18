@@ -17,5 +17,6 @@ public interface ParticipantQueryRepository {
 
     List<ParticipantDto> findUserInfoList(Long roomId);
 
+    // join
     ParticipantDto findParticipantRoom(Long participantId);
 }
