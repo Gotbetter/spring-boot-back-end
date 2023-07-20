@@ -3,7 +3,6 @@ package pcrc.gotbetter.participant.data_access.repository;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import org.springframework.transaction.annotation.Transactional;
 
 import static pcrc.gotbetter.participant.data_access.entity.QParticipant.participant;
 import static pcrc.gotbetter.room.data_access.entity.QRoom.*;
@@ -21,26 +20,6 @@ public class ParticipantRepositoryImpl implements ParticipantQueryRepository {
 
     public ParticipantRepositoryImpl(JPAQueryFactory queryFactory) {
         this.queryFactory = queryFactory;
-    }
-
-    @Override
-    @Transactional
-    public void updatePercentSum(Long participantId, Float percent) {
-        queryFactory
-                .update(participant)
-                .where(participantEqParticipantId(participantId))
-                .set(participant.percentSum, participant.percentSum.add(percent))
-                .execute();
-    }
-
-    @Override
-    @Transactional
-    public void updateRefund(Long participantId, Integer refund) {
-        queryFactory
-                .update(participant)
-                .where(participantEqParticipantId(participantId))
-                .set(participant.refund, refund)
-                .execute();
     }
 
     @Override
@@ -89,7 +68,7 @@ public class ParticipantRepositoryImpl implements ParticipantQueryRepository {
     }
 
     @Override
-    public ParticipantDto findParticipantRoom(Long participantId) {
+    public ParticipantDto findParticipantRoomByParticipantId(Long participantId) {
         return queryFactory
             .select(Projections.constructor(ParticipantDto.class,
                 participant, room))
@@ -97,6 +76,17 @@ public class ParticipantRepositoryImpl implements ParticipantQueryRepository {
             .leftJoin(room).on(participant.roomId.eq(room.roomId)).fetchJoin()
             .where(participantEqParticipantId(participantId))
             .fetchFirst();
+    }
+
+    @Override
+    public List<ParticipantDto> findParticipantRoomByRoomId(Long roomId) {
+        return queryFactory
+            .select(Projections.constructor(ParticipantDto.class,
+                participant, room))
+            .from(participant)
+            .leftJoin(room).on(participant.roomId.eq(room.roomId)).fetchJoin()
+            .where(participantEqRoomId(roomId))
+            .fetch();
     }
 
     /**

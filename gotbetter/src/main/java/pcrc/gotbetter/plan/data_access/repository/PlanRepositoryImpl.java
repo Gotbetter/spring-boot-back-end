@@ -4,7 +4,6 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import org.springframework.transaction.annotation.Transactional;
 
 import pcrc.gotbetter.plan.data_access.dto.PlanDto;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
@@ -15,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
+import static pcrc.gotbetter.participant.data_access.entity.QParticipant.*;
 import static pcrc.gotbetter.plan.data_access.entity.QPlan.plan;
 import static pcrc.gotbetter.room.data_access.entity.QRoom.room;
 
@@ -23,16 +23,6 @@ public class PlanRepositoryImpl implements PlanQueryRepository {
 
     public PlanRepositoryImpl(JPAQueryFactory queryFactory) {
         this.queryFactory = queryFactory;
-    }
-
-    @Override
-    @Transactional
-    public void updateThreeDaysPassed(Long planId) {
-        queryFactory
-                .update(plan)
-                .set(plan.threeDaysPassed, true)
-                .where(eqPlanId(planId))
-                .execute();
     }
 
     @Override
@@ -52,14 +42,6 @@ public class PlanRepositoryImpl implements PlanQueryRepository {
                 .where(eqParticipantId(participantId))
                 .fetchFirst();
         return exists != null;
-    }
-
-    @Override
-    public List<Plan> findListByRoomId(Long roomId, Integer passedWeek) {
-        return queryFactory
-                .selectFrom(plan)
-                .where(eqRoomId(roomId), eqWeek(passedWeek))
-                .fetch();
     }
 
     @Override
@@ -107,6 +89,16 @@ public class PlanRepositoryImpl implements PlanQueryRepository {
             .leftJoin(room).on(plan.participantInfo.roomId.eq(room.roomId)).fetchJoin()
             .where(eqPlanId(planId))
             .fetchFirst();
+    }
+
+    @Override
+    public List<PlanDto> findPlanJoinParticipant(Long roomId, Integer passedWeek) {
+        return queryFactory
+            .select(Projections.constructor(PlanDto.class, plan, participant))
+            .from(plan)
+            .leftJoin(participant).on(plan.participantInfo.participantId.eq(participant.participantId)).fetchJoin()
+            .where(eqRoomId(roomId), eqWeek(passedWeek))
+            .fetch();
     }
 
     /**

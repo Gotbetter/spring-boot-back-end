@@ -6,8 +6,6 @@ import pcrc.gotbetter.participant.data_access.dto.ParticipantDto;
 import pcrc.gotbetter.participant.data_access.entity.Participant;
 
 public interface ParticipantQueryRepository {
-    void updatePercentSum(Long participantId, Float percent); /** Todo batchconfig */
-    void updateRefund(Long participantId, Integer refund); /** Todo batchconfig */
 
     Boolean isMatchedLeader(Long userId, Long roomId);
 
@@ -18,5 +16,8 @@ public interface ParticipantQueryRepository {
     List<ParticipantDto> findUserInfoList(Long roomId);
 
     // join
-    ParticipantDto findParticipantRoom(Long participantId);
+    ParticipantDto findParticipantRoomByParticipantId(Long participantId);
+
+    List<ParticipantDto> findParticipantRoomByRoomId(Long roomId);
+
 }

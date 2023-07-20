@@ -42,4 +42,12 @@ public class Participant extends BaseTimeEntity {
         this.percentSum = percentSum;
         this.refund = refund;
     }
+
+    public void updatePercentSum(Float percentSum) {
+        this.percentSum += percentSum;
+    }
+
+    public void updateRefund(Integer refund) {
+        this.refund = refund;
+    }
 }

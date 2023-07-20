@@ -15,9 +15,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 import pcrc.gotbetter.detail_plan.data_access.repository.DetailPlanRepository;
+import pcrc.gotbetter.participant.data_access.dto.ParticipantDto;
+import pcrc.gotbetter.participant.data_access.entity.Participant;
 import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
-import pcrc.gotbetter.participant.data_access.repository.ViewRepository;
-import pcrc.gotbetter.participant.data_access.view.EnteredView;
+import pcrc.gotbetter.plan.data_access.dto.PlanDto;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
 import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
 import pcrc.gotbetter.room.data_access.entity.Room;
@@ -43,8 +44,6 @@ public class BatchConfig {
     private DetailPlanRepository detailPlanRepository;
     @Autowired
     private ParticipantRepository participantRepository;
-    @Autowired
-    private ViewRepository viewRepository;
 
     @Bean
     public Job job() {
@@ -67,9 +66,10 @@ public class BatchConfig {
                         if (afterThreeDays.isBefore(now)) {
                             log.info("room_id: " + plan.getParticipantInfo().getRoomId()
                                     + ", plan_id: " + plan.getPlanId() + ", start_date: " + plan.getStartDate());
-                            planRepository.updateThreeDaysPassed(plan.getPlanId());
+                            plan.updateThreeDaysPassed();
                         }
                     }
+                    planRepository.saveAll(planList);
                     return RepeatStatus.FINISHED;
                 }, transactionManager)
                 .build();
@@ -79,19 +79,21 @@ public class BatchConfig {
         return new StepBuilder("step_week_pass", jobRepository)
                 .tasklet((StepContribution contribution, ChunkContext chunkContext) -> {
                     log.info("\">>> step_week_pass <<<\"");
+
                     List<Room> roomList = roomRepository.findListUnderWeek();
                     LocalDate now = LocalDate.now();
+
                     for (Room room : roomList) {
                         LocalDate lastDate = room.getStartDate().plusDays(7L * room.getCurrentWeek() - 1);
                         if (lastDate.isBefore(now)) {
                             updatePercentSum(room.getRoomId(), room.getCurrentWeek());
                             int nextWeek = room.getCurrentWeek() + 1;
                             room.updateCurrentWeekToNext();
-                            roomRepository.save(room);
                             log.info("room_id: " + room.getRoomId() + ", start_date: " + room.getStartDate()
                                     + ", current_week/week: " + nextWeek + "/" + room.getWeek());
                         }
                     }
+                    roomRepository.saveAll(roomList);
                     return RepeatStatus.FINISHED;
                 }, transactionManager)
                 .build();
@@ -101,8 +103,10 @@ public class BatchConfig {
         return new StepBuilder("step_update_refund", jobRepository)
                 .tasklet((StepContribution contribution, ChunkContext chunkContext) -> {
                     log.info("\">>> step_update_refund <<<\"");
-                    List<Room> roomList = roomRepository.findListLastWeek();
+
+                    List<Room> roomList = roomRepository.findListLastWeek(); // 마지막 주
                     LocalDate now = LocalDate.now();
+
                     for (Room room : roomList) {
                         LocalDate lastDate = room.getStartDate().plusDays(7L * room.getCurrentWeek());
                         if (lastDate.isEqual(now)) {
@@ -117,8 +121,13 @@ public class BatchConfig {
 
     private void updatePercentSum(Long roomId, Integer passedWeek) {
         log.info("\"update percent sum\"");
-        List<Plan> planList = planRepository.findListByRoomId(roomId, passedWeek);
-        for (Plan plan : planList) {
+
+        List<PlanDto> planDtoList = planRepository.findPlanJoinParticipant(roomId, passedWeek);
+
+        for (PlanDto planDto : planDtoList) {
+            Plan plan = planDto.getPlan();
+            Participant participant = planDto.getParticipant();
+
             if (!plan.getRejected()) {
                 log.info("1. room_id: " + plan.getParticipantInfo().getRoomId()
                         + ", plan_id = " + plan.getPlanId() + ", current_week = " + plan.getWeek());
@@ -126,6 +135,7 @@ public class BatchConfig {
                 Long size = map.get("size");
                 Long completeCount = map.get("completeCount");
                 log.info("2. detail_size = " + size + ", complete_count = " + completeCount);
+
                 if (size == 0 || completeCount == 0) {
                     continue;
                 }
@@ -134,27 +144,33 @@ public class BatchConfig {
                 log.info("3. divide = " + divide + ", percent = " + percent);
                 log.info("4. participant_id = " + plan.getParticipantInfo().getParticipantId()
                         + ", plus percent = " + percent);
-                participantRepository.updatePercentSum(plan.getParticipantInfo().getParticipantId(), percent);
+                participant.updatePercentSum(percent);
+                participantRepository.save(participant);
             }
         }
     }
 
     private void update_refund(Long roomId) {
         log.info("\"update refund\"");
-        List<EnteredView> enteredViewList = viewRepository.enteredListByRoomId(roomId);
-        enteredViewList.sort((o1, o2) -> (int) (o2.getPercentSum() - o1.getPercentSum()));
+        List<ParticipantDto> participantDtoList = participantRepository.findParticipantRoomByRoomId(roomId);
+        participantDtoList.sort((o1, o2) -> (int) (o2.getParticipant().getPercentSum() - o1.getParticipant().getPercentSum()));
         int rank = 1;
-        for (EnteredView enteredView : enteredViewList) {
-            log.info("1. room_id: " + enteredView.getRoomId() + ", participant_id = " + enteredView.getParticipantId()
-                    + ", current_week = " + enteredView.getCurrentWeek());
-            int refund = enteredView.getEntryFee();
+
+        for (ParticipantDto participantDto : participantDtoList) {
+            Participant participant = participantDto.getParticipant();
+            Room room = participantDto.getRoom();
+
+            log.info("1. room_id: " + room.getRoomId() + ", participant_id = " + participant.getParticipantId()
+                + ", current_week = " + room.getCurrentWeek());
+            int refund = room.getEntryFee();
             if (rank == 1) {
                 refund *= 2;
-            } else if (enteredView.getCurrentUserNum() == rank) {
+            } else if (room.getCurrentUserNum() == rank) {
                 refund = 0;
             }
-            log.info("2. participant_id = " + enteredView.getParticipantId() + ", refund = " + refund);
-            participantRepository.updateRefund(enteredView.getParticipantId(), refund);
+            log.info("2. participant_id = " + participant.getParticipantId() + ", refund = " + refund);
+            participant.updateRefund(refund);
+            participantRepository.save(participant);
             rank++;
         }
     }
