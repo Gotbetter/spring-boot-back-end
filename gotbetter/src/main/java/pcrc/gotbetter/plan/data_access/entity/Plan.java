@@ -54,4 +54,8 @@ public class Plan extends BaseTimeEntity {
     public void updateRejected(Boolean rejected) {
         this.rejected = rejected;
     }
+
+    public void updateThreeDaysPassed() {
+        this.threeDaysPassed = true;
+    }
 }

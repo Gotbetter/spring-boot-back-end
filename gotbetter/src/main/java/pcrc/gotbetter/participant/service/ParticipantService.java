@@ -120,7 +120,7 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 
     @Override
     public Integer getMyRefund(Long participantId) { // 마지막 주차 끝난 후 조회 가능
-        ParticipantDto participantDto = participantRepository.findParticipantRoom(participantId);
+        ParticipantDto participantDto = participantRepository.findParticipantRoomByParticipantId(participantId);
 
         // 방의 멤버인지 확인
         if (participantDto == null || !Objects.equals(participantDto.getParticipant().getUserId(), getCurrentUserId())) {
