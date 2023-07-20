@@ -6,18 +6,18 @@ import org.springframework.stereotype.Service;
 import pcrc.gotbetter.common.data_access.entity.CommonCode;
 import pcrc.gotbetter.common.data_access.entity.CommonCodeId;
 import pcrc.gotbetter.common.data_access.repository.CommonCodeRepository;
+import pcrc.gotbetter.participant.data_access.dto.ParticipantDto;
 import pcrc.gotbetter.participant.data_access.entity.JoinRequestId;
 import pcrc.gotbetter.participant.data_access.entity.Participant;
 import pcrc.gotbetter.participant.data_access.entity.JoinRequest;
 import pcrc.gotbetter.participant.data_access.dto.JoinRequestDto;
-import pcrc.gotbetter.participant.data_access.repository.ViewRepository;
-import pcrc.gotbetter.participant.data_access.view.EnteredView;
 import pcrc.gotbetter.room.data_access.entity.Room;
 import pcrc.gotbetter.participant.data_access.repository.JoinRequestRepository;
 import pcrc.gotbetter.room.data_access.repository.RoomRepository;
 import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
+import pcrc.gotbetter.user.data_access.entity.User;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -30,17 +30,16 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     private final RoomRepository roomRepository;
     private final JoinRequestRepository joinRequestRepository;
     private final ParticipantRepository participantRepository;
-    private final ViewRepository viewRepository;
     private final CommonCodeRepository commonCodeRepository;
 
     @Autowired
-    public RoomService(RoomRepository roomRepository, JoinRequestRepository joinRequestRepository,
-        ParticipantRepository participantRepository, ViewRepository viewRepository,
+    public RoomService(RoomRepository roomRepository,
+        JoinRequestRepository joinRequestRepository,
+        ParticipantRepository participantRepository,
         CommonCodeRepository commonCodeRepository) {
         this.roomRepository = roomRepository;
         this.joinRequestRepository = joinRequestRepository;
         this.participantRepository = participantRepository;
-        this.viewRepository = viewRepository;
         this.commonCodeRepository = commonCodeRepository;
     }
 
@@ -149,71 +148,63 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     @Override
     public List<FindRankResult> getRank(Long roomId) {
         Long currentUserId = getCurrentUserId();
-        if (!viewRepository.enteredExistByUserIdRoomId(currentUserId, roomId)) {
+
+        if (!participantRepository.existsByUserIdAndRoomId(currentUserId, roomId)) {
             throw new GotBetterException(MessageType.NOT_FOUND);
         }
 
-        // participant - room - user
-        List<EnteredView> enteredViewList = viewRepository.enteredListByRoomId(roomId);
+        List<ParticipantDto> participantDtoList = participantRepository.findParticipantRoomByRoomId(roomId);
         List<FindRankResult> findRankResultList = new ArrayList<>();
-
         LocalDate now = LocalDate.now();
-        if (now.isBefore(enteredViewList.get(0).getStartDate())) {
+
+        if (participantDtoList.size() == 0 ||
+            now.isBefore(participantDtoList.get(0).getRoom().getStartDate())) {
             return findRankResultList;
         }
 
-        // percent sum 기준 정렬
-        enteredViewList.sort((o1, o2) -> (int) (o2.getPercentSum() - o1.getPercentSum()));
+        Room room = participantDtoList.get(0).getRoom();
+        Map<Float, List<String>> percentMap = new HashMap<>();
+
+        for (ParticipantDto participantDto : participantDtoList) {
+            User user = participantDto.getUser();
+            Participant participant = participantDto.getParticipant();
+            Float key = participant.getPercentSum();
+            List<String> usernameList = new ArrayList<>();
+
+            if (percentMap.containsKey(key)) {
+                usernameList = percentMap.get(key);
+            }
+            usernameList.add(user.getUsername());
+            percentMap.put(key, usernameList);
+        }
+
+        List<Float> keySet = new ArrayList<>(percentMap.keySet());
+
+        Collections.reverse(keySet);
 
         int rank = 1;
-        for (EnteredView enteredView : enteredViewList) {
-            int refund = enteredView.getEntryFee();
-            if (rank == 1) {
-                refund *= 2;
-            } else if (enteredView.getCurrentUserNum() == rank) {
-                refund = 0;
+
+        for (Float key : keySet) {
+            List<String> usernames = percentMap.get(key);
+
+            for (String username : usernames) {
+                int refund = room.getEntryFee();
+
+                if (key == 0F) {
+                    rank = participantDtoList.size();
+                    refund = 0;
+                } else {
+                    if (rank == 1) {
+                        refund *= 2;
+                    }
+                }
+                findRankResultList.add(FindRankResult
+                    .findByRank(username, rank, refund));
             }
-            findRankResultList.add(FindRankResult.findByRank(
-                    enteredView.getUsernameNick(), rank, refund));
-            rank++;
+            rank += percentMap.get(key).size();
         }
         return findRankResultList;
     }
-
-//    @Override
-//    public List<FindRankResult> getRank(Long room_id) {
-//        Long user_id = getCurrentUserId();
-//        if (!viewRepository.enteredExistByUserIdRoomId(user_id, room_id)) {
-//            throw new GotBetterException(MessageType.NOT_FOUND);
-//        }
-//
-//        List<EnteredView> enteredViewList = viewRepository.enteredListByRoomId(room_id);
-//        List<FindRankResult> findRankResultList = new ArrayList<>();
-//
-//        // percent sum 기준 정렬
-//        enteredViewList.sort((o1, o2) -> (int) (o2.getPercentSum() - o1.getPercentSum()));
-//
-//        int rank = 1;
-//        float beforePercentSum = enteredViewList.get(1).getPercentSum();
-//        for (EnteredView enteredView : enteredViewList) {
-//            int refund = enteredView.getEntryFee();
-//            int backupRank = rank;
-//            if (findRankResultList.size() != 0 && enteredView.getPercentSum() == beforePercentSum) {
-//                rank = findRankResultList.get(findRankResultList.size() - 1).getRank();
-//            }
-//            if (rank == 1) {
-//                refund *= 2;
-//            } else if (enteredView.getCurrentUserNum() == rank) {
-//                refund = 0;
-//            }
-//            findRankResultList.add(FindRankResult.findByRank(
-//                    enteredView.getUsernameNick(), rank, refund));
-//            rank = backupRank;
-//            rank++;
-//            beforePercentSum = enteredView.getPercentSum();
-//        }
-//        return findRankResultList;
-//    }
 
     /**
      * other

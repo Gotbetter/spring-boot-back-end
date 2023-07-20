@@ -82,9 +82,10 @@ public class ParticipantRepositoryImpl implements ParticipantQueryRepository {
     public List<ParticipantDto> findParticipantRoomByRoomId(Long roomId) {
         return queryFactory
             .select(Projections.constructor(ParticipantDto.class,
-                participant, room))
+                participant, room, user))
             .from(participant)
             .leftJoin(room).on(participant.roomId.eq(room.roomId)).fetchJoin()
+            .leftJoin(user).on(participant.userId.eq(user.userId)).fetchJoin()
             .where(participantEqRoomId(roomId))
             .fetch();
     }

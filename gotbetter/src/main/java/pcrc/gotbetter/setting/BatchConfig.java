@@ -25,8 +25,11 @@ import pcrc.gotbetter.room.data_access.entity.Room;
 import pcrc.gotbetter.room.data_access.repository.RoomRepository;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Configuration
@@ -153,25 +156,51 @@ public class BatchConfig {
     private void update_refund(Long roomId) {
         log.info("\"update refund\"");
         List<ParticipantDto> participantDtoList = participantRepository.findParticipantRoomByRoomId(roomId);
-        participantDtoList.sort((o1, o2) -> (int) (o2.getParticipant().getPercentSum() - o1.getParticipant().getPercentSum()));
-        int rank = 1;
+
+        if (participantDtoList.size() == 0) {
+            return;
+        }
+
+        Room room = participantDtoList.get(0).getRoom();
+        Map<Float, List<Participant>> percentMap = new HashMap<>();
 
         for (ParticipantDto participantDto : participantDtoList) {
             Participant participant = participantDto.getParticipant();
-            Room room = participantDto.getRoom();
+            Float key = participant.getPercentSum();
+            List<Participant> participantList = new ArrayList<>();
 
-            log.info("1. room_id: " + room.getRoomId() + ", participant_id = " + participant.getParticipantId()
-                + ", current_week = " + room.getCurrentWeek());
-            int refund = room.getEntryFee();
-            if (rank == 1) {
-                refund *= 2;
-            } else if (room.getCurrentUserNum() == rank) {
-                refund = 0;
+            if (percentMap.containsKey(key)) {
+                participantList = percentMap.get(key);
             }
-            log.info("2. participant_id = " + participant.getParticipantId() + ", refund = " + refund);
-            participant.updateRefund(refund);
-            participantRepository.save(participant);
-            rank++;
+            participantList.add(participant);
+            percentMap.put(key, participantList);
+        }
+
+        List<Float> keySet = new ArrayList<>(percentMap.keySet());
+
+        Collections.reverse(keySet);
+
+        int rank = 1;
+
+        for (Float key : keySet) {
+            List<Participant> participants = percentMap.get(key);
+
+            for (Participant participant : participants) {
+                int refund = room.getEntryFee();
+
+                if (key == 0F) {
+                    rank = participantDtoList.size();
+                    refund = 0;
+                } else {
+                    if (rank == 1) {
+                        refund *= 2;
+                    }
+                }
+                participant.updateRefund(refund);
+                log.info("2. participant_id = " + participant.getParticipantId() + ", refund = " + refund);
+            }
+            participantRepository.saveAll(participants);
+            rank += percentMap.get(key).size();
         }
     }
 }
