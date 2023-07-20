@@ -79,8 +79,8 @@ public class RoomController {
         log.info("\"GET A RANK LIST\"");
 
         List<RoomReadUseCase.FindRankResult> result = roomReadUseCase.getRank(room_id);
-
         List<RankView> rankViewList = new ArrayList<>();
+
         for (RoomReadUseCase.FindRankResult rank : result) {
             rankViewList.add(RankView.builder().rankResult(rank).build());
         }

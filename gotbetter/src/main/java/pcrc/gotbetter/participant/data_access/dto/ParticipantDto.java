@@ -16,18 +16,13 @@ public class ParticipantDto {
 
 	// room
 	private Room room;
-	private Long roomId;
-	private Integer currentUserNum;
-	private Integer currentWeek;
 
 	// user
 	private User user;
-	private Long userId;
 
 	// userset
 	private String authId;
 
-	// ParticipantService
 	public ParticipantDto(Long participantId, Boolean authority,
 		User user, String authId) {
 		this.participantId = participantId;
@@ -36,24 +31,14 @@ public class ParticipantDto {
 		this.authId = authId;
 	}
 
-	// plan
 	public ParticipantDto(Participant participant, Room room) {
 		this.participant = participant;
 		this.room = room;
 	}
 
-	// DetailPlanEvalService
-	// public ParticipantDto(Long participantId, Long roomId,
-	// 	Integer currentUserNum, Integer currentWeek, Long userId) {
-	// 	this.participantId = participantId;
-	// 	this.roomId = roomId;
-	// 	this.currentUserNum = currentUserNum;
-	// 	this.currentWeek = currentWeek;
-	// 	this.userId = userId;
-	// }
-	//
-	// public ParticipantDto(Participant participant, Room room) {
-	// 	this.participant = participant;
-	// 	this.room = room;
-	// }
+	public ParticipantDto(Participant participant, Room room, User user) {
+		this.participant = participant;
+		this.room = room;
+		this.user = user;
+	}
 }
