@@ -1,11 +1,15 @@
 package pcrc.gotbetter.detail_plan_record.service;
 
+import java.util.List;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 import pcrc.gotbetter.detail_plan_record.data_access.entity.DetailPlanRecord;
 
 public interface DetailPlanRecordReadUseCase {
+
+	List<FindDetailPlanRecordResult> getRecordList(Long detailPlanId);
 
 	@Getter
 	@ToString

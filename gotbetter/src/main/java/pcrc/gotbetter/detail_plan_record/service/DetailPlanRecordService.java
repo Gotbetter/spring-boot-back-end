@@ -3,6 +3,8 @@ package pcrc.gotbetter.detail_plan_record.service;
 import static pcrc.gotbetter.setting.security.SecurityUtil.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,7 @@ import pcrc.gotbetter.detail_plan.data_access.repository.DetailPlanRepository;
 import pcrc.gotbetter.detail_plan_record.data_access.entity.DetailPlanId;
 import pcrc.gotbetter.detail_plan_record.data_access.entity.DetailPlanRecord;
 import pcrc.gotbetter.detail_plan_record.data_access.repository.DetailPlanRecordRepository;
+import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
 import pcrc.gotbetter.plan.data_access.dto.PlanDto;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
 import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
@@ -26,13 +29,16 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 	private final DetailPlanRecordRepository detailPlanRecordRepository;
 	private final DetailPlanRepository detailPlanRepository;
 	private final PlanRepository planRepository;
+	private final ParticipantRepository participantRepository;
 
 	@Autowired
 	public DetailPlanRecordService(DetailPlanRecordRepository detailPlanRecordRepository,
-		DetailPlanRepository detailPlanRepository, PlanRepository planRepository) {
+		DetailPlanRepository detailPlanRepository, PlanRepository planRepository,
+		ParticipantRepository participantRepository) {
 		this.detailPlanRecordRepository = detailPlanRecordRepository;
 		this.detailPlanRepository = detailPlanRepository;
 		this.planRepository = planRepository;
+		this.participantRepository = participantRepository;
 	}
 
 	@Override
@@ -76,6 +82,22 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 
 		detailPlanRecordRepository.save(detailPlanRecord);
 		return FindDetailPlanRecordResult.findByDetailPlanRecord(detailPlanRecord);
+	}
+
+	@Override
+	public List<FindDetailPlanRecordResult> getRecordList(Long detailPlanId) {
+		// 방에 속한 사용자인지 확인
+		if (!participantRepository.existsByDetailPlanId(getCurrentUserId(), detailPlanId)) {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		}
+		// 인증 리스트 조회
+		List<DetailPlanRecord> records = detailPlanRecordRepository.findByDetailPlanIdDetailPlanId(detailPlanId);
+		List<FindDetailPlanRecordResult> results = new ArrayList<>();
+
+		for (DetailPlanRecord record : records) {
+			results.add(FindDetailPlanRecordResult.findByDetailPlanRecord(record));
+		}
+		return results;
 	}
 
 	private Boolean validateDate(Plan plan, Room room) {

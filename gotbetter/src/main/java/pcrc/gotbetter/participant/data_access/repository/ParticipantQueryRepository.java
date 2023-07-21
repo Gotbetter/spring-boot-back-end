@@ -15,6 +15,8 @@ public interface ParticipantQueryRepository {
 
     List<ParticipantDto> findUserInfoList(Long roomId);
 
+    Boolean existsByDetailPlanId(Long userId, Long detailPlanId);
+
     // join
     ParticipantDto findParticipantRoomByParticipantId(Long participantId);
 
