@@ -39,15 +39,13 @@ public class ParticipantController {
 
         log.info("\"REQUEST JOIN THE ROOM\"");
 
-        // 종료된 방이면 요청 불가능
-
         RoomReadUseCase.FindRoomResult result = participantOperationUseCase.requestJoinRoom(request.getRoom_code());
 
         return ResponseEntity.created(null).body(RoomView.builder().roomResult(result).build());
     }
 
     @GetMapping(value = "/{room_id}")
-    public ResponseEntity<List<ParticipantView>> showOneRoom(@PathVariable Long room_id,
+    public ResponseEntity<List<ParticipantView>> getUserListAboutRoom(@PathVariable Long room_id,
                                                              @RequestParam(value = "accepted") Boolean accepted) {
 
         if (accepted == null) {
@@ -71,8 +69,6 @@ public class ParticipantController {
     public ResponseEntity<ParticipantView> approveJoinRoom(@Valid @RequestBody ParticipantJoinApproveRequest request) {
 
         log.info("\"APPROVE JOIN ROOM\"");
-
-        // 현재 진행 중인 방인지 확인 - 종료된 방이면 승인되지 않음.
 
         var command = ParticipantOperationUseCase.UserRoomAcceptedCommand.builder()
                 .userId(request.getUser_id())
