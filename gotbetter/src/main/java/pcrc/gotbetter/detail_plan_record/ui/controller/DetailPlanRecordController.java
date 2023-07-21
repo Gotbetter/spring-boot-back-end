@@ -1,7 +1,11 @@
 package pcrc.gotbetter.detail_plan_record.ui.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,7 +34,7 @@ public class DetailPlanRecordController {
 		this.detailPlanRecordReadUseCase = detailPlanRecordReadUseCase;
 	}
 
-	@PostMapping
+	@PostMapping(value = "")
 	public ResponseEntity<DetailPlanRecordView> createRecord(@PathVariable(value = "detail_plan_id") Long detail_plan_id,
 		@Valid @RequestBody DetailPlanRecordRequest request) {
 
@@ -45,6 +49,20 @@ public class DetailPlanRecordController {
 		DetailPlanRecordReadUseCase.FindDetailPlanRecordResult result = detailPlanRecordOperationUseCase.createRecord(command);
 
 		return ResponseEntity.created(null).body(DetailPlanRecordView.builder().detailPlanRecordResult(result).build());
-
 	}
+
+	@GetMapping(value = "")
+	public ResponseEntity<List<DetailPlanRecordView>> getRecordList(@PathVariable(value = "detail_plan_id") Long detail_plan_id) {
+
+		log.info("\"GET A DETAIL PLAN RECORD LIST\"");
+
+		List<DetailPlanRecordReadUseCase.FindDetailPlanRecordResult> records = detailPlanRecordReadUseCase.getRecordList(detail_plan_id);
+		List<DetailPlanRecordView> detailPlanRecordViews = new ArrayList<>();
+
+		for (DetailPlanRecordReadUseCase.FindDetailPlanRecordResult record : records) {
+			detailPlanRecordViews.add(DetailPlanRecordView.builder().detailPlanRecordResult(record).build());
+		}
+		return ResponseEntity.ok(detailPlanRecordViews);
+	}
+
 }

@@ -4,6 +4,8 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
+import static com.querydsl.jpa.JPAExpressions.*;
+import static pcrc.gotbetter.detail_plan.data_access.entity.QDetailPlan.*;
 import static pcrc.gotbetter.participant.data_access.entity.QParticipant.participant;
 import static pcrc.gotbetter.room.data_access.entity.QRoom.*;
 import static pcrc.gotbetter.user.data_access.entity.QUser.user;
@@ -65,6 +67,22 @@ public class ParticipantRepositoryImpl implements ParticipantQueryRepository {
             .leftJoin(userSet).on(participant.userId.eq(userSet.userId)).fetchJoin()
             .where(participantEqRoomId(roomId))
             .fetch();
+    }
+
+    @Override
+    public Boolean existsByDetailPlanId(Long userId, Long detailPlanId) {
+        Integer exists =  queryFactory
+            .selectOne()
+            .from(participant)
+            .where(
+                participant.roomId.eq(
+                select(detailPlan.participantInfo.roomId)
+                    .from(detailPlan)
+                    .where(detailPlan.detailPlanId.eq(detailPlanId))
+                ),
+                participantEqUserId(userId))
+            .fetchFirst();
+        return exists != null;
     }
 
     @Override
