@@ -73,7 +73,7 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
             }
         } else { // (방장만) 승인 대기 중인 사용자 조회
             validateUserInRoom(roomId, true); // 방장인지 검증
-            List<JoinRequestDto> joinRequestList = joinRequestRepository.findJoinRequestList(null, roomId, false);
+            List<JoinRequestDto> joinRequestList = joinRequestRepository.findJoinRequestJoinList(null, roomId, false);
             for (JoinRequestDto joinRequest : joinRequestList) {
                 result.add(FindParticipantResult.findByParticipant(joinRequest, -1L, false));
             }
@@ -82,10 +82,10 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
     }
 
     @Override
-    public FindParticipantResult approveJoinRoom(UserRoomAcceptedUpdateCommand command) { // (방장) 방 입장 승인
+    public FindParticipantResult approveJoinRoom(UserRoomAcceptedCommand command) { // (방장) 방 입장 승인
         validateUserInRoom(command.getRoomId(), true); // 방장인지 검증
         // 승인하려는 사용자 정보
-        JoinRequestDto joinRequestDto = joinRequestRepository.findJoinRequest(
+        JoinRequestDto joinRequestDto = joinRequestRepository.findJoinRequestJoin(
             command.getUserId(), command.getRoomId(), false);
 
         if (joinRequestDto == null) {
@@ -116,6 +116,20 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
         // 프로필 수정 추가해야함.
         return FindParticipantResult.findByParticipant(joinRequestDto,
             participant.getParticipantId(), null);
+    }
+
+    @Override
+    public void rejectJoinRoom(UserRoomAcceptedCommand command) { // (방장) 방 입장 요청 거절
+        // 방장인지 검증
+        validateUserInRoom(command.getRoomId(), true);
+        // 존재하는 요청자인지 확인 - join request
+        JoinRequest joinRequest = joinRequestRepository.findJoinRequest(command.getUserId(), command.getRoomId());
+
+        if (joinRequest == null) {
+            throw new GotBetterException(MessageType.NOT_FOUND);
+        }
+        // 거절 - join request
+        joinRequestRepository.deleteById(joinRequest.getJoinRequestId());
     }
 
     @Override

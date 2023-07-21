@@ -3,6 +3,7 @@ package pcrc.gotbetter.participant.ui.controller;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pcrc.gotbetter.participant.ui.view.ParticipantView;
@@ -38,6 +39,8 @@ public class ParticipantController {
 
         log.info("\"REQUEST JOIN THE ROOM\"");
 
+        // 종료된 방이면 요청 불가능
+
         RoomReadUseCase.FindRoomResult result = participantOperationUseCase.requestJoinRoom(request.getRoom_code());
 
         return ResponseEntity.created(null).body(RoomView.builder().roomResult(result).build());
@@ -69,13 +72,29 @@ public class ParticipantController {
 
         log.info("\"APPROVE JOIN ROOM\"");
 
-        var command = ParticipantOperationUseCase.UserRoomAcceptedUpdateCommand.builder()
+        // 현재 진행 중인 방인지 확인 - 종료된 방이면 승인되지 않음.
+
+        var command = ParticipantOperationUseCase.UserRoomAcceptedCommand.builder()
                 .userId(request.getUser_id())
                 .roomId(request.getRoom_id())
                 .build();
         ParticipantReadUseCase.FindParticipantResult result = participantOperationUseCase.approveJoinRoom(command);
 
         return ResponseEntity.ok(ParticipantView.builder().participantResult(result).build());
+    }
+
+    @PostMapping(value = "/reject")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void rejectJoinRoom(@Valid @RequestBody ParticipantJoinApproveRequest request) {
+
+        log.info("\"REJECT JOIN ROOM\"");
+
+        var command = ParticipantOperationUseCase.UserRoomAcceptedCommand.builder()
+            .userId(request.getUser_id())
+            .roomId(request.getRoom_id())
+            .build();
+
+        participantOperationUseCase.rejectJoinRoom(command);
     }
 
     @GetMapping(value = "/{participant_id}/refund")
