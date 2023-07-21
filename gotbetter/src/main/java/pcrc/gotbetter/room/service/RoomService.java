@@ -106,6 +106,33 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     }
 
     @Override
+    public FindRoomResult updateRoom(RoomUpdateCommand command) {
+        // 사용자가 방에 속해있는지 확인
+        ParticipantDto participantDto = participantRepository.findParticipantByUserIdAndRoomId(getCurrentUserId(), command.getRoom_id());
+
+        if (participantDto == null) {
+            throw new GotBetterException(MessageType.NOT_FOUND);
+        }
+        // 방장이 맞는지 확인 - participant
+        Participant participant = participantDto.getParticipant();
+
+        if (!participant.getAuthority()) {
+            throw new GotBetterException(MessageType.FORBIDDEN);
+        }
+        // 방 소개 수정 - room
+        Room room = participantDto.getRoom();
+
+        room.updateDescription(command.getDescription());
+        roomRepository.save(room);
+
+        CommonCode roomCategoryInfo = findRoomCategoryInfo(room.getRoomCategory());
+        CommonCode ruleInfo = findRuleInfo(room.getRule());
+
+        return FindRoomResult.findByRoom(room, null,
+            roomCategoryInfo.getCodeDescription(), ruleInfo.getCodeDescription());
+    }
+
+    @Override
     public List<FindRoomResult> getUserRoomList() {
         Long currentUserId = getCurrentUserId();
         List<FindRoomResult> result = new ArrayList<>();

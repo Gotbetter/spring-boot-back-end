@@ -90,6 +90,18 @@ public class ParticipantRepositoryImpl implements ParticipantQueryRepository {
             .fetch();
     }
 
+    @Override
+    public ParticipantDto findParticipantByUserIdAndRoomId(Long userId, Long roomId) {
+        return queryFactory
+            .select(Projections.constructor(ParticipantDto.class,
+                participant, room))
+            .from(participant)
+            .leftJoin(room).on(participant.roomId.eq(room.roomId)).fetchJoin()
+            .where(participantEqUserId(userId),
+                participantEqRoomId(roomId))
+            .fetchFirst();
+    }
+
     /**
      * participant eq
      */
