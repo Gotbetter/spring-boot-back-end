@@ -137,7 +137,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
         Long currentUserId = getCurrentUserId();
         List<FindRoomResult> result = new ArrayList<>();
         // 유저가 속한 방 리스트 - JoinRequest 대신 Participant에서 사용 가능 - room 정보
-        List<JoinRequestDto> joinRequestDtoList = joinRequestRepository.findJoinRequestList(currentUserId, null, true);
+        List<JoinRequestDto> joinRequestDtoList = joinRequestRepository.findJoinRequestJoinList(currentUserId, null, true);
         // common code 모든 데이터 (ROOM_CATEGORY + RULE)
         List<CommonCode> commonCodes = commonCodeRepository.findListByGroupCode("");
         HashMap<String, CommonCode> commonCodeHashMap = new HashMap<>();
@@ -159,7 +159,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     public FindRoomResult getOneRoomInfo(Long roomId) {
         Long currentUserId = getCurrentUserId();
         // 유저가 속한 방 정보
-        JoinRequestDto joinRequestDto = joinRequestRepository.findJoinRequest(currentUserId, roomId, true);
+        JoinRequestDto joinRequestDto = joinRequestRepository.findJoinRequestJoin(currentUserId, roomId, true);
 
         if (joinRequestDto == null) {
             throw new GotBetterException(MessageType.NOT_FOUND);

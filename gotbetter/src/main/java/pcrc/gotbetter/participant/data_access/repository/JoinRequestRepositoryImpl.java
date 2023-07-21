@@ -12,6 +12,7 @@ import static pcrc.gotbetter.user.data_access.entity.QUser.user;
 import static pcrc.gotbetter.user.data_access.entity.QUserSet.userSet;
 
 import pcrc.gotbetter.participant.data_access.dto.JoinRequestDto;
+import pcrc.gotbetter.participant.data_access.entity.JoinRequest;
 
 public class JoinRequestRepositoryImpl implements JoinRequestQueryRepository {
 
@@ -21,9 +22,18 @@ public class JoinRequestRepositoryImpl implements JoinRequestQueryRepository {
         this.queryFactory = queryFactory;
     }
 
+    @Override
+    public JoinRequest findJoinRequest(Long userId, Long roomId) {
+        return queryFactory
+            .selectFrom(joinRequest)
+            .where(eqUserId(userId),
+                eqRoomId(roomId),
+                eqAccepted(false))
+            .fetchFirst();
+    }
 
     @Override
-    public JoinRequestDto findJoinRequest(Long userId, Long roomId, Boolean accepted) {
+    public JoinRequestDto findJoinRequestJoin(Long userId, Long roomId, Boolean accepted) {
         return queryFactory
                 .select(Projections.constructor(JoinRequestDto.class,
                     joinRequest, room, user, userSet))
@@ -38,7 +48,7 @@ public class JoinRequestRepositoryImpl implements JoinRequestQueryRepository {
     }
 
     @Override
-    public List<JoinRequestDto> findJoinRequestList(Long userId, Long roomId, Boolean accepted) {
+    public List<JoinRequestDto> findJoinRequestJoinList(Long userId, Long roomId, Boolean accepted) {
         return queryFactory
             .select(Projections.constructor(JoinRequestDto.class,
                 joinRequest, room, user, userSet))

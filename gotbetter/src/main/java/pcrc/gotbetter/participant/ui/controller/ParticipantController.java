@@ -3,6 +3,7 @@ package pcrc.gotbetter.participant.ui.controller;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pcrc.gotbetter.participant.ui.view.ParticipantView;
@@ -44,7 +45,7 @@ public class ParticipantController {
     }
 
     @GetMapping(value = "/{room_id}")
-    public ResponseEntity<List<ParticipantView>> showOneRoom(@PathVariable Long room_id,
+    public ResponseEntity<List<ParticipantView>> getUserListAboutRoom(@PathVariable Long room_id,
                                                              @RequestParam(value = "accepted") Boolean accepted) {
 
         if (accepted == null) {
@@ -69,13 +70,27 @@ public class ParticipantController {
 
         log.info("\"APPROVE JOIN ROOM\"");
 
-        var command = ParticipantOperationUseCase.UserRoomAcceptedUpdateCommand.builder()
+        var command = ParticipantOperationUseCase.UserRoomAcceptedCommand.builder()
                 .userId(request.getUser_id())
                 .roomId(request.getRoom_id())
                 .build();
         ParticipantReadUseCase.FindParticipantResult result = participantOperationUseCase.approveJoinRoom(command);
 
         return ResponseEntity.ok(ParticipantView.builder().participantResult(result).build());
+    }
+
+    @PostMapping(value = "/reject")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void rejectJoinRoom(@Valid @RequestBody ParticipantJoinApproveRequest request) {
+
+        log.info("\"REJECT JOIN ROOM\"");
+
+        var command = ParticipantOperationUseCase.UserRoomAcceptedCommand.builder()
+            .userId(request.getUser_id())
+            .roomId(request.getRoom_id())
+            .build();
+
+        participantOperationUseCase.rejectJoinRoom(command);
     }
 
     @GetMapping(value = "/{participant_id}/refund")

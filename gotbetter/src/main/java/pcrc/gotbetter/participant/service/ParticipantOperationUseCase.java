@@ -8,13 +8,14 @@ import pcrc.gotbetter.room.service.RoomReadUseCase;
 
 public interface ParticipantOperationUseCase {
     RoomReadUseCase.FindRoomResult requestJoinRoom(String roomCode);
-    ParticipantReadUseCase.FindParticipantResult approveJoinRoom(UserRoomAcceptedUpdateCommand command);
+    ParticipantReadUseCase.FindParticipantResult approveJoinRoom(UserRoomAcceptedCommand command);
+    void rejectJoinRoom(UserRoomAcceptedCommand command);
 
     @EqualsAndHashCode(callSuper = false)
     @Builder
     @Getter
     @ToString
-    class UserRoomAcceptedUpdateCommand {
+    class UserRoomAcceptedCommand {
         private final Long userId;
         private final Long roomId;
     }
