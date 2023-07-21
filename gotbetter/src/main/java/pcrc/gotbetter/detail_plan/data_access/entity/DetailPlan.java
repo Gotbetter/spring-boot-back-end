@@ -28,21 +28,18 @@ public class DetailPlan extends BaseTimeEntity {
     private ParticipantInfo participantInfo;
     private String content;
     private Boolean complete;
-    @Column(name = "approve_comment")
-    private String approveComment;
     private Boolean rejected;
 
     @Builder
     public DetailPlan(Long detailPlanId, Long planId,
                       ParticipantInfo participantInfo,
                       String content, Boolean complete,
-                      String approveComment, Boolean rejected) {
+                      Boolean rejected) {
         this.detailPlanId = detailPlanId;
         this.planId = planId;
         this.participantInfo = participantInfo;
         this.content = content;
         this.complete = complete;
-        this.approveComment = approveComment;
         this.rejected = rejected;
     }
 
@@ -54,14 +51,12 @@ public class DetailPlan extends BaseTimeEntity {
         this.rejected = rejected;
     }
 
-    public void updateDetailPlanCompleted(String approveComment) {
+    public void updateDetailPlanCompleted() {
         this.complete = true;
-        this.approveComment = approveComment;
     }
 
     public void updateDetailPlanUndo(Boolean rejected) {
         this.complete = false;
-        this.approveComment = null;
         this.rejected = rejected;
     }
 }

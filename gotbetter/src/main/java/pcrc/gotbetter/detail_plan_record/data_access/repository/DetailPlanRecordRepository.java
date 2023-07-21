@@ -12,4 +12,6 @@ public interface DetailPlanRecordRepository extends JpaRepository<DetailPlanReco
 
 	List<DetailPlanRecord> findByDetailPlanIdDetailPlanId(Long detailPlanId);
 
+	void deleteByDetailPlanIdDetailPlanId(Long detailPlanId);
+
 }

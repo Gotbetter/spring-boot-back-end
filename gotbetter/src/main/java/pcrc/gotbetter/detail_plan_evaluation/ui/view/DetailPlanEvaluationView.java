@@ -13,7 +13,6 @@ public class DetailPlanEvaluationView {
     private final Long detail_plan_id;
     private final String content;
     private final Boolean complete;
-    private final String approve_comment;
     private final Boolean rejected;
     private final Long plan_id;
     private final Integer detail_plan_dislike_count;
@@ -24,7 +23,6 @@ public class DetailPlanEvaluationView {
         this.detail_plan_id = detailPlanEvalResult.getDetailPlanId();
         this.content = detailPlanEvalResult.getContent();
         this.complete = detailPlanEvalResult.getComplete();
-        this.approve_comment = detailPlanEvalResult.getApproveComment();
         this.rejected = detailPlanEvalResult.getRejected();
         this.plan_id = detailPlanEvalResult.getPlanId();
         this.detail_plan_dislike_count = detailPlanEvalResult.getDetailPlanDislikeCount();

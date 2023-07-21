@@ -48,7 +48,7 @@ public class DetailPlanCompleteService implements DetailPlanCompleteOperationUse
         if (detailPlan.getRejected()) {
             detailPlan.updateRejected(false);
         }
-        detailPlan.updateDetailPlanCompleted(command.getApproveComment());
+        detailPlan.updateDetailPlanCompleted();
         detailPlanRepository.save(detailPlan);
 
         Integer detailPlanEvalSize = detailPlanEvalRepository.countByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());

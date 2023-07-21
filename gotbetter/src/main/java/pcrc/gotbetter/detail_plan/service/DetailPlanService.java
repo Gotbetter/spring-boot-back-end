@@ -63,7 +63,6 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
                         .roomId(plan.getParticipantInfo().getRoomId())
                         .build())
                 .content(command.getContent())
-                .approveComment(null)
                 .complete(false)
                 .rejected(false)
                 .build();

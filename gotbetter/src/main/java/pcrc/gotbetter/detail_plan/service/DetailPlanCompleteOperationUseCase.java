@@ -17,6 +17,5 @@ public interface DetailPlanCompleteOperationUseCase {
     class DetailPlanCompleteCommand {
         private final Long planId;
         private final Long detailPlanId;
-        private final String approveComment;
     }
 }
