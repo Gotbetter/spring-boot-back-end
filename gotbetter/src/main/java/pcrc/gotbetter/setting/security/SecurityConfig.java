@@ -99,6 +99,7 @@ public class SecurityConfig implements WebMvcConfigurer {
         configuration.addAllowedMethod("GET");
         configuration.addAllowedMethod("PUT");
         configuration.addAllowedMethod("DELETE");
+        configuration.addAllowedMethod("PATCH");
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
