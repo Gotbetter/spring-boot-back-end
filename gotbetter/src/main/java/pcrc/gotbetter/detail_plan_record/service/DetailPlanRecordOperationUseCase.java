@@ -11,6 +11,8 @@ public interface DetailPlanRecordOperationUseCase {
 
 	DetailPlanRecordReadUseCase.FindDetailPlanRecordResult updateRecord(DetailPlanRecordUpdateCommand command);
 
+	void deleteRecord(DetailPlanRecordDeleteCommand command);
+
 	@EqualsAndHashCode(callSuper = false)
 	@Builder
 	@Getter
@@ -32,5 +34,14 @@ public interface DetailPlanRecordOperationUseCase {
 		private final String recordTitle;
 		private final String recordBody;
 		private final String recordPhoto;
+	}
+
+	@EqualsAndHashCode(callSuper = false)
+	@Builder
+	@Getter
+	@ToString
+	class DetailPlanRecordDeleteCommand {
+		private final Long detailPlanId;
+		private final Long recordId;
 	}
 }

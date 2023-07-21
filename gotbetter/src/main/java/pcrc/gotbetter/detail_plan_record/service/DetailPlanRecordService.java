@@ -89,6 +89,13 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 		return FindDetailPlanRecordResult.findByDetailPlanRecord(detailPlanRecord);
 	}
 
+	@Override
+	public void deleteRecord(DetailPlanRecordDeleteCommand command) {
+		DetailPlanRecord detailPlanRecord = validateRecord(command.getRecordId(), command.getDetailPlanId());
+
+		detailPlanRecordRepository.deleteById(detailPlanRecord.getRecordId());
+	}
+
 	/**
 	 * validate
 	 */
