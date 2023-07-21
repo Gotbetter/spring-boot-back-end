@@ -8,6 +8,7 @@ import pcrc.gotbetter.detail_plan.data_access.repository.DetailPlanRepository;
 import pcrc.gotbetter.detail_plan_evaluation.data_access.entity.DetailPlanEval;
 import pcrc.gotbetter.detail_plan_evaluation.data_access.entity.DetailPlanEvalId;
 import pcrc.gotbetter.detail_plan_evaluation.data_access.repository.DetailPlanEvalRepository;
+import pcrc.gotbetter.detail_plan_record.data_access.repository.DetailPlanRecordRepository;
 import pcrc.gotbetter.participant.data_access.entity.Participant;
 import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
 import pcrc.gotbetter.plan.data_access.dto.PlanDto;
@@ -28,16 +29,19 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase {
     private final DetailPlanRepository detailPlanRepository;
     private final PlanRepository planRepository;
     private final ParticipantRepository participantRepository;
+    private final DetailPlanRecordRepository detailPlanRecordRepository;
 
     @Autowired
     public DetailPlanEvalService(DetailPlanEvalRepository detailPlanEvalRepository,
                                  DetailPlanRepository detailPlanRepository,
                                  PlanRepository planRepository,
-                                 ParticipantRepository participantRepository) {
+                                 ParticipantRepository participantRepository,
+        DetailPlanRecordRepository detailPlanRecordRepository) {
         this.detailPlanEvalRepository = detailPlanEvalRepository;
         this.detailPlanRepository = detailPlanRepository;
         this.planRepository = planRepository;
         this.participantRepository = participantRepository;
+        this.detailPlanRecordRepository = detailPlanRecordRepository;
     }
 
     @Override
@@ -53,6 +57,7 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase {
         if (Math.floor(room.getCurrentUserNum() - 1) / 2 < detailPlanEvalSize + 1) {
             detailPlan.updateDetailPlanUndo(true);
             detailPlanRepository.save(detailPlan);
+            detailPlanRecordRepository.deleteByDetailPlanIdDetailPlanId(detailPlan.getDetailPlanId());
             detailPlanEvalRepository.deleteByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());
             detailPlanEvalSize = 0;
         } else {
@@ -161,8 +166,8 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase {
                 throw new GotBetterException(MessageType.FORBIDDEN_DATE);
             }
         }
-        //        if (!plan.getThreeDaysPassed()) {
-        //            throw new GotBetterException(MessageType.FORBIDDEN_DATE);
-        //        }
+        // if (!plan.getThreeDaysPassed()) {
+        //     throw new GotBetterException(MessageType.FORBIDDEN_DATE);
+        // }
     }
 }
