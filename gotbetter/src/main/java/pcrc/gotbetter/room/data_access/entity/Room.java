@@ -78,4 +78,8 @@ public class Room extends BaseTimeEntity {
         this.totalEntryFee += fee;
         this.currentUserNum += 1;
     }
+
+    public void updateDescription(String description) {
+        this.description = description;
+    }
 }

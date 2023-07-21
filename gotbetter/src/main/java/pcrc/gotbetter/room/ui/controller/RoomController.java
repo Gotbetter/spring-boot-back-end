@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import pcrc.gotbetter.room.service.RoomOperationUseCase;
 import pcrc.gotbetter.room.service.RoomReadUseCase;
 import pcrc.gotbetter.room.ui.requestBody.RoomCreateRequest;
+import pcrc.gotbetter.room.ui.requestBody.RoomUpdateRequest;
 import pcrc.gotbetter.room.ui.view.RankView;
 import pcrc.gotbetter.room.ui.view.RoomView;
 
@@ -69,6 +70,21 @@ public class RoomController {
         log.info("\"GET A ROOM INFO\"");
 
         RoomReadUseCase.FindRoomResult result = roomReadUseCase.getOneRoomInfo(room_id);
+
+        return ResponseEntity.ok(RoomView.builder().roomResult(result).build());
+    }
+
+    @PatchMapping(value = "/{room_id}")
+    public ResponseEntity<RoomView> modifyDescription(@PathVariable Long room_id,
+        @Valid @RequestBody RoomUpdateRequest roomUpdateRequest) {
+
+        log.info("\"MODIFY ROOM DESCRIPTION\"");
+
+        var command = RoomOperationUseCase.RoomUpdateCommand.builder()
+            .room_id(room_id)
+            .description(roomUpdateRequest.getDescription())
+            .build();
+        RoomReadUseCase.FindRoomResult result = roomOperationUseCase.updateRoom(command);
 
         return ResponseEntity.ok(RoomView.builder().roomResult(result).build());
     }

@@ -8,6 +8,7 @@ import lombok.ToString;
 public interface RoomOperationUseCase {
 
     RoomReadUseCase.FindRoomResult createRoom(RoomCreateCommand command);
+    RoomReadUseCase.FindRoomResult updateRoom(RoomUpdateCommand command);
 
     @EqualsAndHashCode(callSuper = false)
     @Builder
@@ -23,6 +24,15 @@ public interface RoomOperationUseCase {
         private final String ruleCode;
         private final String account;
         private final String roomCategoryCode;
+        private final String description;
+    }
+
+    @EqualsAndHashCode(callSuper = false)
+    @Builder
+    @Getter
+    @ToString
+    class RoomUpdateCommand {
+        private final Long room_id;
         private final String description;
     }
 }
