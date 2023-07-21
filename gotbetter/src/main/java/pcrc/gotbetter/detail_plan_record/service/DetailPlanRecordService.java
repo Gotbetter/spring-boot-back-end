@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import pcrc.gotbetter.detail_plan.data_access.entity.DetailPlan;
 import pcrc.gotbetter.detail_plan.data_access.repository.DetailPlanRepository;
+import pcrc.gotbetter.detail_plan_record.data_access.dto.DetailPlanRecordDto;
 import pcrc.gotbetter.detail_plan_record.data_access.entity.DetailPlanId;
 import pcrc.gotbetter.detail_plan_record.data_access.entity.DetailPlanRecord;
 import pcrc.gotbetter.detail_plan_record.data_access.repository.DetailPlanRecordRepository;
@@ -43,29 +44,8 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 
 	@Override
 	public FindDetailPlanRecordResult createRecord(DetailPlanRecordCreateCommand command) {
-		DetailPlan detailPlan = detailPlanRepository.findByDetailPlanId(command.getDetailPlanId());
+		DetailPlan detailPlan = validateDetailPlan(command.getDetailPlanId());
 
-		if (detailPlan == null) {
-			throw new GotBetterException(MessageType.NOT_FOUND);
-		}
-
-		PlanDto planDto = planRepository.findPlanJoinRoom(detailPlan.getPlanId());
-
-		if (planDto == null) {
-			throw new GotBetterException(MessageType.NOT_FOUND);
-		}
-		// 인증할 수 있는 기간에 해당되는지 확인
-		if (!validateDate(planDto.getPlan(), planDto.getRoom())) {
-			throw new GotBetterException(MessageType.FORBIDDEN_DATE);
-		}
-		// 사용자가 세부 계획의 주인인지 확인
-		// 계획 완료된 상태인지 확인
-		// 세부 계획 평가가 불가능한 상태인지 확인
-		if (!Objects.equals(detailPlan.getParticipantInfo().getUserId(), getCurrentUserId())
-			|| detailPlan.getComplete()
-			|| detailPlan.getRejected()) {
-			throw new GotBetterException(MessageType.FORBIDDEN);
-		}
 		// 계획 인증 생성
 		DetailPlanRecord detailPlanRecord = DetailPlanRecord.builder()
 			.detailPlanId(DetailPlanId.builder()
@@ -98,6 +78,65 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 			results.add(FindDetailPlanRecordResult.findByDetailPlanRecord(record));
 		}
 		return results;
+	}
+
+	@Override
+	public FindDetailPlanRecordResult updateRecord(DetailPlanRecordUpdateCommand command) {
+		DetailPlanRecord detailPlanRecord = validateRecord(command.getRecordId(), command.getDetailPlanId());
+
+		detailPlanRecord.updateRecord(command.getRecordTitle(), command.getRecordBody(), command.getRecordPhoto());
+		detailPlanRecordRepository.save(detailPlanRecord);
+		return FindDetailPlanRecordResult.findByDetailPlanRecord(detailPlanRecord);
+	}
+
+	/**
+	 * validate
+	 */
+	private DetailPlan validateDetailPlan(Long detailPlanId) {
+		DetailPlan detailPlan = detailPlanRepository.findByDetailPlanId(detailPlanId);
+
+		if (detailPlan == null) {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		}
+		validateAboutDetail(detailPlan);
+		return detailPlan;
+	}
+
+	private DetailPlanRecord validateRecord(Long recordId, Long detailPlanId) {
+		DetailPlanRecordDto detailPlanRecordDto = detailPlanRecordRepository.findDetailPlanJoinRecord(recordId);
+
+		if (detailPlanRecordDto == null) {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		}
+
+		DetailPlan detailPlan = detailPlanRecordDto.getDetailPlan();
+		DetailPlanRecord detailPlanRecord = detailPlanRecordDto.getDetailPlanRecord();
+
+		if (!Objects.equals(detailPlan.getDetailPlanId(), detailPlanId)) {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		}
+		validateAboutDetail(detailPlan);
+		return detailPlanRecord;
+	}
+
+	private void validateAboutDetail(DetailPlan detailPlan) {
+		PlanDto planDto = planRepository.findPlanJoinRoom(detailPlan.getPlanId());
+
+		if (planDto == null) {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		}
+		// 인증할 수 있는 기간에 해당되는지 확인
+		if (!validateDate(planDto.getPlan(), planDto.getRoom())) {
+			throw new GotBetterException(MessageType.FORBIDDEN_DATE);
+		}
+		// 사용자가 세부 계획의 주인인지 확인
+		// 계획 완료된 상태인지 확인
+		// 세부 계획 평가가 불가능한 상태인지 확인
+		if (!Objects.equals(detailPlan.getParticipantInfo().getUserId(), getCurrentUserId())
+			|| detailPlan.getComplete()
+			|| detailPlan.getRejected()) {
+			throw new GotBetterException(MessageType.FORBIDDEN);
+		}
 	}
 
 	private Boolean validateDate(Plan plan, Room room) {

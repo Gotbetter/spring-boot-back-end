@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -65,4 +66,22 @@ public class DetailPlanRecordController {
 		return ResponseEntity.ok(detailPlanRecordViews);
 	}
 
+	@PatchMapping(value = "/{record_id}")
+	public ResponseEntity<DetailPlanRecordView> updateRecord(@PathVariable(value = "detail_plan_id") Long detail_plan_id,
+		@PathVariable(value = "record_id") Long record_id,
+		@Valid @RequestBody DetailPlanRecordRequest request) {
+
+		log.info("\"UPDATE THE DETAIL PLAN RECORD\"");
+
+		var command = DetailPlanRecordOperationUseCase.DetailPlanRecordUpdateCommand.builder()
+			.detailPlanId(detail_plan_id)
+			.recordId(record_id)
+			.recordTitle(request.getRecord_title())
+			.recordBody(request.getRecord_body())
+			.recordPhoto(request.getRecord_photo())
+			.build();
+		DetailPlanRecordReadUseCase.FindDetailPlanRecordResult result = detailPlanRecordOperationUseCase.updateRecord(command);
+
+		return ResponseEntity.ok(DetailPlanRecordView.builder().detailPlanRecordResult(result).build());
+	}
 }

@@ -45,4 +45,10 @@ public class DetailPlanRecord extends BaseTimeEntity {
 		this.recordBody = recordBody;
 		this.recordPhoto = recordPhoto;
 	}
+
+	public void updateRecord(String recordTitle, String recordBody, String recordPhoto) {
+		this.recordTitle = recordTitle;
+		this.recordBody = recordBody;
+		this.recordPhoto = recordPhoto;
+	}
 }
