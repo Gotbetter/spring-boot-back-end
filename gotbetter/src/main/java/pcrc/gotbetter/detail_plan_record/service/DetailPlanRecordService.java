@@ -119,7 +119,17 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 	public void deleteRecord(DetailPlanRecordDeleteCommand command) {
 		DetailPlanRecord detailPlanRecord = validateRecord(command.getRecordId(), command.getDetailPlanId());
 
-		detailPlanRecordRepository.deleteById(detailPlanRecord.getRecordId());
+		try {
+			String os = System.getProperty("os.name").toLowerCase();
+			String defaultDir = os.contains("win") ? RECORD_LOCAL_PATH : RECORD_SERVER_PATH;
+			String photoDir = defaultDir + "/" + detailPlanRecord.getDetailPlanId().getDetailPlanId();
+
+			deleteImages(photoDir, detailPlanRecord.getRecordId(), true);
+			detailPlanRecordRepository.deleteById(detailPlanRecord.getRecordId());
+		} catch (Exception e) {
+			throw new GotBetterException(MessageType.BAD_REQUEST);
+		}
+
 	}
 
 	/**
@@ -195,25 +205,7 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 			bytes = Base64.getEncoder().encodeToString(IOUtils.toByteArray(photo.getInputStream()));
 
 			// 저장소에 사진 저장
-			File storeDir = new File(photoDir);
-
-			if (!storeDir.exists()) {
-				try {
-					storeDir.mkdirs();
-				} catch (Exception e) {
-					e.getStackTrace();
-				}
-			} else {
-				String[] files = storeDir.list();
-				for (String file : files) {
-					System.out.println(file);
-					if (file.contains(detailPlanRecord.getRecordId() + ".")) {
-						System.out.println(detailPlanRecord.getRecordId() + ".");
-						File image = new File(photoDir + "/" + file);
-						image.delete();
-					}
-				}
-			}
+			deleteImages(photoDir, detailPlanRecord.getRecordId(), false);
 			photo.transferTo(new File(fileName));
 			// 경로 수정
 			String updateRecordTitle = recordTitle == null ? detailPlanRecord.getRecordTitle() : recordTitle;
@@ -224,5 +216,31 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 			throw new GotBetterException(MessageType.BAD_REQUEST);
 		}
 		return bytes;
+	}
+
+	void deleteImages(String photoDir, Long recordId, Boolean forDelete) {
+		// 저장소에 사진 저장
+		File storeDir = new File(photoDir);
+
+		if (!forDelete && !storeDir.exists()) {
+			try {
+				storeDir.mkdirs();
+			} catch (Exception e) {
+				e.getStackTrace();
+			}
+		} else {
+			String[] files = storeDir.list();
+			for (String file : files) {
+				if (file.startsWith(recordId + ".")) {
+					File image = new File(photoDir + "/" + file);
+					image.delete();
+					if (forDelete && files.length == 1) {
+						File dir = new File(photoDir);
+						dir.delete();
+					}
+				}
+			}
+
+		}
 	}
 }
