@@ -15,7 +15,4 @@ public class DetailPlanRecordRequest {
 
 	@NotBlank
 	private String record_body;
-
-	@NotBlank
-	private String record_photo;
 }

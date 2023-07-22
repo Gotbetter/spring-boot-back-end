@@ -1,5 +1,9 @@
 package pcrc.gotbetter.detail_plan_record.service;
 
+import java.io.IOException;
+
+import org.springframework.web.multipart.MultipartFile;
+
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -7,7 +11,8 @@ import lombok.ToString;
 
 public interface DetailPlanRecordOperationUseCase {
 
-	DetailPlanRecordReadUseCase.FindDetailPlanRecordResult createRecord(DetailPlanRecordCreateCommand command);
+	DetailPlanRecordReadUseCase.FindDetailPlanRecordResult createRecord(DetailPlanRecordCreateCommand command) throws
+		IOException;
 
 	DetailPlanRecordReadUseCase.FindDetailPlanRecordResult updateRecord(DetailPlanRecordUpdateCommand command);
 
@@ -21,7 +26,7 @@ public interface DetailPlanRecordOperationUseCase {
 		private final Long detailPlanId;
 		private final String recordTitle;
 		private final String recordBody;
-		private final String recordPhoto;
+		private final MultipartFile recordPhoto;
 	}
 
 	@EqualsAndHashCode(callSuper = false)
@@ -33,7 +38,7 @@ public interface DetailPlanRecordOperationUseCase {
 		private final Long recordId;
 		private final String recordTitle;
 		private final String recordBody;
-		private final String recordPhoto;
+		private final MultipartFile recordPhoto;
 	}
 
 	@EqualsAndHashCode(callSuper = false)

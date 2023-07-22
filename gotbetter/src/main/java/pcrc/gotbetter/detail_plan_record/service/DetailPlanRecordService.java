@@ -2,13 +2,19 @@ package pcrc.gotbetter.detail_plan_record.service;
 
 import static pcrc.gotbetter.setting.security.SecurityUtil.*;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import pcrc.gotbetter.detail_plan.data_access.entity.DetailPlan;
 import pcrc.gotbetter.detail_plan.data_access.repository.DetailPlanRepository;
@@ -26,7 +32,10 @@ import pcrc.gotbetter.setting.http_api.MessageType;
 
 @Service
 public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase, DetailPlanRecordReadUseCase {
-
+	@Value("${local.default.record.path}")
+	String RECORD_LOCAL_PATH;
+	@Value("${server.default.record.path}")
+	String RECORD_SERVER_PATH;
 	private final DetailPlanRecordRepository detailPlanRecordRepository;
 	private final DetailPlanRepository detailPlanRepository;
 	private final PlanRepository planRepository;
@@ -43,7 +52,7 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 	}
 
 	@Override
-	public FindDetailPlanRecordResult createRecord(DetailPlanRecordCreateCommand command) {
+	public FindDetailPlanRecordResult createRecord(DetailPlanRecordCreateCommand command) throws IOException {
 		DetailPlan detailPlan = validateDetailPlan(command.getDetailPlanId());
 
 		// 계획 인증 생성
@@ -57,11 +66,13 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 				.build())
 			.recordTitle(command.getRecordTitle())
 			.recordBody(command.getRecordBody())
-			.recordPhoto(command.getRecordPhoto())
+			.recordPhoto("to be continued")
 			.build();
 
 		detailPlanRecordRepository.save(detailPlanRecord);
-		return FindDetailPlanRecordResult.findByDetailPlanRecord(detailPlanRecord);
+		// 이미지
+		String bytes = storePhoto(detailPlanRecord, null, null, command.getRecordPhoto());
+		return FindDetailPlanRecordResult.findByDetailPlanRecord(detailPlanRecord, bytes);
 	}
 
 	@Override
@@ -83,10 +94,8 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 	@Override
 	public FindDetailPlanRecordResult updateRecord(DetailPlanRecordUpdateCommand command) {
 		DetailPlanRecord detailPlanRecord = validateRecord(command.getRecordId(), command.getDetailPlanId());
-
-		detailPlanRecord.updateRecord(command.getRecordTitle(), command.getRecordBody(), command.getRecordPhoto());
-		detailPlanRecordRepository.save(detailPlanRecord);
-		return FindDetailPlanRecordResult.findByDetailPlanRecord(detailPlanRecord);
+		String bytes = storePhoto(detailPlanRecord, command.getRecordTitle(), command.getRecordBody(), command.getRecordPhoto());
+		return FindDetailPlanRecordResult.findByDetailPlanRecord(detailPlanRecord, bytes);
 	}
 
 	@Override
@@ -153,5 +162,50 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 			return !plan.getStartDate().isAfter(LocalDate.now())
 				&& !plan.getTargetDate().isBefore(LocalDate.now());
 		}
+	}
+
+	private String storePhoto(DetailPlanRecord detailPlanRecord, String recordTitle, String recordBody,  MultipartFile photo) {
+		String os = System.getProperty("os.name").toLowerCase();
+		String defaultDir = os.contains("win") ? RECORD_LOCAL_PATH : RECORD_SERVER_PATH;
+		String bytes;
+
+		try {
+			String photoDir = defaultDir + "/" + detailPlanRecord.getDetailPlanId().getDetailPlanId();
+			String extension = Objects.requireNonNull(photo.getOriginalFilename())
+				.substring(photo.getOriginalFilename().lastIndexOf(".") + 1);
+			String fileName = photoDir + "/" + detailPlanRecord.getRecordId() + "." + extension;
+
+			bytes = Base64.getEncoder().encodeToString(IOUtils.toByteArray(photo.getInputStream()));
+
+			// 저장소에 사진 저장
+			File storeDir = new File(photoDir);
+
+			if (!storeDir.exists()) {
+				try {
+					storeDir.mkdirs();
+				} catch (Exception e) {
+					e.getStackTrace();
+				}
+			} else {
+				String[] files = storeDir.list();
+				for (String file : files) {
+					System.out.println(file);
+					if (file.contains(detailPlanRecord.getRecordId() + ".")) {
+						System.out.println(detailPlanRecord.getRecordId() + ".");
+						File image = new File(photoDir + "/" + file);
+						image.delete();
+					}
+				}
+			}
+			photo.transferTo(new File(fileName));
+			// 경로 수정
+			String updateRecordTitle = recordTitle == null ? detailPlanRecord.getRecordTitle() : recordTitle;
+			String updateRecordBody = recordTitle == null ? detailPlanRecord.getRecordBody() : recordBody;
+			detailPlanRecord.updateRecord(updateRecordTitle, updateRecordBody, fileName);
+			detailPlanRecordRepository.save(detailPlanRecord);
+		} catch (Exception e) {
+			throw new GotBetterException(MessageType.BAD_REQUEST);
+		}
+		return bytes;
 	}
 }

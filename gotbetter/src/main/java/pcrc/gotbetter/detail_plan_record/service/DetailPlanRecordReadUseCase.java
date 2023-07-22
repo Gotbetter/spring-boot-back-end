@@ -30,5 +30,15 @@ public interface DetailPlanRecordReadUseCase {
 				.lastUpdateDate(record.getUpdated_date().toString().split("\\.")[0].replace("T", " "))
 				.build();
 		}
+
+		public static FindDetailPlanRecordResult findByDetailPlanRecord(DetailPlanRecord record, String bytes) {
+			return FindDetailPlanRecordResult.builder()
+				.recordId(record.getRecordId())
+				.recordTitle(record.getRecordTitle())
+				.recordBody(record.getRecordBody())
+				.recordPhoto(bytes)
+				.lastUpdateDate(record.getUpdated_date().toString().split("\\.")[0].replace("T", " "))
+				.build();
+		}
 	}
 }
