@@ -1,5 +1,6 @@
 package pcrc.gotbetter.detail_plan_record.service;
 
+import java.io.IOException;
 import java.util.List;
 
 import lombok.Builder;
@@ -9,7 +10,7 @@ import pcrc.gotbetter.detail_plan_record.data_access.entity.DetailPlanRecord;
 
 public interface DetailPlanRecordReadUseCase {
 
-	List<FindDetailPlanRecordResult> getRecordList(Long detailPlanId);
+	List<FindDetailPlanRecordResult> getRecordList(Long detailPlanId) throws IOException;
 
 	@Getter
 	@ToString

@@ -60,7 +60,8 @@ public class DetailPlanRecordController {
 	}
 
 	@GetMapping(value = "")
-	public ResponseEntity<List<DetailPlanRecordView>> getRecordList(@PathVariable(value = "detail_plan_id") Long detail_plan_id) {
+	public ResponseEntity<List<DetailPlanRecordView>> getRecordList(@PathVariable(value = "detail_plan_id") Long detail_plan_id) throws
+		IOException {
 
 		log.info("\"GET A DETAIL PLAN RECORD LIST\"");
 

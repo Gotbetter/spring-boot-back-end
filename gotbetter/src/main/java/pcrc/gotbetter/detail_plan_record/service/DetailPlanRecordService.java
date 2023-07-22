@@ -4,6 +4,8 @@ import static pcrc.gotbetter.setting.security.SecurityUtil.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -36,6 +38,10 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 	String RECORD_LOCAL_PATH;
 	@Value("${server.default.record.path}")
 	String RECORD_SERVER_PATH;
+	@Value("${local.default.loading.image}")
+	String RECORD_LOCAL_DEFAULT_IMG;
+	@Value("${server.default.loading.image}")
+	String RECORD_SERVER_DEFAULT_IMG;
 	private final DetailPlanRecordRepository detailPlanRecordRepository;
 	private final DetailPlanRepository detailPlanRepository;
 	private final PlanRepository planRepository;
@@ -76,7 +82,7 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 	}
 
 	@Override
-	public List<FindDetailPlanRecordResult> getRecordList(Long detailPlanId) {
+	public List<FindDetailPlanRecordResult> getRecordList(Long detailPlanId) throws IOException {
 		// 방에 속한 사용자인지 확인
 		if (!participantRepository.existsByDetailPlanId(getCurrentUserId(), detailPlanId)) {
 			throw new GotBetterException(MessageType.NOT_FOUND);
@@ -84,9 +90,20 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 		// 인증 리스트 조회
 		List<DetailPlanRecord> records = detailPlanRecordRepository.findByDetailPlanIdDetailPlanId(detailPlanId);
 		List<FindDetailPlanRecordResult> results = new ArrayList<>();
+		String os = System.getProperty("os.name").toLowerCase();
 
 		for (DetailPlanRecord record : records) {
-			results.add(FindDetailPlanRecordResult.findByDetailPlanRecord(record));
+
+			String bytes;
+
+			try {
+				bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(
+					Paths.get(record.getRecordPhoto())));
+			} catch (Exception e) {
+				String dir = os.contains("win") ? RECORD_LOCAL_DEFAULT_IMG : RECORD_SERVER_DEFAULT_IMG;
+				bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
+			}
+			results.add(FindDetailPlanRecordResult.findByDetailPlanRecord(record, bytes));
 		}
 		return results;
 	}
