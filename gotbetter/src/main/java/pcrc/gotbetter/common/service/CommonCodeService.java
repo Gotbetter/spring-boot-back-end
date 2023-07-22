@@ -17,10 +17,10 @@ import java.util.List;
 @Service
 public class CommonCodeService implements CommonCodeReadUseCase {
     private final CommonCodeRepository commonCodeRepository;
-    @Value("${local.default.image.path}")
-    String DEFAULT_LOCAL_PATH;
-    @Value("${server.default.image.path}")
-    String DEFAULT_SERVER_PATH;
+    @Value("${local.default.loading.image}")
+    String LOADING_LOCAL_DEFAULT_IMG;
+    @Value("${server.default.loading.image}")
+    String LOADING_SERVER_DEFAULT_IMG;
 
     @Autowired
     public CommonCodeService(CommonCodeRepository commonCodeRepository) {
@@ -39,7 +39,7 @@ public class CommonCodeService implements CommonCodeReadUseCase {
                         Paths.get(c.getAttribute1())));
             } catch (Exception e) {
                 String os = System.getProperty("os.name").toLowerCase();
-                String dir = os.contains("win") ? DEFAULT_LOCAL_PATH : DEFAULT_SERVER_PATH;
+                String dir = os.contains("win") ? LOADING_LOCAL_DEFAULT_IMG : LOADING_SERVER_DEFAULT_IMG;
                 imageBytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
             }
             CommonCode roomCategory = CommonCode.builder()

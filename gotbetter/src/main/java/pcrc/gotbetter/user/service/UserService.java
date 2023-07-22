@@ -23,10 +23,10 @@ import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
 @Service
 public class UserService implements UserOperationUseCase, UserReadUseCase {
 
-    @Value("${local.default.profile.path}")
-    String DEFAULT_PROFILE_LOCAL_PATH;
-    @Value("${server.default.profile.path}")
-    String DEFAULT_PROFILE_SERVER_PATH;
+    @Value("${local.default.profile.image}")
+    String PROFILE_LOCAL_DEFAULT_IMG;
+    @Value("${server.default.profile.image}")
+    String PROFILE_SERVER_DEFAULT_IMG;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
@@ -113,7 +113,7 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
                     Paths.get(findUser.getProfile())));
         } catch (Exception e) {
             String os = System.getProperty("os.name").toLowerCase();
-            String dir = os.contains("win") ? DEFAULT_PROFILE_LOCAL_PATH : DEFAULT_PROFILE_SERVER_PATH;
+            String dir = os.contains("win") ? PROFILE_LOCAL_DEFAULT_IMG : PROFILE_SERVER_DEFAULT_IMG;
             bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
         }
         User user = User.builder()

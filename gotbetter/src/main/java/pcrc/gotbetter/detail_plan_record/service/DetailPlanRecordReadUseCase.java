@@ -1,5 +1,6 @@
 package pcrc.gotbetter.detail_plan_record.service;
 
+import java.io.IOException;
 import java.util.List;
 
 import lombok.Builder;
@@ -9,7 +10,7 @@ import pcrc.gotbetter.detail_plan_record.data_access.entity.DetailPlanRecord;
 
 public interface DetailPlanRecordReadUseCase {
 
-	List<FindDetailPlanRecordResult> getRecordList(Long detailPlanId);
+	List<FindDetailPlanRecordResult> getRecordList(Long detailPlanId) throws IOException;
 
 	@Getter
 	@ToString
@@ -27,6 +28,16 @@ public interface DetailPlanRecordReadUseCase {
 				.recordTitle(record.getRecordTitle())
 				.recordBody(record.getRecordBody())
 				.recordPhoto(record.getRecordPhoto())
+				.lastUpdateDate(record.getUpdated_date().toString().split("\\.")[0].replace("T", " "))
+				.build();
+		}
+
+		public static FindDetailPlanRecordResult findByDetailPlanRecord(DetailPlanRecord record, String bytes) {
+			return FindDetailPlanRecordResult.builder()
+				.recordId(record.getRecordId())
+				.recordTitle(record.getRecordTitle())
+				.recordBody(record.getRecordBody())
+				.recordPhoto(bytes)
 				.lastUpdateDate(record.getUpdated_date().toString().split("\\.")[0].replace("T", " "))
 				.build();
 		}
