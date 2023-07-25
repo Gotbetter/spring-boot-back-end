@@ -2,6 +2,7 @@ package pcrc.gotbetter.room.service;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import pcrc.gotbetter.common.data_access.entity.CommonCode;
 import pcrc.gotbetter.common.data_access.entity.CommonCodeId;
@@ -19,6 +20,9 @@ import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 import pcrc.gotbetter.user.data_access.entity.User;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -27,6 +31,10 @@ import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
 
 @Service
 public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
+    @Value("${local.default.profile.image}")
+    String PROFILE_LOCAL_DEFAULT_IMG;
+    @Value("${server.default.profile.image}")
+    String PROFILE_SERVER_DEFAULT_IMG;
     private final RoomRepository roomRepository;
     private final JoinRequestRepository joinRequestRepository;
     private final ParticipantRepository participantRepository;
@@ -173,7 +181,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
     }
 
     @Override
-    public List<FindRankResult> getRank(Long roomId) {
+    public List<FindRankResult> getRank(Long roomId) throws IOException {
         Long currentUserId = getCurrentUserId();
 
         if (!participantRepository.existsByUserIdAndRoomId(currentUserId, roomId)) {
@@ -190,19 +198,22 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
         }
 
         Room room = participantDtoList.get(0).getRoom();
-        Map<Float, List<String>> percentMap = new HashMap<>();
+        Map<Float, List<HashMap<String, String>>> percentMap = new HashMap<>();
 
         for (ParticipantDto participantDto : participantDtoList) {
             User user = participantDto.getUser();
             Participant participant = participantDto.getParticipant();
             Float key = participant.getPercentSum();
-            List<String> usernameList = new ArrayList<>();
+            List<HashMap<String, String>> userInfoList = new ArrayList<>();
+            HashMap<String, String> userInfo = new HashMap<>();
 
             if (percentMap.containsKey(key)) {
-                usernameList = percentMap.get(key);
+                userInfoList = percentMap.get(key);
             }
-            usernameList.add(user.getUsername());
-            percentMap.put(key, usernameList);
+            userInfo.put("profile", getProfileBytes(user.getProfile()));
+            userInfo.put("username",user.getUsername());
+            userInfoList.add(userInfo);
+            percentMap.put(key, userInfoList);
         }
 
         List<Float> keySet = new ArrayList<>(percentMap.keySet());
@@ -210,11 +221,12 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
         Collections.reverse(keySet);
 
         int rank = 1;
+        int rankId = 0;
 
         for (Float key : keySet) {
-            List<String> usernames = percentMap.get(key);
+            List<HashMap<String, String>> userInfoList = percentMap.get(key);
 
-            for (String username : usernames) {
+            for (HashMap<String, String> userInfo : userInfoList) {
                 int refund = room.getEntryFee();
 
                 if (key == 0F) {
@@ -226,7 +238,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
                     }
                 }
                 findRankResultList.add(FindRankResult
-                    .findByRank(username, rank, refund));
+                    .findByRank(rankId++, rank, userInfo, refund));
             }
             rank += percentMap.get(key).size();
         }
@@ -274,5 +286,18 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
             throw new GotBetterException(MessageType.BAD_REQUEST);
         }
         return ruleInfo;
+    }
+
+    private String getProfileBytes(String path) throws IOException {
+        String bytes;
+
+        try {
+            bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(path)));
+        } catch (Exception e) {
+            String os = System.getProperty("os.name").toLowerCase();
+            String dir = os.contains("win") ? PROFILE_LOCAL_DEFAULT_IMG : PROFILE_SERVER_DEFAULT_IMG;
+            bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
+        }
+        return bytes;
     }
 }
