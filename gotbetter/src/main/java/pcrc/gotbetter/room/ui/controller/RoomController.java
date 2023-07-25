@@ -12,6 +12,7 @@ import pcrc.gotbetter.room.ui.requestBody.RoomUpdateRequest;
 import pcrc.gotbetter.room.ui.view.RankView;
 import pcrc.gotbetter.room.ui.view.RoomView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -90,7 +91,7 @@ public class RoomController {
     }
 
     @GetMapping(value = "/{room_id}/rank")
-    public ResponseEntity<List<RankView>> getRank(@PathVariable Long room_id) {
+    public ResponseEntity<List<RankView>> getRank(@PathVariable Long room_id) throws IOException {
 
         log.info("\"GET A RANK LIST\"");
 

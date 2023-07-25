@@ -6,13 +6,15 @@ import lombok.ToString;
 import pcrc.gotbetter.participant.data_access.dto.JoinRequestDto;
 import pcrc.gotbetter.room.data_access.entity.Room;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 public interface RoomReadUseCase {
 
     List<FindRoomResult> getUserRoomList();
     FindRoomResult getOneRoomInfo(Long roomId);
-    List<FindRankResult> getRank(Long roomId);
+    List<FindRankResult> getRank(Long roomId) throws IOException;
 
     @Getter
     @ToString
@@ -78,16 +80,21 @@ public interface RoomReadUseCase {
     @ToString
     @Builder
     class FindRankResult {
-        private final String username;
+        private final Integer rankId;
         private final Integer rank;
+        private final String username;
+        private final String profile;
         private final Integer refund;
 
-        public static FindRankResult findByRank(String username, Integer rank, Integer refund) {
+        public static FindRankResult findByRank(Integer rankId, Integer rank,
+            HashMap<String, String> userInfo, Integer refund) {
             return FindRankResult.builder()
-                    .username(username)
-                    .rank(rank)
-                    .refund(refund)
-                    .build();
+                .rankId(rankId)
+                .rank(rank)
+                .username(userInfo.get("username"))
+                .profile(userInfo.get("profile"))
+                .refund(refund)
+                .build();
         }
     }
 }
