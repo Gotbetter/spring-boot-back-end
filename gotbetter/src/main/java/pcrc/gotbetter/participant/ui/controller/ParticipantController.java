@@ -17,6 +17,7 @@ import pcrc.gotbetter.room.ui.view.RoomView;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +47,8 @@ public class ParticipantController {
 
     @GetMapping(value = "/{room_id}")
     public ResponseEntity<List<ParticipantView>> getUserListAboutRoom(@PathVariable Long room_id,
-                                                             @RequestParam(value = "accepted") Boolean accepted) {
+                                                             @RequestParam(value = "accepted") Boolean accepted) throws
+        IOException {
 
         if (accepted == null) {
             throw new GotBetterException(MessageType.BAD_REQUEST);
@@ -66,7 +68,8 @@ public class ParticipantController {
     }
 
     @PatchMapping(value = "")
-    public ResponseEntity<ParticipantView> approveJoinRoom(@Valid @RequestBody ParticipantJoinApproveRequest request) {
+    public ResponseEntity<ParticipantView> approveJoinRoom(@Valid @RequestBody ParticipantJoinApproveRequest request) throws
+        IOException {
 
         log.info("\"APPROVE JOIN ROOM\"");
 

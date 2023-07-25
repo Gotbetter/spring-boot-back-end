@@ -1,6 +1,7 @@
 package pcrc.gotbetter.participant.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import pcrc.gotbetter.participant.data_access.dto.ParticipantDto;
@@ -16,8 +17,12 @@ import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -26,6 +31,10 @@ import static pcrc.gotbetter.setting.security.SecurityUtil.getCurrentUserId;
 
 @Service
 public class ParticipantService implements ParticipantOperationUseCase, ParticipantReadUseCase {
+    @Value("${local.default.profile.image}")
+    String PROFILE_LOCAL_DEFAULT_IMG;
+    @Value("${server.default.profile.image}")
+    String PROFILE_SERVER_DEFAULT_IMG;
     private final ParticipantRepository participantRepository;
     private final JoinRequestRepository joinRequestRepository;
     private final RoomRepository roomRepository;
@@ -65,27 +74,28 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
     }
 
     @Override
-    public List<FindParticipantResult> getMemberListInARoom(Long roomId, Boolean accepted) {
+    public List<FindParticipantResult> getMemberListInARoom(Long roomId, Boolean accepted) throws IOException {
         List<FindParticipantResult> result = new ArrayList<>();
 
         if (accepted) { // (방장 포함 일반 멤버) 방에 속한 멤버들 조회
             validateUserInRoom(roomId, false); // 방에 속한 멤버인지 검증
             List<ParticipantDto> participantDtoList = participantRepository.findUserInfoList(roomId);
             for (ParticipantDto p : participantDtoList) {
-                result.add(FindParticipantResult.findByParticipant(p));
+                result.add(FindParticipantResult.findByParticipant(p, getProfileBytes(p.getUser().getProfile())));
             }
         } else { // (방장만) 승인 대기 중인 사용자 조회
             validateUserInRoom(roomId, true); // 방장인지 검증
             List<JoinRequestDto> joinRequestList = joinRequestRepository.findJoinRequestJoinList(null, roomId, false);
             for (JoinRequestDto joinRequest : joinRequestList) {
-                result.add(FindParticipantResult.findByParticipant(joinRequest, -1L, false));
+                result.add(FindParticipantResult.findByParticipant(joinRequest,
+                    -1L, false, getProfileBytes(joinRequest.getUser().getProfile())));
             }
         }
         return result;
     }
 
     @Override
-    public FindParticipantResult approveJoinRoom(UserRoomAcceptedCommand command) { // (방장) 방 입장 승인
+    public FindParticipantResult approveJoinRoom(UserRoomAcceptedCommand command) throws IOException { // (방장) 방 입장 승인
         // 방장인지 검증
         validateUserInRoom(command.getRoomId(), true);
 
@@ -122,7 +132,7 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
         roomRepository.save(roomInfo);
         // 프로필 수정 추가해야함.
         return FindParticipantResult.findByParticipant(joinRequestDto,
-            participant.getParticipantId(), null);
+            participant.getParticipantId(), null, getProfileBytes(joinRequestDto.getUser().getProfile()));
     }
 
     @Override
@@ -215,5 +225,18 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
         if (lastDate.isBefore(LocalDate.now())) {
             throw new GotBetterException(MessageType.FORBIDDEN_DATE);
         }
+    }
+
+    private String getProfileBytes(String path) throws IOException {
+        String bytes;
+
+        try {
+            bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(path)));
+        } catch (Exception e) {
+            String os = System.getProperty("os.name").toLowerCase();
+            String dir = os.contains("win") ? PROFILE_LOCAL_DEFAULT_IMG : PROFILE_SERVER_DEFAULT_IMG;
+            bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
+        }
+        return bytes;
     }
 }
