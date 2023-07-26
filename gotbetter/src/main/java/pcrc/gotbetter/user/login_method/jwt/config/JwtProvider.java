@@ -1,10 +1,12 @@
 package pcrc.gotbetter.user.login_method.jwt.config;
 
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.http.HttpServletRequest;
+import java.security.Key;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -14,10 +16,19 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import pcrc.gotbetter.user.login_method.jwt.service.CustomUserDetailService;
 
-import java.security.Key;
-import java.util.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
+import pcrc.gotbetter.user.login_method.jwt.service.CustomUserDetailService;
 
 @Component
 public class JwtProvider {
@@ -27,10 +38,12 @@ public class JwtProvider {
     private static final String AUTHORITIES_KEY = "role";
     private final CustomUserDetailService customUserDetailService;
 
-    public JwtProvider(@Value("${external.jwt.secretKey}") String secretKey,
-                       @Value("${external.jwt.accessTokenExpiredTime}") Long accessExpiredTime,
-                       @Value("${external.jwt.refreshTokenExpiredTime}") Long refreshExpiredTime,
-                       CustomUserDetailService customUserDetailService) {
+    public JwtProvider(
+        @Value("${external.jwt.secretKey}") String secretKey,
+        @Value("${external.jwt.accessTokenExpiredTime}") Long accessExpiredTime,
+        @Value("${external.jwt.refreshTokenExpiredTime}") Long refreshExpiredTime,
+        CustomUserDetailService customUserDetailService
+    ) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
         this.accessExpiredTime = accessExpiredTime;
@@ -41,35 +54,33 @@ public class JwtProvider {
     public TokenInfo generateToken(String userId) {
 
         Map<String, Object> headers = new HashMap<>();
-        headers.put("type", "token");
-
         Map<String, Object> payloads = new HashMap<>();
+
+        headers.put("type", "token");
         payloads.put("id", userId);
         payloads.put(AUTHORITIES_KEY, "USER");
 
         Date now = new Date();
-
         //Access Token 생성
         String accessToken = Jwts.builder()
-                .setHeader(headers)
-                .setClaims(payloads)
-                .setSubject("got-better")
-                .setExpiration(new Date(now.getTime() + accessExpiredTime))
-                .signWith(secretKey, SignatureAlgorithm.HS256)
-                .compact();
-
+            .setHeader(headers)
+            .setClaims(payloads)
+            .setSubject("got-better")
+            .setExpiration(new Date(now.getTime() + accessExpiredTime))
+            .signWith(secretKey, SignatureAlgorithm.HS256)
+            .compact();
         //Refresh Token 생성
         String refreshToken = Jwts.builder()
-                .setClaims(payloads)
-                .setExpiration(new Date(now.getTime() + refreshExpiredTime))
-                .signWith(secretKey, SignatureAlgorithm.HS256)
-                .compact();
+            .setClaims(payloads)
+            .setExpiration(new Date(now.getTime() + refreshExpiredTime))
+            .signWith(secretKey, SignatureAlgorithm.HS256)
+            .compact();
 
         return TokenInfo.builder()
-                .grantType("Bearer")
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+            .grantType("Bearer")
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
+            .build();
     }
 
     public Boolean validateJwtToken(ServletRequest request, String token) {
@@ -84,7 +95,8 @@ public class JwtProvider {
         } catch (ExpiredJwtException exception) {
             request.setAttribute("exception", "ExpiredJwtException"); // 토큰 만료 Expired Jwt token
         } catch (UnsupportedJwtException exception) {
-            request.setAttribute("exception", "UnsupportedJwtException"); // 예상하는 형식과 일치하지 않는 특정 형식이나 구성의 JWT일 경우 Unsupported Jwt token
+            request.setAttribute("exception",
+                "UnsupportedJwtException"); // 예상하는 형식과 일치하지 않는 특정 형식이나 구성의 JWT일 경우 Unsupported Jwt token
         } catch (JwtException | IllegalArgumentException exception) {
             request.setAttribute("exception", "IllegalArgumentException"); // Jwt token compact of handler are invalid
         }
@@ -95,12 +107,12 @@ public class JwtProvider {
 
         Claims claims = parseClaims(accessToken);
         Collection<? extends GrantedAuthority> authorities =
-                Arrays.stream(new String[]{claims.get(AUTHORITIES_KEY).toString()})
-                        .map(SimpleGrantedAuthority::new).toList();
+            Arrays.stream(new String[] {claims.get(AUTHORITIES_KEY).toString()})
+                .map(SimpleGrantedAuthority::new).toList();
         UserDetails userDetails;
 
         try {
-            userDetails = customUserDetailService.loadUserByUsername((String) parseClaims(accessToken).get("id"));
+            userDetails = customUserDetailService.loadUserByUsername((String)parseClaims(accessToken).get("id"));
         } catch (UsernameNotFoundException ex) {
             request.setAttribute("exception", "UsernameOrPasswordNotFound");
             return null;
@@ -118,6 +130,7 @@ public class JwtProvider {
 
     public String extractToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
+
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }

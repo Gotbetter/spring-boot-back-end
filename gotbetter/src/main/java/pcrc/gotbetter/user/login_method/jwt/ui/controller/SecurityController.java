@@ -1,12 +1,13 @@
 package pcrc.gotbetter.user.login_method.jwt.ui.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import pcrc.gotbetter.user.login_method.jwt.config.TokenInfo;
 import pcrc.gotbetter.user.login_method.jwt.service.JwtService;
 import pcrc.gotbetter.user.login_method.jwt.ui.view.TokenView;

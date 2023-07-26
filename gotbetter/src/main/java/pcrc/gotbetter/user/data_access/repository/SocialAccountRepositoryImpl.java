@@ -1,14 +1,15 @@
 package pcrc.gotbetter.user.data_access.repository;
 
+import static pcrc.gotbetter.user.data_access.entity.QSocialAccount.*;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.util.StringUtils;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import pcrc.gotbetter.user.data_access.entity.SocialAccount;
 import pcrc.gotbetter.user.login_method.login_type.ProviderType;
-
-import static pcrc.gotbetter.user.data_access.entity.QSocialAccount.socialAccount;
 
 public class SocialAccountRepositoryImpl implements SocialAccountQueryRepository {
     private final JPAQueryFactory queryFactory;

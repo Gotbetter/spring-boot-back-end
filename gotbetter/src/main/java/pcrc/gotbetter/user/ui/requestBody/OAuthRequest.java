@@ -11,12 +11,17 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 public class OAuthRequest {
-    @NotNull @NotBlank
+    @NotNull
+    @NotBlank
     private String id;
-    @NotNull @NotBlank @Email
+    @NotNull
+    @NotBlank
+    @Email
     private String email;
-    @NotNull @NotBlank
+    @NotNull
+    @NotBlank
     private String name;
-    @NotNull @NotBlank
+    @NotNull
+    @NotBlank
     private String picture;
 }

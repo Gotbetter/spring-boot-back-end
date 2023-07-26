@@ -2,10 +2,11 @@ package pcrc.gotbetter.user.login_method.oauth;
 
 import java.util.Objects;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
@@ -27,8 +28,12 @@ public class OAuthWebService {
     private final JwtProvider jwtProvider;
 
     @Autowired
-    public OAuthWebService(OauthInterface oauthInterface, UserRepository userRepository,
-                           SocialAccountRepository socialAccountRepository, JwtProvider jwtProvider) {
+    public OAuthWebService(
+        OauthInterface oauthInterface,
+        UserRepository userRepository,
+        SocialAccountRepository socialAccountRepository,
+        JwtProvider jwtProvider
+    ) {
         this.oauthInterface = oauthInterface;
         this.userRepository = userRepository;
         this.socialAccountRepository = socialAccountRepository;
@@ -39,7 +44,7 @@ public class OAuthWebService {
         return oauthInterface.getOAuthRedirectURL();
     }
 
-    public TokenInfo oAuthLogin (String code) throws JsonProcessingException, ParseException {
+    public TokenInfo oAuthLogin(String code) throws JsonProcessingException, ParseException {
         // get access token
         GoogleOAuthToken googleOAuthToken = oauthInterface.requestAccessToken(code);
         // get user info
@@ -56,7 +61,7 @@ public class OAuthWebService {
                 findUser = User.builder()
                     .username(googleUser.name)
                     .email(googleUser.email)
-                    //                        .profile()
+                    // .profile()
                     .build();
                 userRepository.save(findUser);
             }
@@ -81,7 +86,6 @@ public class OAuthWebService {
 
         findUser.updateRefreshToken(tokenInfo.getRefreshToken());
         userRepository.save(findUser);
-
         return tokenInfo;
     }
 }

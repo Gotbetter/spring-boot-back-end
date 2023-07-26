@@ -1,6 +1,7 @@
 package pcrc.gotbetter.user.data_access.dto;
 
 import com.querydsl.core.annotations.QueryProjection;
+
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,8 +17,13 @@ public class UserDto {
     private String profile;
 
     @QueryProjection
-    public UserDto(Long userId, String authId, String usernameNick,
-                   String email, String profile) {
+    public UserDto(
+        Long userId,
+        String authId,
+        String usernameNick,
+        String email,
+        String profile
+    ) {
         this.userId = userId;
         this.authId = authId;
         this.usernameNick = usernameNick;

@@ -1,16 +1,21 @@
 package pcrc.gotbetter.user.service;
 
-import lombok.*;
+import java.io.IOException;
+
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+import pcrc.gotbetter.user.data_access.entity.User;
 import pcrc.gotbetter.user.data_access.entity.UserSet;
 import pcrc.gotbetter.user.login_method.jwt.config.TokenInfo;
-import pcrc.gotbetter.user.data_access.entity.User;
-
-import java.io.IOException;
 
 public interface UserReadUseCase {
 
     FindUserResult loginUser(UserFindQuery query);
+
     FindUserResult verifyId(String authId);
+
     FindUserResult getUserInfo() throws IOException;
 
     @EqualsAndHashCode(callSuper = false)
@@ -36,14 +41,14 @@ public interface UserReadUseCase {
 
         public static FindUserResult findByUser(User user, UserSet userSet, TokenInfo tokenInfo) {
             return FindUserResult.builder()
-                    .userId(user.getUserId())
-                    .authId(userSet.getAuthId())
-                    .username(user.getUsername())
-                    .email(user.getEmail())
-                    .profile(user.getProfile())
-                    .accessToken(tokenInfo.getAccessToken())
-                    .refreshToken(tokenInfo.getRefreshToken())
-                    .build();
+                .userId(user.getUserId())
+                .authId(userSet.getAuthId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .profile(user.getProfile())
+                .accessToken(tokenInfo.getAccessToken())
+                .refreshToken(tokenInfo.getRefreshToken())
+                .build();
         }
     }
 

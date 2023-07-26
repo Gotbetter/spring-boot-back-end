@@ -1,18 +1,23 @@
 package pcrc.gotbetter.user.ui.controller;
 
-import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+import pcrc.gotbetter.user.service.UserOperationUseCase;
 import pcrc.gotbetter.user.service.UserReadUseCase;
 import pcrc.gotbetter.user.ui.requestBody.UserJoinRequest;
-import pcrc.gotbetter.user.service.UserOperationUseCase;
 import pcrc.gotbetter.user.ui.requestBody.UserLoginRequest;
 import pcrc.gotbetter.user.ui.requestBody.UserVerifyIdRequest;
 import pcrc.gotbetter.user.ui.view.UserView;
-
-import java.io.IOException;
 
 @Slf4j
 @RestController
@@ -23,8 +28,10 @@ public class UserController {
     private final UserReadUseCase userReadUseCase;
 
     @Autowired
-    public UserController(UserOperationUseCase userOperationUseCase,
-                          UserReadUseCase userReadUseCase) {
+    public UserController(
+        UserOperationUseCase userOperationUseCase,
+        UserReadUseCase userReadUseCase
+    ) {
         this.userOperationUseCase = userOperationUseCase;
         this.userReadUseCase = userReadUseCase;
     }
@@ -35,11 +42,11 @@ public class UserController {
         log.info("\"JOIN\"");
 
         var command = UserOperationUseCase.UserCreateCommand.builder()
-                .authId(request.getAuth_id())
-                .password(request.getPassword())
-                .username(request.getUsername())
-                .email(request.getEmail())
-                .build();
+            .authId(request.getAuth_id())
+            .password(request.getPassword())
+            .username(request.getUsername())
+            .email(request.getEmail())
+            .build();
         UserReadUseCase.FindUserResult result = userOperationUseCase.createUser(command);
 
         return ResponseEntity.created(null).body(UserView.builder().userResult(result).build());
@@ -61,9 +68,9 @@ public class UserController {
         log.info("\"LOGIN\"");
 
         var query = UserReadUseCase.UserFindQuery.builder()
-                .authId(request.getAuth_id())
-                .password(request.getPassword())
-                .build();
+            .authId(request.getAuth_id())
+            .password(request.getPassword())
+            .build();
         UserReadUseCase.FindUserResult result = userReadUseCase.loginUser(query);
 
         return ResponseEntity.ok(UserView.builder().userResult(result).build());

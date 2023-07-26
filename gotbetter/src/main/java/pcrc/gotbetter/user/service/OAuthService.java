@@ -20,7 +20,11 @@ public class OAuthService implements OAuthOperationUseCase {
     private final UserRepository userRepository;
     private final SocialAccountRepository socialAccountRepository;
 
-    public OAuthService(UserRepository userRepository, SocialAccountRepository socialAccountRepository, JwtProvider jwtProvider) {
+    public OAuthService(
+        UserRepository userRepository,
+        SocialAccountRepository socialAccountRepository,
+        JwtProvider jwtProvider
+    ) {
         this.userRepository = userRepository;
         this.socialAccountRepository = socialAccountRepository;
         this.jwtProvider = jwtProvider;
@@ -39,7 +43,7 @@ public class OAuthService implements OAuthOperationUseCase {
                 findUser = User.builder()
                     .username(command.getName())
                     .email(command.getEmail())
-                    //                        .profile()
+                    // .profile()
                     .build();
                 findUser.updateById("-1");
                 userRepository.save(findUser);

@@ -11,8 +11,10 @@ import lombok.ToString;
 @NoArgsConstructor
 public class UserLoginRequest {
 
-    @NotNull @NotBlank
+    @NotNull
+    @NotBlank
     private String auth_id;
-    @NotNull @NotBlank
+    @NotNull
+    @NotBlank
     private String password;
 }

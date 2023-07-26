@@ -1,16 +1,17 @@
 package pcrc.gotbetter.user.login_method.jwt.service;
 
-import jakarta.servlet.http.HttpServletRequest;
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import jakarta.servlet.http.HttpServletRequest;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
-import pcrc.gotbetter.user.login_method.jwt.config.JwtProvider;
-import pcrc.gotbetter.user.login_method.jwt.config.TokenInfo;
 import pcrc.gotbetter.user.data_access.entity.User;
 import pcrc.gotbetter.user.data_access.repository.UserRepository;
-
-import java.util.Date;
+import pcrc.gotbetter.user.login_method.jwt.config.JwtProvider;
+import pcrc.gotbetter.user.login_method.jwt.config.TokenInfo;
 
 @Service
 public class JwtService {
@@ -34,6 +35,7 @@ public class JwtService {
         User user = validateRefreshToken(refreshToken);
         long diffDays = compareDate(jwtProvider.parseClaims(refreshToken).getExpiration());
         TokenInfo tokenInfo = jwtProvider.generateToken(user.getUserId().toString());
+
         if (diffDays < 30) {
             user.updateRefreshToken(tokenInfo.getRefreshToken());
             user.updateById(user.getUserId().toString());
@@ -48,11 +50,12 @@ public class JwtService {
      * validate section
      */
     private User validateRefreshToken(String refreshToken) {
-        String userId = (String) jwtProvider.parseClaims(refreshToken).get("id");
+        String userId = (String)jwtProvider.parseClaims(refreshToken).get("id");
         User user = userRepository.findByUserId(Long.valueOf(userId))
-                .orElseThrow(() -> {
-                    throw new GotBetterException(MessageType.ReLogin);
-                });
+            .orElseThrow(() -> {
+                throw new GotBetterException(MessageType.ReLogin);
+            });
+
         if (!user.getRefreshToken().equals(refreshToken)) {
             throw new GotBetterException(MessageType.ReLogin);
         }

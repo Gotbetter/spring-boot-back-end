@@ -1,9 +1,9 @@
 package pcrc.gotbetter.user.login_method.oauth;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,14 +11,14 @@ import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import pcrc.gotbetter.user.data_access.entity.User;
 import pcrc.gotbetter.user.data_access.entity.UserSet;
-import pcrc.gotbetter.user.login_method.login_type.ProviderType;
 import pcrc.gotbetter.user.login_method.login_type.RoleType;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
 
 @Getter
 @Setter
@@ -27,7 +27,7 @@ import java.util.Map;
 public class UserPrincipal implements OAuth2User, UserDetails, OidcUser {
     private final String userId;
     private final String password;
-//    private final ProviderType providerType;
+    // private final ProviderType providerType;
     private final RoleType roleType;
     private final Collection<GrantedAuthority> authorities;
     private Map<String, Object> attributes;
@@ -89,18 +89,18 @@ public class UserPrincipal implements OAuth2User, UserDetails, OidcUser {
 
     public static UserPrincipal create(User user, UserSet userSet) {
         return new UserPrincipal(
-                user.getUserId().toString(),
-                userSet.getPassword(),
-//                user.getProviderType(),
-                RoleType.USER,
-                Collections.singleton(new SimpleGrantedAuthority(RoleType.USER.getCode()))
+            user.getUserId().toString(),
+            userSet.getPassword(),
+            // user.getProviderType(),
+            RoleType.USER,
+            Collections.singleton(new SimpleGrantedAuthority(RoleType.USER.getCode()))
         );
     }
 
-//    public static UserPrincipal create(User user, Map<String, Object> attributes) {
-//        UserPrincipal userPrincipal = create(user);
-//        userPrincipal.setAttributes(attributes);
-//
-//        return userPrincipal;
-//    }
+    //    public static UserPrincipal create(User user, Map<String, Object> attributes) {
+    //        UserPrincipal userPrincipal = create(user);
+    //        userPrincipal.setAttributes(attributes);
+    //
+    //        return userPrincipal;
+    //    }
 }

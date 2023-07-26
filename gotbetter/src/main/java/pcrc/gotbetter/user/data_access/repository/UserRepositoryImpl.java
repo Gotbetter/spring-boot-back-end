@@ -1,15 +1,16 @@
 package pcrc.gotbetter.user.data_access.repository;
 
-import com.querydsl.core.Tuple;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import static pcrc.gotbetter.user.data_access.entity.QUser.user;
+import static pcrc.gotbetter.user.data_access.entity.QUser.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 
 public class UserRepositoryImpl implements UserQueryRepository {
 
