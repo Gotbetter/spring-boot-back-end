@@ -1,6 +1,7 @@
 package pcrc.gotbetter.participant.ui.view;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
@@ -10,22 +11,22 @@ import pcrc.gotbetter.participant.service.ParticipantReadUseCase;
 @ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ParticipantView {
-    private final Long participant_id;
-    private final Long user_id;
-    private final String auth_id;
-    private final String username;
-    private final String email;
-    private final String profile;
-    private final Boolean authority;
+	private final Long participant_id;
+	private final Long user_id;
+	private final String auth_id;
+	private final String username;
+	private final String email;
+	private final String profile;
+	private final Boolean authority;
 
-    @Builder
-    public ParticipantView(ParticipantReadUseCase.FindParticipantResult participantResult) {
-        this.participant_id = participantResult.getParticipantId();
-        this.user_id = participantResult.getUserId();
-        this.auth_id = participantResult.getAuthId();
-        this.username = participantResult.getUsername();
-        this.email = participantResult.getEmail();
-        this.profile = participantResult.getProfile();
-        this.authority = participantResult.getAuthority();
-    }
+	@Builder
+	public ParticipantView(ParticipantReadUseCase.FindParticipantResult participantResult) {
+		this.participant_id = participantResult.getParticipantId();
+		this.user_id = participantResult.getUserId();
+		this.auth_id = participantResult.getAuthId();
+		this.username = participantResult.getUsername();
+		this.email = participantResult.getEmail();
+		this.profile = participantResult.getProfile();
+		this.authority = participantResult.getAuthority();
+	}
 }

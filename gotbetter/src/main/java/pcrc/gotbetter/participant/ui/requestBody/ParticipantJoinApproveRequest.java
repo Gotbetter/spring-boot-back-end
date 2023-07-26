@@ -9,8 +9,8 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 public class ParticipantJoinApproveRequest {
-    @NotNull
-    private Long user_id;
-    @NotNull
-    private Long room_id;
+	@NotNull
+	private Long user_id;
+	@NotNull
+	private Long room_id;
 }
