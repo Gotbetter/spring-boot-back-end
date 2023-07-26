@@ -9,16 +9,16 @@ import pcrc.gotbetter.setting.http_api.MessageType;
 
 public class SecurityUtil {
 
-    public static Long getCurrentUserId() {
-        final Authentication authentication = SecurityContextHolder.getContext()
-            .getAuthentication();
+	public static Long getCurrentUserId() {
+		final Authentication authentication = SecurityContextHolder.getContext()
+			.getAuthentication();
 
-        if (authentication == null || authentication.getName() == null
-            || authentication.getPrincipal().equals("anonymousUser")) {
-            throw new GotBetterException(MessageType.ReLogin);
-        }
+		if (authentication == null || authentication.getName() == null
+			|| authentication.getPrincipal().equals("anonymousUser")) {
+			throw new GotBetterException(MessageType.ReLogin);
+		}
 
-        UserDetails principal = (UserDetails)authentication.getPrincipal();
-        return Long.parseLong(principal.getUsername());
-    }
+		UserDetails principal = (UserDetails)authentication.getPrincipal();
+		return Long.parseLong(principal.getUsername());
+	}
 }

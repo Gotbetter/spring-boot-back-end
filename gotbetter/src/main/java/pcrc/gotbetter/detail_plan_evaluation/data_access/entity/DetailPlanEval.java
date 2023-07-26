@@ -10,7 +10,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import pcrc.gotbetter.setting.BaseTimeEntity;
+import pcrc.gotbetter.setting.common.BaseTimeEntity;
 
 @Entity
 @Table(name = "DetailPlanEvaluation")

@@ -1,4 +1,4 @@
-package pcrc.gotbetter.setting;
+package pcrc.gotbetter.setting.batch;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -58,7 +58,7 @@ public class BatchNotification {
 				// roomId와 current week로 plan 리스트 가져오기
 				List<HashMap<String, Object>> info = planRepository.findPushNotification();
 				// System.out.println(planRepository.findPushNotification());
-				for (HashMap<String, Object> data: info) {
+				for (HashMap<String, Object> data : info) {
 					Boolean threeDaysPassed = (Boolean)data.get("threeDaysPassed");
 					// three days passed인지 아닌지 확인
 					if (!threeDaysPassed) {

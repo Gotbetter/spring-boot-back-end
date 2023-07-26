@@ -15,7 +15,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import pcrc.gotbetter.setting.BaseTimeEntity;
+import pcrc.gotbetter.setting.common.BaseTimeEntity;
 import pcrc.gotbetter.user.login_method.login_type.ProviderType;
 
 @Entity
@@ -25,36 +25,36 @@ import pcrc.gotbetter.user.login_method.login_type.ProviderType;
 @DynamicInsert
 @DynamicUpdate
 public class SocialAccount extends BaseTimeEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "social_account_id", nullable = false)
-    private Long socialAccountId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "social_account_id", nullable = false)
+	private Long socialAccountId;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+	@Column(name = "user_id", nullable = false)
+	private Long userId;
 
-    @Column(name = "provider_type", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private ProviderType providerType;
+	@Column(name = "provider_type", nullable = false)
+	@Enumerated(EnumType.STRING)
+	private ProviderType providerType;
 
-    @Column(name = "provider_id", nullable = false)
-    private String providerId;
+	@Column(name = "provider_id", nullable = false)
+	private String providerId;
 
-    @Builder
-    public SocialAccount(
-        Long socialAccountId,
-        Long userId,
-        ProviderType providerType,
-        String providerId
-    ) {
-        this.socialAccountId = socialAccountId;
-        this.userId = userId;
-        this.providerType = providerType;
-        this.providerId = providerId;
-    }
+	@Builder
+	public SocialAccount(
+		Long socialAccountId,
+		Long userId,
+		ProviderType providerType,
+		String providerId
+	) {
+		this.socialAccountId = socialAccountId;
+		this.userId = userId;
+		this.providerType = providerType;
+		this.providerId = providerId;
+	}
 
-    public void updateById(String userId) {
-        this.updateCreatedById(userId);
-        this.updateUpdatedById(userId);
-    }
+	public void updateById(String userId) {
+		this.updateCreatedById(userId);
+		this.updateUpdatedById(userId);
+	}
 }
