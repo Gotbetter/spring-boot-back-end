@@ -58,7 +58,7 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 	}
 
 	@Override
-	public FindDetailPlanRecordResult createRecord(DetailPlanRecordCreateCommand command) throws IOException {
+	public FindDetailPlanRecordResult createRecord(DetailPlanRecordCreateCommand command) {
 		DetailPlan detailPlan = validateDetailPlan(command.getDetailPlanId());
 
 		// 계획 인증 생성
@@ -111,7 +111,8 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 	@Override
 	public FindDetailPlanRecordResult updateRecord(DetailPlanRecordUpdateCommand command) {
 		DetailPlanRecord detailPlanRecord = validateRecord(command.getRecordId(), command.getDetailPlanId());
-		String bytes = storePhoto(detailPlanRecord, command.getRecordTitle(), command.getRecordBody(), command.getRecordPhoto());
+		String bytes = storePhoto(detailPlanRecord, command.getRecordTitle(), command.getRecordBody(),
+			command.getRecordPhoto());
 		return FindDetailPlanRecordResult.findByDetailPlanRecord(detailPlanRecord, bytes);
 	}
 
@@ -191,7 +192,12 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 		}
 	}
 
-	private String storePhoto(DetailPlanRecord detailPlanRecord, String recordTitle, String recordBody,  MultipartFile photo) {
+	private String storePhoto(
+		DetailPlanRecord detailPlanRecord,
+		String recordTitle,
+		String recordBody,
+		MultipartFile photo
+	) {
 		String os = System.getProperty("os.name").toLowerCase();
 		String defaultDir = os.contains("win") ? RECORD_LOCAL_PATH : RECORD_SERVER_PATH;
 		String bytes;

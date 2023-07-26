@@ -42,9 +42,11 @@ public class DetailPlanRecordController {
 	}
 
 	@PostMapping(value = "")
-	public ResponseEntity<DetailPlanRecordView> createRecord(@PathVariable(value = "detail_plan_id") Long detail_plan_id,
+	public ResponseEntity<DetailPlanRecordView> createRecord(
+		@PathVariable(value = "detail_plan_id") Long detail_plan_id,
 		@Valid @RequestPart(value = "record_content") DetailPlanRecordRequest request,
-		@RequestParam MultipartFile record_photo) throws IOException {
+		@RequestParam MultipartFile record_photo
+	) throws IOException {
 
 		log.info("\"CREATE A DETAIL PLAN RECORD\"");
 
@@ -54,18 +56,21 @@ public class DetailPlanRecordController {
 			.recordBody(request.getRecord_body())
 			.recordPhoto(record_photo)
 			.build();
-		DetailPlanRecordReadUseCase.FindDetailPlanRecordResult result = detailPlanRecordOperationUseCase.createRecord(command);
+		DetailPlanRecordReadUseCase.FindDetailPlanRecordResult result = detailPlanRecordOperationUseCase.createRecord(
+			command);
 
 		return ResponseEntity.created(null).body(DetailPlanRecordView.builder().detailPlanRecordResult(result).build());
 	}
 
 	@GetMapping(value = "")
-	public ResponseEntity<List<DetailPlanRecordView>> getRecordList(@PathVariable(value = "detail_plan_id") Long detail_plan_id) throws
-		IOException {
+	public ResponseEntity<List<DetailPlanRecordView>> getRecordList(
+		@PathVariable(value = "detail_plan_id") Long detail_plan_id
+	) throws IOException {
 
 		log.info("\"GET A DETAIL PLAN RECORD LIST\"");
 
-		List<DetailPlanRecordReadUseCase.FindDetailPlanRecordResult> records = detailPlanRecordReadUseCase.getRecordList(detail_plan_id);
+		List<DetailPlanRecordReadUseCase.FindDetailPlanRecordResult> records = detailPlanRecordReadUseCase.getRecordList(
+			detail_plan_id);
 		List<DetailPlanRecordView> detailPlanRecordViews = new ArrayList<>();
 
 		for (DetailPlanRecordReadUseCase.FindDetailPlanRecordResult record : records) {
@@ -75,10 +80,12 @@ public class DetailPlanRecordController {
 	}
 
 	@PatchMapping(value = "/{record_id}")
-	public ResponseEntity<DetailPlanRecordView> updateRecord(@PathVariable(value = "detail_plan_id") Long detail_plan_id,
+	public ResponseEntity<DetailPlanRecordView> updateRecord(
+		@PathVariable(value = "detail_plan_id") Long detail_plan_id,
 		@PathVariable(value = "record_id") Long record_id,
 		@Valid @RequestPart(value = "record_content") DetailPlanRecordRequest request,
-		@RequestParam MultipartFile record_photo) {
+		@RequestParam MultipartFile record_photo
+	) {
 
 		log.info("\"UPDATE THE DETAIL PLAN RECORD\"");
 
@@ -89,7 +96,8 @@ public class DetailPlanRecordController {
 			.recordBody(request.getRecord_body())
 			.recordPhoto(record_photo)
 			.build();
-		DetailPlanRecordReadUseCase.FindDetailPlanRecordResult result = detailPlanRecordOperationUseCase.updateRecord(command);
+		DetailPlanRecordReadUseCase.FindDetailPlanRecordResult result = detailPlanRecordOperationUseCase.updateRecord(
+			command);
 
 		return ResponseEntity.ok(DetailPlanRecordView.builder().detailPlanRecordResult(result).build());
 	}
