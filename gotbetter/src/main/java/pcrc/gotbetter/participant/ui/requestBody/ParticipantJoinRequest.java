@@ -10,7 +10,7 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 public class ParticipantJoinRequest {
-    @NotNull
-    @NotBlank
-    private String room_code;
+	@NotNull
+	@NotBlank
+	private String room_code;
 }

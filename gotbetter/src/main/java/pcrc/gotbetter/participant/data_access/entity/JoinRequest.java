@@ -1,14 +1,17 @@
 package pcrc.gotbetter.participant.data_access.entity;
 
-import jakarta.persistence.*;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import pcrc.gotbetter.setting.BaseTimeEntity;
-
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
+import pcrc.gotbetter.setting.common.BaseTimeEntity;
 
 @Entity
 @Table(name = "join_request")
@@ -17,18 +20,18 @@ import org.hibernate.annotations.DynamicUpdate;
 @DynamicInsert
 @DynamicUpdate
 public class JoinRequest extends BaseTimeEntity {
-    @EmbeddedId
-    private JoinRequestId joinRequestId;
-    @Column(nullable = false)
-    private Boolean accepted;
+	@EmbeddedId
+	private JoinRequestId joinRequestId;
+	@Column(nullable = false)
+	private Boolean accepted;
 
-    @Builder
-    public JoinRequest(JoinRequestId joinRequestId, Boolean accepted) {
-        this.joinRequestId = joinRequestId;
-        this.accepted = accepted;
-    }
+	@Builder
+	public JoinRequest(JoinRequestId joinRequestId, Boolean accepted) {
+		this.joinRequestId = joinRequestId;
+		this.accepted = accepted;
+	}
 
-    public void updateAcceptedToJoin() {
-        this.accepted = true;
-    }
+	public void updateAcceptedToJoin() {
+		this.accepted = true;
+	}
 }

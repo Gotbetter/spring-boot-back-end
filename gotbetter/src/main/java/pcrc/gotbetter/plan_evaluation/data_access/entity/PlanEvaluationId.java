@@ -11,20 +11,20 @@ import lombok.NoArgsConstructor;
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PlanEvaluationId {
-    @Column(name = "plan_id")
-    private Long planId;
-    @Column(name = "participant_id")
-    private Long participantId;
-    @Column(name = "user_id")
-    private Long userId;
-    @Column(name = "room_id")
-    private Long roomId;
+	@Column(name = "plan_id")
+	private Long planId;
+	@Column(name = "participant_id")
+	private Long participantId;
+	@Column(name = "user_id")
+	private Long userId;
+	@Column(name = "room_id")
+	private Long roomId;
 
-    @Builder
-    public PlanEvaluationId(Long planId, Long participantId, Long userId, Long roomId) {
-        this.planId = planId;
-        this.participantId =  participantId;
-        this.userId = userId;
-        this.roomId = roomId;
-    }
+	@Builder
+	public PlanEvaluationId(Long planId, Long participantId, Long userId, Long roomId) {
+		this.planId = planId;
+		this.participantId = participantId;
+		this.userId = userId;
+		this.roomId = roomId;
+	}
 }

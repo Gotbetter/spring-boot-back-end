@@ -7,21 +7,21 @@ import pcrc.gotbetter.participant.data_access.entity.Participant;
 
 public interface ParticipantQueryRepository {
 
-    Boolean isMatchedLeader(Long userId, Long roomId);
+	Boolean isMatchedLeader(Long userId, Long roomId);
 
-    Participant findByUserIdAndRoomId(Long userId, Long roomId);
+	Participant findByUserIdAndRoomId(Long userId, Long roomId);
 
-    Boolean existsByUserIdAndRoomId(Long userId, Long roomId);
+	Boolean existsByUserIdAndRoomId(Long userId, Long roomId);
 
-    List<ParticipantDto> findUserInfoList(Long roomId);
+	List<ParticipantDto> findUserInfoList(Long roomId);
 
-    Boolean existsByDetailPlanId(Long userId, Long detailPlanId);
+	Boolean existsByDetailPlanId(Long userId, Long detailPlanId);
 
-    // join
-    ParticipantDto findParticipantRoomByParticipantId(Long participantId);
+	// join
+	ParticipantDto findParticipantRoomByParticipantId(Long participantId);
 
-    List<ParticipantDto> findParticipantRoomByRoomId(Long roomId);
+	List<ParticipantDto> findParticipantRoomByRoomId(Long roomId);
 
-    ParticipantDto findParticipantByUserIdAndRoomId(Long userId, Long roomId);
+	ParticipantDto findParticipantByUserIdAndRoomId(Long userId, Long roomId);
 
 }

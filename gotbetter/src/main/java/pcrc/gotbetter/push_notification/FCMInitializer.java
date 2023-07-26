@@ -20,7 +20,7 @@ public class FCMInitializer {
 	private String CREDENTIAL;
 
 	@PostConstruct
-	public void initialize(){
+	public void initialize() {
 		ClassPathResource resource = new ClassPathResource(CREDENTIAL);
 
 		try (InputStream stream = resource.getInputStream()) {
@@ -32,7 +32,7 @@ public class FCMInitializer {
 				FirebaseApp.initializeApp(options);
 				log.info("FirebaseApp initialization complete");
 			}
-		}catch (Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 			// throw new ApiException(ExceptionEnum.INTERNAL_SERVER_ERROR);
 		}

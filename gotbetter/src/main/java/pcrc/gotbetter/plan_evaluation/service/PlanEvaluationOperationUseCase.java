@@ -6,14 +6,15 @@ import lombok.Getter;
 import lombok.ToString;
 
 public interface PlanEvaluationOperationUseCase {
-    PlanEvaluationReadUseCase.FindPlanEvaluationResult createPlanEvaluation(PlanEvaluationCommand command);
-    void deletePlanEvaluation(PlanEvaluationCommand command);
+	PlanEvaluationReadUseCase.FindPlanEvaluationResult createPlanEvaluation(PlanEvaluationCommand command);
 
-    @EqualsAndHashCode(callSuper = false)
-    @Builder
-    @Getter
-    @ToString
-    class PlanEvaluationCommand {
-        private final Long planId;
-    }
+	void deletePlanEvaluation(PlanEvaluationCommand command);
+
+	@EqualsAndHashCode(callSuper = false)
+	@Builder
+	@Getter
+	@ToString
+	class PlanEvaluationCommand {
+		private final Long planId;
+	}
 }

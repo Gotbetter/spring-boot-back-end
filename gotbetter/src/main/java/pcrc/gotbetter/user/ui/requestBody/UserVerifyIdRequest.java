@@ -11,6 +11,7 @@ import lombok.ToString;
 @NoArgsConstructor
 public class UserVerifyIdRequest {
 
-    @NotNull @NotBlank
-    private String auth_id;
+	@NotNull
+	@NotBlank
+	private String auth_id;
 }

@@ -5,6 +5,6 @@ import pcrc.gotbetter.user.login_method.login_type.ProviderType;
 
 public interface SocialAccountQueryRepository {
 
-    SocialAccount findByTypeAndId(ProviderType providerType, String providerId);
+	SocialAccount findByTypeAndId(ProviderType providerType, String providerId);
 
 }

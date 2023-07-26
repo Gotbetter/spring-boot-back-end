@@ -7,32 +7,33 @@ import lombok.ToString;
 
 public interface RoomOperationUseCase {
 
-    RoomReadUseCase.FindRoomResult createRoom(RoomCreateCommand command);
-    RoomReadUseCase.FindRoomResult updateRoom(RoomUpdateCommand command);
+	RoomReadUseCase.FindRoomResult createRoom(RoomCreateCommand command);
 
-    @EqualsAndHashCode(callSuper = false)
-    @Builder
-    @Getter
-    @ToString
-    class RoomCreateCommand {
-        private final String title;
-        private final Integer maxUserNum;
-        private final String startDate;
-        private final Integer week;
-        private final Integer currentWeek;
-        private final Integer entryFee;
-        private final String ruleCode;
-        private final String account;
-        private final String roomCategoryCode;
-        private final String description;
-    }
+	RoomReadUseCase.FindRoomResult updateRoom(RoomUpdateCommand command);
 
-    @EqualsAndHashCode(callSuper = false)
-    @Builder
-    @Getter
-    @ToString
-    class RoomUpdateCommand {
-        private final Long room_id;
-        private final String description;
-    }
+	@EqualsAndHashCode(callSuper = false)
+	@Builder
+	@Getter
+	@ToString
+	class RoomCreateCommand {
+		private final String title;
+		private final Integer maxUserNum;
+		private final String startDate;
+		private final Integer week;
+		private final Integer currentWeek;
+		private final Integer entryFee;
+		private final String ruleCode;
+		private final String account;
+		private final String roomCategoryCode;
+		private final String description;
+	}
+
+	@EqualsAndHashCode(callSuper = false)
+	@Builder
+	@Getter
+	@ToString
+	class RoomUpdateCommand {
+		private final Long room_id;
+		private final String description;
+	}
 }

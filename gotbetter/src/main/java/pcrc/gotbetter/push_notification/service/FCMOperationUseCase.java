@@ -9,6 +9,7 @@ import lombok.ToString;
 
 public interface FCMOperationUseCase {
 	void storeToken(FCMStoreCommand command);
+
 	void sendNotifications(String targetToken, String title, String body) throws IOException;
 
 	@EqualsAndHashCode(callSuper = false)
