@@ -15,25 +15,25 @@ import pcrc.gotbetter.user.login_method.oauth.UserPrincipal;
 @Service
 public class CustomUserDetailService implements UserDetailsService {
 
-    private final UserRepository userRepository;
-    private final UserSetRepository userSetRepository;
+	private final UserRepository userRepository;
+	private final UserSetRepository userSetRepository;
 
-    @Autowired
-    public CustomUserDetailService(UserRepository userRepository, UserSetRepository userSetRepository) {
-        this.userRepository = userRepository;
-        this.userSetRepository = userSetRepository;
-    }
+	@Autowired
+	public CustomUserDetailService(UserRepository userRepository, UserSetRepository userSetRepository) {
+		this.userRepository = userRepository;
+		this.userSetRepository = userSetRepository;
+	}
 
-    @Override
-    public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
+	@Override
+	public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
 
-        User user = userRepository.findByUserId(Long.valueOf(userId)).orElseThrow(() -> {
-            throw new UsernameNotFoundException("Not existed user.");
-        });
-        UserSet userSet = userSetRepository.findByUserId(Long.valueOf(userId));
-        if (userSet == null) {
-            throw new UsernameNotFoundException("Not existed user.");
-        }
-        return UserPrincipal.create(user, userSet);
-    }
+		User user = userRepository.findByUserId(Long.valueOf(userId)).orElseThrow(() -> {
+			throw new UsernameNotFoundException("Not existed user.");
+		});
+		UserSet userSet = userSetRepository.findByUserId(Long.valueOf(userId));
+		if (userSet == null) {
+			throw new UsernameNotFoundException("Not existed user.");
+		}
+		return UserPrincipal.create(user, userSet);
+	}
 }

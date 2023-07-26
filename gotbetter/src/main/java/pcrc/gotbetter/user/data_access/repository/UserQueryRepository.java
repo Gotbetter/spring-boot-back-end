@@ -5,6 +5,6 @@ import java.util.List;
 
 public interface UserQueryRepository {
 
-    HashMap<Long, List<String>> getAllUsersUserIdAndFcmToken();
+	HashMap<Long, List<String>> getAllUsersUserIdAndFcmToken();
 
 }

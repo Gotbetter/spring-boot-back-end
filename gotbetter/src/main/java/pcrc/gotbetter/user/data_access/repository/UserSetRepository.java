@@ -8,8 +8,8 @@ import pcrc.gotbetter.user.data_access.entity.UserSet;
 @Repository
 public interface UserSetRepository extends JpaRepository<UserSet, Long>, UserSetQueryRepository {
 
-    UserSet findByAuthId(String authId);
+	UserSet findByAuthId(String authId);
 
-    UserSet findByUserId(Long userId);
+	UserSet findByUserId(Long userId);
 
 }

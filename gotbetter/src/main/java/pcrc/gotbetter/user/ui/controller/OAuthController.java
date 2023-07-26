@@ -21,31 +21,31 @@ import pcrc.gotbetter.user.ui.view.OAuthView;
 @RestController
 @RequestMapping(value = "/oauth")
 public class OAuthController {
-    private final OAuthOperationUseCase oAuthOperationUseCase;
+	private final OAuthOperationUseCase oAuthOperationUseCase;
 
-    public OAuthController(OAuthOperationUseCase oAuthOperationUseCase) {
-        this.oAuthOperationUseCase = oAuthOperationUseCase;
-    }
+	public OAuthController(OAuthOperationUseCase oAuthOperationUseCase) {
+		this.oAuthOperationUseCase = oAuthOperationUseCase;
+	}
 
-    @PostMapping(value = "")
-    public ResponseEntity<OAuthView> oAuthLogin(
-        @RequestParam(name = "provider") String provider,
-        @Valid @RequestBody OAuthRequest request
-    ) {
-        provider = provider.toUpperCase();
+	@PostMapping(value = "")
+	public ResponseEntity<OAuthView> oAuthLogin(
+		@RequestParam(name = "provider") String provider,
+		@Valid @RequestBody OAuthRequest request
+	) {
+		provider = provider.toUpperCase();
 
-        if (!ProviderType.contains(provider)) {
-            throw new GotBetterException(MessageType.NOT_FOUND);
-        }
+		if (!ProviderType.contains(provider)) {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		}
 
-        var command = OAuthOperationUseCase.OAuthLoginCommand.builder()
-            .id(request.getId())
-            .email(request.getEmail())
-            .name(request.getName())
-            .picture(request.getPicture())
-            .build();
-        TokenInfo tokenInfo = oAuthOperationUseCase.oAuthLogin(command);
+		var command = OAuthOperationUseCase.OAuthLoginCommand.builder()
+			.id(request.getId())
+			.email(request.getEmail())
+			.name(request.getName())
+			.picture(request.getPicture())
+			.build();
+		TokenInfo tokenInfo = oAuthOperationUseCase.oAuthLogin(command);
 
-        return ResponseEntity.created(null).body(OAuthView.builder().tokenInfo(tokenInfo).build());
-    }
+		return ResponseEntity.created(null).body(OAuthView.builder().tokenInfo(tokenInfo).build());
+	}
 }

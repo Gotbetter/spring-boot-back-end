@@ -8,9 +8,9 @@ import pcrc.gotbetter.user.login_method.oauth.google.GoogleOAuthToken;
 import pcrc.gotbetter.user.login_method.oauth.google.GoogleUser;
 
 public interface OauthInterface {
-    String getOAuthRedirectURL();
+	String getOAuthRedirectURL();
 
-    GoogleOAuthToken requestAccessToken(String code) throws JsonProcessingException, ParseException;
+	GoogleOAuthToken requestAccessToken(String code) throws JsonProcessingException, ParseException;
 
-    GoogleUser requestUserInfo(GoogleOAuthToken googleOAuthToken) throws ParseException;
+	GoogleUser requestUserInfo(GoogleOAuthToken googleOAuthToken) throws ParseException;
 }

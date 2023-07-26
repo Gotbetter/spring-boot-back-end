@@ -13,21 +13,21 @@ import pcrc.gotbetter.setting.http_api.MessageType;
 
 @Component
 public class JwtAccessDeniedHandler implements AccessDeniedHandler {
-    @Override
-    public void handle(
-        HttpServletRequest request,
-        HttpServletResponse response,
-        AccessDeniedException accessDeniedException
-    ) throws IOException {
-        JSONObject json = new JSONObject();
+	@Override
+	public void handle(
+		HttpServletRequest request,
+		HttpServletResponse response,
+		AccessDeniedException accessDeniedException
+	) throws IOException {
+		JSONObject json = new JSONObject();
 
-        response.setContentType("application/json;charset=UTF-8");
-        response.setCharacterEncoding("utf-8");
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+		response.setContentType("application/json;charset=UTF-8");
+		response.setCharacterEncoding("utf-8");
+		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-        json.put("errorType", "FORBIDDEN");
-        json.put("errorMessage", MessageType.FORBIDDEN.getMessage());
-        response.getWriter().print(json);
-    }
+		json.put("errorType", "FORBIDDEN");
+		json.put("errorMessage", MessageType.FORBIDDEN.getMessage());
+		response.getWriter().print(json);
+	}
 
 }

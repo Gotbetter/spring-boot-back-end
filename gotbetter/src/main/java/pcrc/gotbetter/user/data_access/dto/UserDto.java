@@ -10,24 +10,24 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class UserDto {
-    private Long userId;
-    private String authId;
-    private String usernameNick;
-    private String email;
-    private String profile;
+	private Long userId;
+	private String authId;
+	private String usernameNick;
+	private String email;
+	private String profile;
 
-    @QueryProjection
-    public UserDto(
-        Long userId,
-        String authId,
-        String usernameNick,
-        String email,
-        String profile
-    ) {
-        this.userId = userId;
-        this.authId = authId;
-        this.usernameNick = usernameNick;
-        this.email = email;
-        this.profile = profile;
-    }
+	@QueryProjection
+	public UserDto(
+		Long userId,
+		String authId,
+		String usernameNick,
+		String email,
+		String profile
+	) {
+		this.userId = userId;
+		this.authId = authId;
+		this.usernameNick = usernameNick;
+		this.email = email;
+		this.profile = profile;
+	}
 }

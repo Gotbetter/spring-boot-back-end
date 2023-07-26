@@ -12,18 +12,18 @@ import lombok.ToString;
 @NoArgsConstructor
 public class UserJoinRequest {
 
-    @NotNull
-    @NotBlank
-    private String auth_id;
-    @NotNull
-    @NotBlank
-    private String password;
-    @NotNull
-    @NotBlank
-    private String username;
-    @NotNull
-    @NotBlank
-    @Email
-    private String email;
+	@NotNull
+	@NotBlank
+	private String auth_id;
+	@NotNull
+	@NotBlank
+	private String password;
+	@NotNull
+	@NotBlank
+	private String username;
+	@NotNull
+	@NotBlank
+	@Email
+	private String email;
 
 }

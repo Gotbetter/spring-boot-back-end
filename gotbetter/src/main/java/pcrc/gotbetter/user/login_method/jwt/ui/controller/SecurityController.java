@@ -16,20 +16,20 @@ import pcrc.gotbetter.user.login_method.jwt.ui.view.TokenView;
 @RestController
 @RequestMapping(value = "/users")
 public class SecurityController {
-    private final JwtService jwtService;
+	private final JwtService jwtService;
 
-    @Autowired
-    public SecurityController(JwtService jwtService) {
-        this.jwtService = jwtService;
-    }
+	@Autowired
+	public SecurityController(JwtService jwtService) {
+		this.jwtService = jwtService;
+	}
 
-    @PostMapping(value = "/reissue")
-    public ResponseEntity<TokenView> reissue(HttpServletRequest request) {
+	@PostMapping(value = "/reissue")
+	public ResponseEntity<TokenView> reissue(HttpServletRequest request) {
 
-        log.info("\"REISSUE\"");
+		log.info("\"REISSUE\"");
 
-        TokenInfo tokenInfo = jwtService.reissueNewAccessToken(request);
+		TokenInfo tokenInfo = jwtService.reissueNewAccessToken(request);
 
-        return ResponseEntity.ok(TokenView.builder().tokenInfo(tokenInfo).build());
-    }
+		return ResponseEntity.ok(TokenView.builder().tokenInfo(tokenInfo).build());
+	}
 }

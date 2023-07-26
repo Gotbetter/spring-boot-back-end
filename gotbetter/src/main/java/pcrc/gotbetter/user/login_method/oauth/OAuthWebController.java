@@ -15,27 +15,27 @@ import pcrc.gotbetter.user.login_method.jwt.config.TokenInfo;
 
 @Controller
 public class OAuthWebController {
-    private final OAuthWebService oAuthWebService;
+	private final OAuthWebService oAuthWebService;
 
-    public OAuthWebController(OAuthWebService oAuthWebService) {
-        this.oAuthWebService = oAuthWebService;
-    }
+	public OAuthWebController(OAuthWebService oAuthWebService) {
+		this.oAuthWebService = oAuthWebService;
+	}
 
-    @GetMapping(value = "/oauth")
-    public void socialLoginRequest(HttpServletResponse response) throws IOException {
-        String requestURL = oAuthWebService.forCodeUrl();
-        response.sendRedirect(requestURL);
-    }
+	@GetMapping(value = "/oauth")
+	public void socialLoginRequest(HttpServletResponse response) throws IOException {
+		String requestURL = oAuthWebService.forCodeUrl();
+		response.sendRedirect(requestURL);
+	}
 
-    @GetMapping(value = "/oauth/redirect")
-    public ResponseEntity<TokenInfo> callback(@RequestParam(name = "code") String code) throws
-        JsonProcessingException,
-        ParseException {
-        TokenInfo tokenInfo = oAuthWebService.oAuthLogin(code);
+	@GetMapping(value = "/oauth/redirect")
+	public ResponseEntity<TokenInfo> callback(@RequestParam(name = "code") String code) throws
+		JsonProcessingException,
+		ParseException {
+		TokenInfo tokenInfo = oAuthWebService.oAuthLogin(code);
 
-        return ResponseEntity.ok(tokenInfo);
-        // return ResponseEntity.status(HttpStatus.FOUND)
-        // .location(ServletUriComponentsBuilder.fromHttpUrl("http://localhost:8081/rules").build().toUri())
-        // .build();
-    }
+		return ResponseEntity.ok(tokenInfo);
+		// return ResponseEntity.status(HttpStatus.FOUND)
+		// .location(ServletUriComponentsBuilder.fromHttpUrl("http://localhost:8081/rules").build().toUri())
+		// .build();
+	}
 }

@@ -11,12 +11,12 @@ import pcrc.gotbetter.user.login_method.jwt.config.TokenInfo;
 @ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TokenView {
-    private final String access_token;
-    private final String refresh_token;
+	private final String access_token;
+	private final String refresh_token;
 
-    @Builder
-    public TokenView(TokenInfo tokenInfo) {
-        this.access_token = tokenInfo.getAccessToken();
-        this.refresh_token = tokenInfo.getRefreshToken();
-    }
+	@Builder
+	public TokenView(TokenInfo tokenInfo) {
+		this.access_token = tokenInfo.getAccessToken();
+		this.refresh_token = tokenInfo.getRefreshToken();
+	}
 }

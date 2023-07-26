@@ -24,65 +24,65 @@ import pcrc.gotbetter.user.ui.view.UserView;
 @RequestMapping(value = "/users")
 public class UserController {
 
-    private final UserOperationUseCase userOperationUseCase;
-    private final UserReadUseCase userReadUseCase;
+	private final UserOperationUseCase userOperationUseCase;
+	private final UserReadUseCase userReadUseCase;
 
-    @Autowired
-    public UserController(
-        UserOperationUseCase userOperationUseCase,
-        UserReadUseCase userReadUseCase
-    ) {
-        this.userOperationUseCase = userOperationUseCase;
-        this.userReadUseCase = userReadUseCase;
-    }
+	@Autowired
+	public UserController(
+		UserOperationUseCase userOperationUseCase,
+		UserReadUseCase userReadUseCase
+	) {
+		this.userOperationUseCase = userOperationUseCase;
+		this.userReadUseCase = userReadUseCase;
+	}
 
-    @PostMapping(value = "")
-    public ResponseEntity<UserView> newUserJoin(@Valid @RequestBody UserJoinRequest request) {
+	@PostMapping(value = "")
+	public ResponseEntity<UserView> newUserJoin(@Valid @RequestBody UserJoinRequest request) {
 
-        log.info("\"JOIN\"");
+		log.info("\"JOIN\"");
 
-        var command = UserOperationUseCase.UserCreateCommand.builder()
-            .authId(request.getAuth_id())
-            .password(request.getPassword())
-            .username(request.getUsername())
-            .email(request.getEmail())
-            .build();
-        UserReadUseCase.FindUserResult result = userOperationUseCase.createUser(command);
+		var command = UserOperationUseCase.UserCreateCommand.builder()
+			.authId(request.getAuth_id())
+			.password(request.getPassword())
+			.username(request.getUsername())
+			.email(request.getEmail())
+			.build();
+		UserReadUseCase.FindUserResult result = userOperationUseCase.createUser(command);
 
-        return ResponseEntity.created(null).body(UserView.builder().userResult(result).build());
-    }
+		return ResponseEntity.created(null).body(UserView.builder().userResult(result).build());
+	}
 
-    @PostMapping(value = "/verify")
-    public ResponseEntity<UserView> verifyId(@Valid @RequestBody UserVerifyIdRequest request) {
+	@PostMapping(value = "/verify")
+	public ResponseEntity<UserView> verifyId(@Valid @RequestBody UserVerifyIdRequest request) {
 
-        log.info("\"VERIFY ID\"");
+		log.info("\"VERIFY ID\"");
 
-        UserReadUseCase.FindUserResult result = userReadUseCase.verifyId(request.getAuth_id());
+		UserReadUseCase.FindUserResult result = userReadUseCase.verifyId(request.getAuth_id());
 
-        return ResponseEntity.ok(UserView.builder().userResult(result).build());
-    }
+		return ResponseEntity.ok(UserView.builder().userResult(result).build());
+	}
 
-    @PostMapping(value = "/login")
-    public ResponseEntity<UserView> login(@Valid @RequestBody UserLoginRequest request) {
+	@PostMapping(value = "/login")
+	public ResponseEntity<UserView> login(@Valid @RequestBody UserLoginRequest request) {
 
-        log.info("\"LOGIN\"");
+		log.info("\"LOGIN\"");
 
-        var query = UserReadUseCase.UserFindQuery.builder()
-            .authId(request.getAuth_id())
-            .password(request.getPassword())
-            .build();
-        UserReadUseCase.FindUserResult result = userReadUseCase.loginUser(query);
+		var query = UserReadUseCase.UserFindQuery.builder()
+			.authId(request.getAuth_id())
+			.password(request.getPassword())
+			.build();
+		UserReadUseCase.FindUserResult result = userReadUseCase.loginUser(query);
 
-        return ResponseEntity.ok(UserView.builder().userResult(result).build());
-    }
+		return ResponseEntity.ok(UserView.builder().userResult(result).build());
+	}
 
-    @GetMapping(value = "")
-    public ResponseEntity<UserView> getUserInfo() throws IOException {
+	@GetMapping(value = "")
+	public ResponseEntity<UserView> getUserInfo() throws IOException {
 
-        log.info("\"GET USER'S INFO\"");
+		log.info("\"GET USER'S INFO\"");
 
-        UserReadUseCase.FindUserResult result = userReadUseCase.getUserInfo();
+		UserReadUseCase.FindUserResult result = userReadUseCase.getUserInfo();
 
-        return ResponseEntity.ok(UserView.builder().userResult(result).build());
-    }
+		return ResponseEntity.ok(UserView.builder().userResult(result).build());
+	}
 }
