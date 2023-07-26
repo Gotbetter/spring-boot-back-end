@@ -59,4 +59,9 @@ public class DetailPlan extends BaseTimeEntity {
         this.complete = false;
         this.rejected = rejected;
     }
+
+    public void updateById(String userId) {
+        this.updateCreatedById(userId);
+        this.updateUpdatedById(userId);
+    }
 }

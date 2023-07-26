@@ -41,4 +41,9 @@ public class SocialAccount extends BaseTimeEntity {
         this.providerType = providerType;
         this.providerId = providerId;
     }
+
+    public void updateById(String userId) {
+        this.updateCreatedById(userId);
+        this.updateUpdatedById(userId);
+    }
 }

@@ -53,7 +53,6 @@ public class SecurityConfig implements WebMvcConfigurer {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         String[] uriPost = {"/users", "/users/verify", "/users/login", "/users/reissue", "/oauth"};
-        String[] uriGet = {"/rules"};
 
         http.cors().configurationSource(corsConfigurationSource());
         http.httpBasic().disable()
@@ -61,7 +60,6 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.authorizeHttpRequests()
                 .requestMatchers(HttpMethod.POST, uriPost).permitAll()
-                .requestMatchers(HttpMethod.GET, uriGet).permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .formLogin().disable()

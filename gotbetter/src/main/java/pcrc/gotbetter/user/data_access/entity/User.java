@@ -64,4 +64,9 @@ public class User extends BaseTimeEntity {
     public void updateFcmToken(String fcmToken) {
         this.fcmToken = fcmToken;
     }
+
+    public void updateById(String userId) {
+        this.updateCreatedById(userId);
+        this.updateUpdatedById(userId);
+    }
 }

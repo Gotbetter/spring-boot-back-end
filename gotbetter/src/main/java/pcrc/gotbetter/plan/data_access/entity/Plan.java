@@ -58,4 +58,9 @@ public class Plan extends BaseTimeEntity {
     public void updateThreeDaysPassed() {
         this.threeDaysPassed = true;
     }
+
+    public void updateById(String userId) {
+        this.updateCreatedById(userId);
+        this.updateUpdatedById(userId);
+    }
 }

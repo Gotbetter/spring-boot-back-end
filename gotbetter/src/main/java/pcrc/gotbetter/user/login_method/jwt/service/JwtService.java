@@ -36,6 +36,7 @@ public class JwtService {
         TokenInfo tokenInfo = jwtProvider.generateToken(user.getUserId().toString());
         if (diffDays < 30) {
             user.updateRefreshToken(tokenInfo.getRefreshToken());
+            user.updateById(user.getUserId().toString());
             userRepository.save(user);
         } else {
             tokenInfo.setRefreshToken(refreshToken);

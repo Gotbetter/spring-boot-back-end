@@ -55,6 +55,7 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
             }
             // 소셜 로그인으로 가입되어 있는 경우
             findUser.updateUsername(command.getUsername());
+            findUser.updateById(findUser.getUserId().toString());
             userRepository.save(findUser);
         } else {
             // 아무것도 가입되어있지 않은 경우
@@ -62,6 +63,7 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
                 .username(command.getUsername())
                 .email(command.getEmail())
                 .build();
+            saveUser.updateById("-1");
             userRepository.save(saveUser);
             findUser = saveUser;
         }
@@ -72,6 +74,7 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
                 .authId(command.getAuthId())
                 .password(encodePassword)
                 .build();
+        savedUserSet.updateById(findUser.getUserId().toString());
         userSetRepository.save(savedUserSet);
         return FindUserResult.findByUser(findUser, savedUserSet, TokenInfo.builder().build());
     }
@@ -97,8 +100,8 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
         });
 
         findUser.updateRefreshToken(tokenInfo.getRefreshToken());
+        findUser.updateById(findUser.getUserId().toString());
         userRepository.save(findUser);
-
         return FindUserResult.findByUser(User.builder().build(), UserSet.builder().build(), tokenInfo);
     }
 
