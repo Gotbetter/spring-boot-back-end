@@ -7,15 +7,16 @@ import lombok.ToString;
 
 public interface DetailPlanCompleteOperationUseCase {
 
-    DetailPlanReadUseCase.FindDetailPlanResult completeDetailPlan(DetailPlanCompleteCommand command);
-    DetailPlanReadUseCase.FindDetailPlanResult undoCompleteDetailPlan(DetailPlanCompleteCommand command);
+	DetailPlanReadUseCase.FindDetailPlanResult completeDetailPlan(DetailPlanCompleteCommand command);
 
-    @EqualsAndHashCode(callSuper = false)
-    @Builder
-    @Getter
-    @ToString
-    class DetailPlanCompleteCommand {
-        private final Long planId;
-        private final Long detailPlanId;
-    }
+	DetailPlanReadUseCase.FindDetailPlanResult undoCompleteDetailPlan(DetailPlanCompleteCommand command);
+
+	@EqualsAndHashCode(callSuper = false)
+	@Builder
+	@Getter
+	@ToString
+	class DetailPlanCompleteCommand {
+		private final Long planId;
+		private final Long detailPlanId;
+	}
 }

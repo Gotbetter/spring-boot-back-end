@@ -10,7 +10,7 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 public class DetailPlanRequest {
-    @NotNull
-    @NotBlank
-    private String content;
+	@NotNull
+	@NotBlank
+	private String content;
 }
