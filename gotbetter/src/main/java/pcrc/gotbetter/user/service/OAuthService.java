@@ -41,6 +41,7 @@ public class OAuthService implements OAuthOperationUseCase {
                     .email(command.getEmail())
                     //                        .profile()
                     .build();
+                findUser.updateById("-1");
                 userRepository.save(findUser);
             }
             SocialAccount saveSocialAccount = SocialAccount.builder()
@@ -48,6 +49,7 @@ public class OAuthService implements OAuthOperationUseCase {
                 .providerType(ProviderType.GOOGLE)
                 .providerId(command.getId())
                 .build();
+            saveSocialAccount.updateById(findUser.getUserId().toString());
             socialAccountRepository.save(saveSocialAccount);
         } else if (findUser != null) {
             // 소셜 로그인을 한 적이 있는 경우
@@ -63,6 +65,7 @@ public class OAuthService implements OAuthOperationUseCase {
         TokenInfo tokenInfo = jwtProvider.generateToken(findUser.getUserId().toString());
 
         findUser.updateRefreshToken(tokenInfo.getRefreshToken());
+        findUser.updateById(findUser.getUserId().toString());
         userRepository.save(findUser);
 
         return tokenInfo;

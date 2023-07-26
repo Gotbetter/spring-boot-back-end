@@ -56,6 +56,7 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase {
 
         if (Math.floor(room.getCurrentUserNum() - 1) / 2 < detailPlanEvalSize + 1) {
             detailPlan.updateDetailPlanUndo(true);
+            detailPlan.updateById("SERVER");
             detailPlanRepository.save(detailPlan);
             detailPlanRecordRepository.deleteByDetailPlanIdDetailPlanId(detailPlan.getDetailPlanId());
             detailPlanEvalRepository.deleteByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());

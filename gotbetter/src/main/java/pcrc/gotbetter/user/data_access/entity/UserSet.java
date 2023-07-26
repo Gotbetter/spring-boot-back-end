@@ -36,4 +36,9 @@ public class UserSet extends BaseTimeEntity {
         this.authId = authId;
         this.password = password;
     }
+
+    public void updateById(String userId) {
+        this.updateCreatedById(userId);
+        this.updateUpdatedById(userId);
+    }
 }

@@ -50,4 +50,9 @@ public class Participant extends BaseTimeEntity {
     public void updateRefund(Integer refund) {
         this.refund = refund;
     }
+
+    public void updateById(String userId) {
+        this.updateCreatedById(userId);
+        this.updateUpdatedById(userId);
+    }
 }

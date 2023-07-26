@@ -55,6 +55,7 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase,  P
         if (Math.floor(roomInfo.getCurrentUserNum() - 1) / 2 < planEvaluations.size() + 1) {
             // 재작성 표시 업데이트
             planInfo.updateRejected(true);
+            planInfo.updateById("SERVER");
             planRepository.save(planInfo);
             // 기존 평가들 삭제
             planEvaluationRepository.deleteByPlanEvaluationIdPlanId(planInfo.getPlanId());

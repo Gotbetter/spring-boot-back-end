@@ -82,4 +82,9 @@ public class Room extends BaseTimeEntity {
     public void updateDescription(String description) {
         this.description = description;
     }
+
+    public void updateById(String userId) {
+        this.updateCreatedById(userId);
+        this.updateUpdatedById(userId);
+    }
 }

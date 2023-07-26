@@ -28,7 +28,7 @@ public interface DetailPlanRecordReadUseCase {
 				.recordTitle(record.getRecordTitle())
 				.recordBody(record.getRecordBody())
 				.recordPhoto(record.getRecordPhoto())
-				.lastUpdateDate(record.getUpdated_date().toString().split("\\.")[0].replace("T", " "))
+				.lastUpdateDate(record.getUpdatedDate().toString().split("\\.")[0].replace("T", " "))
 				.build();
 		}
 
@@ -38,7 +38,7 @@ public interface DetailPlanRecordReadUseCase {
 				.recordTitle(record.getRecordTitle())
 				.recordBody(record.getRecordBody())
 				.recordPhoto(bytes)
-				.lastUpdateDate(record.getUpdated_date().toString().split("\\.")[0].replace("T", " "))
+				.lastUpdateDate(record.getUpdatedDate().toString().split("\\.")[0].replace("T", " "))
 				.build();
 		}
 	}

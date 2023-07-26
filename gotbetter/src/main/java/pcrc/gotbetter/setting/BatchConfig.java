@@ -70,6 +70,7 @@ public class BatchConfig {
                             log.info("room_id: " + plan.getParticipantInfo().getRoomId()
                                     + ", plan_id: " + plan.getPlanId() + ", start_date: " + plan.getStartDate());
                             plan.updateThreeDaysPassed();
+                            plan.updateById("SERVER");
                         }
                     }
                     planRepository.saveAll(planList);
@@ -92,6 +93,7 @@ public class BatchConfig {
                             updatePercentSum(room.getRoomId(), room.getCurrentWeek());
                             int nextWeek = room.getCurrentWeek() + 1;
                             room.updateCurrentWeekToNext();
+                            room.updateById("SERVER");
                             log.info("room_id: " + room.getRoomId() + ", start_date: " + room.getStartDate()
                                     + ", current_week/week: " + nextWeek + "/" + room.getWeek());
                         }
@@ -148,6 +150,7 @@ public class BatchConfig {
                 log.info("4. participant_id = " + plan.getParticipantInfo().getParticipantId()
                         + ", plus percent = " + percent);
                 participant.updatePercentSum(percent);
+                participant.updateById("SERVER");
                 participantRepository.save(participant);
             }
         }
@@ -197,6 +200,7 @@ public class BatchConfig {
                     }
                 }
                 participant.updateRefund(refund);
+                participant.updateById("SERVER");
                 log.info("2. participant_id = " + participant.getParticipantId() + ", refund = " + refund);
             }
             participantRepository.saveAll(participants);
