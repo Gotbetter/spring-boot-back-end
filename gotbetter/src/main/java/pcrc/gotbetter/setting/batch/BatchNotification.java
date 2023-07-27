@@ -50,16 +50,20 @@ public class BatchNotification {
 	private Step stepPushNotifications() {
 		return new StepBuilder("stepPushNotifications", jobRepository)
 			.tasklet((StepContribution contribution, ChunkContext chunkContext) -> {
-				log.info("\">>> step_push_notifications <<<\"");
+
+				log.info("\">>> (START) step_push_notifications <<<\"");
+
 				// userId와 토큰 맵 가져오기
 				HashMap<Long, List<String>> users = userRepository.getAllUsersUserIdAndFcmToken();
 				// System.out.println(users);
 				// room 테이블에서 시간 지난거는 제외
 				// roomId와 current week로 plan 리스트 가져오기
 				List<HashMap<String, Object>> info = planRepository.findPushNotification();
+
 				// System.out.println(planRepository.findPushNotification());
 				for (HashMap<String, Object> data : info) {
 					Boolean threeDaysPassed = (Boolean)data.get("threeDaysPassed");
+
 					// three days passed인지 아닌지 확인
 					if (!threeDaysPassed) {
 						pushForWritePlan(data, users);
@@ -75,9 +79,10 @@ public class BatchNotification {
 	public void pushForWritePlan(HashMap<String, Object> data, HashMap<Long, List<String>> users) throws IOException {
 		// 3일차인지 확인 후 true면 알림 전송
 		LocalDate planStartDate = LocalDate.parse(data.get("planStartDate").toString());
-		LocalDate threeDay = planStartDate.plusDays(2L);
+		LocalDate thirdDay = planStartDate.plusDays(2L);
 		LocalDate now = LocalDate.now();
-		if (threeDay.isEqual(now)) {
+
+		if (thirdDay.isEqual(now)) {
 			String username = users.get((Long)data.get("userId")).get(0);
 			String fcmToken = users.get((Long)data.get("userId")).get(1);
 			String title = "\uD83D\uDEA8\uD83D\uDEA8 계획 작성 마감 임박 \uD83D\uDEA8\uD83D\uDEA8";
@@ -94,6 +99,7 @@ public class BatchNotification {
 		LocalDate planStartDate = LocalDate.parse(data.get("planStartDate").toString());
 		LocalDate lastDay = planStartDate.plusDays(6L);
 		LocalDate now = LocalDate.now();
+
 		if (lastDay.isEqual(now)) {
 			String username = users.get((Long)data.get("userId")).get(0);
 			String fcmToken = users.get((Long)data.get("userId")).get(1);
