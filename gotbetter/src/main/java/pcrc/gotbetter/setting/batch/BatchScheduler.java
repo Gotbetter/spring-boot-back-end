@@ -18,7 +18,7 @@ public class BatchScheduler {
 	@Autowired
 	private JobLauncher jobLauncher;
 	@Autowired
-	private BatchConfig batchConfig;
+	private BatchPlan batchPlan;
 	@Autowired
 	private BatchNotification batchNotification;
 
@@ -29,7 +29,7 @@ public class BatchScheduler {
 			.toJobParameters();
 
 		try {
-			jobLauncher.run(batchConfig.job(), jobParameters);
+			jobLauncher.run(batchPlan.job(), jobParameters);
 		} catch (JobExecutionAlreadyRunningException
 				 | JobInstanceAlreadyCompleteException
 				 | JobParametersInvalidException

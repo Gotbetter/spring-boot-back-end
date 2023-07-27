@@ -31,11 +31,12 @@ import pcrc.gotbetter.plan.data_access.entity.Plan;
 import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
 import pcrc.gotbetter.room.data_access.entity.Room;
 import pcrc.gotbetter.room.data_access.repository.RoomRepository;
+import pcrc.gotbetter.user.login_method.login_type.RoleType;
 
 @Slf4j
 @Configuration
 @EnableBatchProcessing
-public class BatchConfig {
+public class BatchPlan {
 	@Autowired
 	private JobRepository jobRepository;
 	@Autowired
@@ -54,24 +55,31 @@ public class BatchConfig {
 		log.info("\">>>>> Run Job <<<<<\"");
 		return new JobBuilder("job", jobRepository)
 			.start(stepThreeDaysPassed())
-			.next(stepWeekPass())
-			.next(stepUpdateRefund())
+			.next(stepSetRefund())
+			.next(stepWeekPassed())
 			.build();
 	}
 
 	private Step stepThreeDaysPassed() {
 		return new StepBuilder("step_three_days_passed", jobRepository)
 			.tasklet((StepContribution contribution, ChunkContext chunkContext) -> {
-				log.info("\">>> step_three_days_passed <<<\"");
+
+				log.info("\">>> (START) step_three_days_passed <<<\"");
+
 				List<Plan> planList = planRepository.findByThreeDaysPassed(false);
 				LocalDate now = LocalDate.now();
+
 				for (Plan plan : planList) {
-					LocalDate afterThreeDays = plan.getStartDate().plusDays(2L);
-					if (afterThreeDays.isBefore(now)) {
-						log.info("room_id: " + plan.getParticipantInfo().getRoomId()
-							+ ", plan_id: " + plan.getPlanId() + ", start_date: " + plan.getStartDate());
+					LocalDate thirdDay = plan.getStartDate().plusDays(2L);
+
+					if (thirdDay.isBefore(now)) {
+						log.info("(change three days passed to TRUE |" +
+							" roomId=" + plan.getParticipantInfo().getRoomId() +
+							" planId=" + plan.getPlanId() +
+							" startDate=" + plan.getStartDate() +
+							")");
 						plan.updateThreeDaysPassed();
-						plan.updateById("SERVER");
+						plan.updateById(RoleType.SERVER.getCode());
 					}
 				}
 				planRepository.saveAll(planList);
@@ -80,42 +88,19 @@ public class BatchConfig {
 			.build();
 	}
 
-	private Step stepWeekPass() {
-		return new StepBuilder("step_week_pass", jobRepository)
-			.tasklet((StepContribution contribution, ChunkContext chunkContext) -> {
-				log.info("\">>> step_week_pass <<<\"");
-
-				List<Room> roomList = roomRepository.findListUnderWeek();
-				LocalDate now = LocalDate.now();
-
-				for (Room room : roomList) {
-					LocalDate lastDate = room.getStartDate().plusDays(7L * room.getCurrentWeek() - 1);
-					if (lastDate.isBefore(now)) {
-						updatePercentSum(room.getRoomId(), room.getCurrentWeek());
-						int nextWeek = room.getCurrentWeek() + 1;
-						room.updateCurrentWeekToNext();
-						room.updateById("SERVER");
-						log.info("room_id: " + room.getRoomId() + ", start_date: " + room.getStartDate()
-							+ ", current_week/week: " + nextWeek + "/" + room.getWeek());
-					}
-				}
-				roomRepository.saveAll(roomList);
-				return RepeatStatus.FINISHED;
-			}, transactionManager)
-			.build();
-	}
-
-	private Step stepUpdateRefund() {
+	private Step stepSetRefund() {
 		return new StepBuilder("step_update_refund", jobRepository)
 			.tasklet((StepContribution contribution, ChunkContext chunkContext) -> {
-				log.info("\">>> step_update_refund <<<\"");
+
+				log.info("\">>> (START) step_update_refund <<<\"");
 
 				List<Room> roomList = roomRepository.findListLastWeek(); // 마지막 주
 				LocalDate now = LocalDate.now();
 
 				for (Room room : roomList) {
-					LocalDate lastDate = room.getStartDate().plusDays(7L * room.getCurrentWeek());
-					if (lastDate.isEqual(now)) {
+					LocalDate afterOneDayOfLastDay = room.getStartDate().plusDays(7L * room.getCurrentWeek());
+
+					if (afterOneDayOfLastDay.isEqual(now)) { // 좀 더 고민
 						updatePercentSum(room.getRoomId(), room.getCurrentWeek());
 						update_refund(room.getRoomId());
 					}
@@ -125,9 +110,37 @@ public class BatchConfig {
 			.build();
 	}
 
-	private void updatePercentSum(Long roomId, Integer passedWeek) {
-		log.info("\"update percent sum\"");
+	private Step stepWeekPassed() {
+		return new StepBuilder("step_week_pass", jobRepository)
+			.tasklet((StepContribution contribution, ChunkContext chunkContext) -> {
 
+				log.info("\">>> (START) step_week_pass <<<\"");
+
+				List<Room> roomList = roomRepository.findListUnderWeek();
+				LocalDate now = LocalDate.now();
+
+				for (Room room : roomList) {
+					LocalDate lastDay = room.getStartDate().plusDays(7L * room.getCurrentWeek() - 1);
+
+					if (lastDay.isBefore(now)) {
+						int nextWeek = room.getCurrentWeek() + 1;
+
+						updatePercentSum(room.getRoomId(), room.getCurrentWeek());
+						room.updateCurrentWeekToNext();
+						room.updateById(RoleType.SERVER.getCode());
+						log.info("(change to next week |" +
+							" roomId=" + room.getRoomId() +
+							" startDate=" + room.getStartDate() +
+							") new_week/total_week: " + nextWeek + "/" + room.getWeek());
+					}
+				}
+				roomRepository.saveAll(roomList);
+				return RepeatStatus.FINISHED;
+			}, transactionManager)
+			.build();
+	}
+
+	private void updatePercentSum(Long roomId, Integer passedWeek) {
 		List<PlanDto> planDtoList = planRepository.findPlanJoinParticipant(roomId, passedWeek);
 
 		for (PlanDto planDto : planDtoList) {
@@ -135,30 +148,36 @@ public class BatchConfig {
 			Participant participant = planDto.getParticipant();
 
 			if (!plan.getRejected()) {
-				log.info("1. room_id: " + plan.getParticipantInfo().getRoomId()
-					+ ", plan_id = " + plan.getPlanId() + ", current_week = " + plan.getWeek());
+				// log.info("1. room_id: " + plan.getParticipantInfo().getRoomId()
+				// 	+ ", plan_id = " + plan.getPlanId() + ", current_week = " + plan.getWeek());
 				HashMap<String, Long> map = detailPlanRepository.countCompleteTrue(plan.getPlanId());
 				Long size = map.get("size");
 				Long completeCount = map.get("completeCount");
-				log.info("2. detail_size = " + size + ", complete_count = " + completeCount);
+				// log.info("2. detail_size = " + size + ", complete_count = " + completeCount);
 
 				if (size == 0 || completeCount == 0) {
+					log.info("(no change to the percent | participantId=" +
+						plan.getParticipantInfo().getParticipantId() + ")");
 					continue;
 				}
+
 				float divide = (float)completeCount / (float)size;
 				float percent = Math.round(divide * 1000) / 10.0F;
-				log.info("3. divide = " + divide + ", percent = " + percent);
-				log.info("4. participant_id = " + plan.getParticipantInfo().getParticipantId()
-					+ ", plus percent = " + percent);
+
+				// log.info("3. divide = " + divide + ", percent = " + percent);
 				participant.updatePercentSum(percent);
-				participant.updateById("SERVER");
+				participant.updateById(RoleType.SERVER.getCode());
 				participantRepository.save(participant);
+				log.info("(change the percent | participantId=" + plan.getParticipantInfo().getParticipantId() +
+					") newPercent=" + percent);
+			} else {
+				log.info("(changing the percent is rejected | participantId=" +
+					plan.getParticipantInfo().getParticipantId() + ")");
 			}
 		}
 	}
 
 	private void update_refund(Long roomId) {
-		log.info("\"update refund\"");
 		List<ParticipantDto> participantDtoList = participantRepository.findParticipantRoomByRoomId(roomId);
 
 		if (participantDtoList.size() == 0) {
@@ -201,8 +220,8 @@ public class BatchConfig {
 					}
 				}
 				participant.updateRefund(refund);
-				participant.updateById("SERVER");
-				log.info("2. participant_id = " + participant.getParticipantId() + ", refund = " + refund);
+				participant.updateById(RoleType.SERVER.getCode());
+				log.info("(will refund | participantId=" + participant.getParticipantId() + ") refund=" + refund);
 			}
 			participantRepository.saveAll(participants);
 			rank += percentMap.get(key).size();
