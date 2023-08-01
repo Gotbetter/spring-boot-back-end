@@ -9,15 +9,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +23,8 @@ import pcrc.gotbetter.detail_plan_record.service.DetailPlanRecordOperationUseCas
 import pcrc.gotbetter.detail_plan_record.service.DetailPlanRecordReadUseCase;
 import pcrc.gotbetter.detail_plan_record.ui.request_body.DetailPlanRecordRequest;
 import pcrc.gotbetter.detail_plan_record.ui.view.DetailPlanRecordView;
+import pcrc.gotbetter.setting.http_api.GotBetterException;
+import pcrc.gotbetter.setting.http_api.MessageType;
 
 @Slf4j
 @RestController
@@ -44,17 +44,20 @@ public class DetailPlanRecordController {
 	@PostMapping(value = "")
 	public ResponseEntity<DetailPlanRecordView> createRecord(
 		@PathVariable(value = "detail_plan_id") Long detail_plan_id,
-		@Valid @RequestPart(value = "record_content") DetailPlanRecordRequest request,
-		@RequestParam MultipartFile record_photo
+		@Valid @ModelAttribute DetailPlanRecordRequest request
 	) throws IOException {
 
 		log.info("\"CREATE A DETAIL PLAN RECORD\"");
+
+		if (request.getRecord_photo().isEmpty()) {
+			throw new GotBetterException(MessageType.BAD_REQUEST);
+		}
 
 		var command = DetailPlanRecordOperationUseCase.DetailPlanRecordCreateCommand.builder()
 			.detailPlanId(detail_plan_id)
 			.recordTitle(request.getRecord_title())
 			.recordBody(request.getRecord_body())
-			.recordPhoto(record_photo)
+			.recordPhoto(request.getRecord_photo())
 			.build();
 		DetailPlanRecordReadUseCase.FindDetailPlanRecordResult result = detailPlanRecordOperationUseCase.createRecord(
 			command);
@@ -83,18 +86,21 @@ public class DetailPlanRecordController {
 	public ResponseEntity<DetailPlanRecordView> updateRecord(
 		@PathVariable(value = "detail_plan_id") Long detail_plan_id,
 		@PathVariable(value = "record_id") Long record_id,
-		@Valid @RequestPart(value = "record_content") DetailPlanRecordRequest request,
-		@RequestParam MultipartFile record_photo
+		@Valid @ModelAttribute DetailPlanRecordRequest request
 	) {
 
 		log.info("\"UPDATE THE DETAIL PLAN RECORD\"");
+
+		if (request.getRecord_photo().isEmpty()) {
+			throw new GotBetterException(MessageType.BAD_REQUEST);
+		}
 
 		var command = DetailPlanRecordOperationUseCase.DetailPlanRecordUpdateCommand.builder()
 			.detailPlanId(detail_plan_id)
 			.recordId(record_id)
 			.recordTitle(request.getRecord_title())
 			.recordBody(request.getRecord_body())
-			.recordPhoto(record_photo)
+			.recordPhoto(request.getRecord_photo())
 			.build();
 		DetailPlanRecordReadUseCase.FindDetailPlanRecordResult result = detailPlanRecordOperationUseCase.updateRecord(
 			command);
