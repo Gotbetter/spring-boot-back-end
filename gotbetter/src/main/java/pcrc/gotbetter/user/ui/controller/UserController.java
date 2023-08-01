@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
@@ -63,13 +64,17 @@ public class UserController {
 	}
 
 	@PostMapping(value = "/login")
-	public ResponseEntity<UserView> login(@Valid @RequestBody UserLoginRequest request) {
+	public ResponseEntity<UserView> login(
+		@Valid @RequestBody UserLoginRequest request,
+		@RequestParam(name = "admin", required = false) Boolean isAdmin
+	) {
 
 		log.info("\"LOGIN\"");
 
 		var query = UserReadUseCase.UserFindQuery.builder()
 			.authId(request.getAuth_id())
 			.password(request.getPassword())
+			.isAdmin(isAdmin)
 			.build();
 		UserReadUseCase.FindUserResult result = userReadUseCase.loginUser(query);
 

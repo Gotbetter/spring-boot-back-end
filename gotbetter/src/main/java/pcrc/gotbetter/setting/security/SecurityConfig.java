@@ -1,5 +1,7 @@
 package pcrc.gotbetter.setting.security;
 
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -43,6 +45,8 @@ public class SecurityConfig implements WebMvcConfigurer {
 	private String localBack;
 	@Value("${external.localBack.prod}")
 	private String prodLocalBack;
+	@Value("${external.localFront.admin}")
+	private String localFrontAdmin;
 
 	@Autowired
 	public SecurityConfig(
@@ -94,6 +98,8 @@ public class SecurityConfig implements WebMvcConfigurer {
 		configuration.addAllowedOrigin(localBack);
 		configuration.addAllowedOrigin(prodBackend);
 		configuration.addAllowedOrigin(prodLocalBack);
+		configuration.addAllowedOrigin(localFrontAdmin);
+		configuration.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization"));
 		configuration.addAllowedHeader(localFront);
 		configuration.addAllowedHeader(frontend);
 		configuration.addAllowedOrigin("http://jxy.me");

@@ -29,6 +29,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import pcrc.gotbetter.user.login_method.jwt.service.CustomUserDetailService;
+import pcrc.gotbetter.user.login_method.login_type.RoleType;
 
 @Component
 public class JwtProvider {
@@ -51,14 +52,14 @@ public class JwtProvider {
 		this.customUserDetailService = customUserDetailService;
 	}
 
-	public TokenInfo generateToken(String userId) {
+	public TokenInfo generateToken(String userId, RoleType roleType) {
 
 		Map<String, Object> headers = new HashMap<>();
 		Map<String, Object> payloads = new HashMap<>();
 
 		headers.put("type", "token");
 		payloads.put("id", userId);
-		payloads.put(AUTHORITIES_KEY, "USER");
+		payloads.put(AUTHORITIES_KEY, roleType);
 
 		Date now = new Date();
 		//Access Token 생성
