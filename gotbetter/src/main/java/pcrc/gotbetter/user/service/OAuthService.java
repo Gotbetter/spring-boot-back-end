@@ -66,7 +66,7 @@ public class OAuthService implements OAuthOperationUseCase {
 		}
 
 		// 토큰 만들기
-		TokenInfo tokenInfo = jwtProvider.generateToken(findUser.getUserId().toString());
+		TokenInfo tokenInfo = jwtProvider.generateToken(findUser.getUserId().toString(), findUser.getRoleType());
 
 		findUser.updateRefreshToken(tokenInfo.getRefreshToken());
 		findUser.updateById(findUser.getUserId().toString());
