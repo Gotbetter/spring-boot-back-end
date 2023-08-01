@@ -20,6 +20,7 @@ import pcrc.gotbetter.user.data_access.repository.UserRepository;
 import pcrc.gotbetter.user.data_access.repository.UserSetRepository;
 import pcrc.gotbetter.user.login_method.jwt.config.JwtProvider;
 import pcrc.gotbetter.user.login_method.jwt.config.TokenInfo;
+import pcrc.gotbetter.user.login_method.login_type.RoleType;
 
 @Service
 public class UserService implements UserOperationUseCase, UserReadUseCase {
@@ -100,13 +101,17 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
 	public FindUserResult loginUser(UserFindQuery query) {
 		// 아이디와 비번이 매치되는 유저가 있는지 확인
 		UserSet findUserSet = validateFindUserSet(query);
-		// jwt
-		TokenInfo tokenInfo = jwtProvider.generateToken(findUserSet.getUserId().toString());
 		// User 테이블에서 User 객체 가져오기
 		User findUser = userRepository.findByUserId(findUserSet.getUserId()).orElseThrow(() -> {
 			throw new GotBetterException(MessageType.NOT_FOUND);
 		});
+		// jwt
+		TokenInfo tokenInfo = jwtProvider.generateToken(findUserSet.getUserId().toString(), findUser.getRoleType());
 
+		if ((query.getIsAdmin() != null && query.getIsAdmin())
+			&& (findUser.getRoleType() != RoleType.ADMIN && findUser.getRoleType() != RoleType.MAIN_ADMIN)) {
+			throw new GotBetterException(MessageType.FORBIDDEN);
+		}
 		findUser.updateRefreshToken(tokenInfo.getRefreshToken());
 		findUser.updateById(findUser.getUserId().toString());
 		userRepository.save(findUser);

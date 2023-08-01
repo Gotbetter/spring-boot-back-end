@@ -25,6 +25,7 @@ public interface UserReadUseCase {
 	class UserFindQuery {
 		private final String authId;
 		private final String password;
+		private final Boolean isAdmin;
 	}
 
 	@Getter
