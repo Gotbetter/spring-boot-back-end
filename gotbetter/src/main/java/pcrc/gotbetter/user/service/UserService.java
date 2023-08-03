@@ -5,7 +5,9 @@ import static pcrc.gotbetter.setting.security.SecurityUtil.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
+import pcrc.gotbetter.user.data_access.dto.UserDto;
 import pcrc.gotbetter.user.data_access.entity.User;
 import pcrc.gotbetter.user.data_access.entity.UserSet;
 import pcrc.gotbetter.user.data_access.repository.UserRepository;
@@ -67,6 +70,7 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
 			User saveUser = User.builder()
 				.username(command.getUsername())
 				.email(command.getEmail())
+				.roleType(RoleType.USER)
 				.build();
 			saveUser.updateById("-1");
 			userRepository.save(saveUser);
@@ -126,17 +130,7 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
 	public FindUserResult getUserInfo() throws IOException {
 		User findUser = validateUser();
 		UserSet findUserSet = userSetRepository.findByUserId(findUser.getUserId());
-		String bytes;
-
-		try {
-			bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(
-				Paths.get(findUser.getProfile())));
-		} catch (Exception e) {
-			String os = System.getProperty("os.name").toLowerCase();
-			String dir =
-				os.contains("win") ? PROFILE_LOCAL_DEFAULT_IMG : PROFILE_SERVER_DEFAULT_IMG;
-			bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
-		}
+		String bytes = getByteProfile(findUser.getProfile());
 		User user = User.builder()
 			.userId(findUser.getUserId())
 			.username(findUser.getUsername())
@@ -147,6 +141,55 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
 			.authId(findUserSet != null ? findUserSet.getAuthId() : "") // 소셜 로그인으로만 가입되어있는 경우
 			.build();
 		return FindUserResult.findByUser(user, userSet, TokenInfo.builder().build());
+	}
+
+	@Override
+	public List<FindUserResult> getAllUserInfo() throws IOException {
+		User requestUser = validateUser();
+
+		if (requestUser.getRoleType() != RoleType.ADMIN && requestUser.getRoleType() != RoleType.MAIN_ADMIN) {
+			throw new GotBetterException(MessageType.FORBIDDEN);
+		}
+
+		List<UserDto> allUsers = userRepository.findAllUserUserSet();
+		List<FindUserResult> results = new ArrayList<>();
+
+		for (UserDto userDto : allUsers) {
+			User userInfo = userDto.getUser();
+			UserSet userSetInfo = userDto.getUserSet();
+			String bytes = getByteProfile(userInfo.getProfile());
+			UserSet userSet = UserSet.builder()
+				.authId(userSetInfo != null ? userSetInfo.getAuthId() : "") // 소셜 로그인으로만 가입되어있는 경우
+				.build();
+			results.add(FindUserResult.findByUsers(userInfo, userSet, bytes));
+		}
+		return results;
+	}
+
+	@Override
+	public void changeAuthentication(UserAdminUpdateCommand command) {
+		User requestUser = validateUser();
+
+		if (requestUser.getRoleType() != RoleType.MAIN_ADMIN) {
+			throw new GotBetterException(MessageType.FORBIDDEN);
+		}
+
+		User findUser = userRepository.findByUserId(command.getUserId()).orElseThrow(() -> {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		});
+
+		if (command.getApprove()) {
+			if (findUser.getRoleType() == RoleType.ADMIN) {
+				throw new GotBetterException(MessageType.CONFLICT);
+			}
+			findUser.updateRoleType(RoleType.ADMIN);
+		} else {
+			if (findUser.getRoleType() == RoleType.USER) {
+				throw new GotBetterException(MessageType.CONFLICT);
+			}
+			findUser.updateRoleType(RoleType.USER);
+		}
+		userRepository.save(findUser);
 	}
 
 	/**
@@ -173,5 +216,19 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
 		return userRepository.findByUserId(currentUserId).orElseThrow(() -> {
 			throw new GotBetterException(MessageType.NOT_FOUND);
 		});
+	}
+
+	private String getByteProfile(String profile) throws IOException {
+		String bytes;
+
+		try {
+			bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(profile)));
+		} catch (Exception e) {
+			String os = System.getProperty("os.name").toLowerCase();
+			String dir =
+				os.contains("win") ? PROFILE_LOCAL_DEFAULT_IMG : PROFILE_SERVER_DEFAULT_IMG;
+			bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
+		}
+		return bytes;
 	}
 }
