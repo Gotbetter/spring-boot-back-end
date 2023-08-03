@@ -1,6 +1,7 @@
 package pcrc.gotbetter.user.data_access.repository;
 
 import static pcrc.gotbetter.user.data_access.entity.QUser.*;
+import static pcrc.gotbetter.user.data_access.entity.QUserSet.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,8 +10,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+
+import pcrc.gotbetter.user.data_access.dto.UserDto;
 
 public class UserRepositoryImpl implements UserQueryRepository {
 
@@ -35,6 +39,15 @@ public class UserRepositoryImpl implements UserQueryRepository {
 			map.put(tuple.get(user.userId), userInfo);
 		}
 		return map;
+	}
+
+	@Override
+	public List<UserDto> findAllUserUserSet() {
+		return queryFactory
+			.select(Projections.constructor(UserDto.class, user, userSet))
+			.from(user)
+			.leftJoin(userSet).on(user.userId.eq(userSet.userId)).fetchJoin()
+			.fetch();
 	}
 
 	/**

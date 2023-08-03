@@ -43,6 +43,7 @@ public abstract class BaseTimeEntity {
 		this.createdDate = LocalDateTime.now();
 		try {
 			this.createdById = getCurrentUserId().toString();
+			this.updatedById = getCurrentUserId().toString();
 		} catch (Exception e) {
 		}
 	}

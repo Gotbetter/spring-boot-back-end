@@ -84,4 +84,8 @@ public class User extends BaseTimeEntity {
 		this.updateCreatedById(userId);
 		this.updateUpdatedById(userId);
 	}
+
+	public void updateRoleType(RoleType roleType) {
+		this.roleType = roleType;
+	}
 }

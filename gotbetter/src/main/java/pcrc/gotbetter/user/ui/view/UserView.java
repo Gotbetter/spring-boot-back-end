@@ -1,10 +1,13 @@
 package pcrc.gotbetter.user.ui.view;
 
+import java.time.LocalDate;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
+import pcrc.gotbetter.user.login_method.login_type.RoleType;
 import pcrc.gotbetter.user.service.UserReadUseCase;
 
 @Getter
@@ -16,8 +19,10 @@ public class UserView {
 	private final String username;
 	private final String email;
 	private final String profile;
+	private final RoleType role_type;
 	private final String access_token;
 	private final String refresh_token;
+	private final LocalDate created_date;
 
 	@Builder
 	public UserView(UserReadUseCase.FindUserResult userResult) {
@@ -26,7 +31,9 @@ public class UserView {
 		this.username = userResult.getUsername();
 		this.email = userResult.getEmail();
 		this.profile = userResult.getProfile();
+		this.role_type = userResult.getRoleType();
 		this.access_token = userResult.getAccessToken();
 		this.refresh_token = userResult.getRefreshToken();
+		this.created_date = userResult.getCreatedDate();
 	}
 }

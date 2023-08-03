@@ -1,10 +1,13 @@
 package pcrc.gotbetter.user.ui.controller;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +18,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import pcrc.gotbetter.user.service.UserOperationUseCase;
 import pcrc.gotbetter.user.service.UserReadUseCase;
+import pcrc.gotbetter.user.ui.requestBody.AdminChangeRequest;
 import pcrc.gotbetter.user.ui.requestBody.UserJoinRequest;
 import pcrc.gotbetter.user.ui.requestBody.UserLoginRequest;
 import pcrc.gotbetter.user.ui.requestBody.UserVerifyIdRequest;
@@ -89,5 +93,34 @@ public class UserController {
 		UserReadUseCase.FindUserResult result = userReadUseCase.getUserInfo();
 
 		return ResponseEntity.ok(UserView.builder().userResult(result).build());
+	}
+
+	@GetMapping(value = "/all")
+	public ResponseEntity<List<UserView>> getAllUserInfo() throws IOException {
+
+		log.info("\"GET ALL USER'S INFO\"");
+
+		List<UserReadUseCase.FindUserResult> result = userReadUseCase.getAllUserInfo();
+		List<UserView> userViews = new ArrayList<>();
+
+		for (UserReadUseCase.FindUserResult findUserResult : result) {
+			userViews.add(UserView.builder().userResult(findUserResult).build());
+		}
+		return ResponseEntity.ok(userViews);
+	}
+
+	@PostMapping(value = "/{user_id}/admin")
+	public void changeAuthentication(
+		@PathVariable(value = "user_id") Long userId,
+		@Valid @RequestBody AdminChangeRequest request
+	) {
+
+		log.info("\"CHANGE USER AUTHENTICATION\"");
+
+		var command = UserOperationUseCase.UserAdminUpdateCommand.builder()
+			.userId(userId)
+			.approve(request.getApprove())
+			.build();
+		userOperationUseCase.changeAuthentication(command);
 	}
 }
