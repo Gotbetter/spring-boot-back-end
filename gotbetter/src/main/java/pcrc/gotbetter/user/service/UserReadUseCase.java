@@ -1,7 +1,6 @@
 package pcrc.gotbetter.user.service;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.List;
 
 import lombok.Builder;
@@ -22,6 +21,8 @@ public interface UserReadUseCase {
 	FindUserResult getUserInfo() throws IOException;
 
 	List<FindUserResult> getAllUserInfo() throws IOException;
+
+	void logoutUser(Boolean isAdmin);
 
 	@EqualsAndHashCode(callSuper = false)
 	@Getter
@@ -45,7 +46,8 @@ public interface UserReadUseCase {
 		private final RoleType roleType;
 		private final String accessToken;
 		private final String refreshToken;
-		private final LocalDate createdDate;
+		private final String createdDate;
+		private final String updatedDate;
 
 		public static FindUserResult findByUser(User user, UserSet userSet, TokenInfo tokenInfo) {
 			return FindUserResult.builder()
@@ -67,7 +69,8 @@ public interface UserReadUseCase {
 				.email(user.getEmail())
 				.profile(profile)
 				.roleType(user.getRoleType())
-				.createdDate(user.getCreatedDate().toLocalDate())
+				.createdDate(user.getCreatedDate().toLocalDate().toString())
+				.updatedDate(user.getUpdatedDate().toLocalDate().toString())
 				.build();
 		}
 	}

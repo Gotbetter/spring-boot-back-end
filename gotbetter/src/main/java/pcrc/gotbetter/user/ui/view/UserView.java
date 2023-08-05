@@ -1,7 +1,5 @@
 package pcrc.gotbetter.user.ui.view;
 
-import java.time.LocalDate;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.Builder;
@@ -22,7 +20,8 @@ public class UserView {
 	private final RoleType role_type;
 	private final String access_token;
 	private final String refresh_token;
-	private final LocalDate created_date;
+	private final String created_date;
+	private final String updated_date;
 
 	@Builder
 	public UserView(UserReadUseCase.FindUserResult userResult) {
@@ -35,5 +34,6 @@ public class UserView {
 		this.access_token = userResult.getAccessToken();
 		this.refresh_token = userResult.getRefreshToken();
 		this.created_date = userResult.getCreatedDate();
+		this.updated_date = userResult.getUpdatedDate();
 	}
 }

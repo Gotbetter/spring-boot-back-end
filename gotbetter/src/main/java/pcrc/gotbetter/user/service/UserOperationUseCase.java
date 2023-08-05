@@ -11,6 +11,10 @@ public interface UserOperationUseCase {
 
 	void changeAuthentication(UserAdminUpdateCommand command);
 
+	void deleteUser(Long userId);
+
+	void updateUserInfo(UserUpdateCommand command);
+
 	@EqualsAndHashCode(callSuper = false)
 	@Builder
 	@Getter
@@ -29,6 +33,15 @@ public interface UserOperationUseCase {
 	class UserAdminUpdateCommand {
 		private final Long userId;
 		private final Boolean approve;
+	}
+
+	@EqualsAndHashCode(callSuper = false)
+	@Builder
+	@Getter
+	@ToString
+	class UserUpdateCommand {
+		private final Long userId;
+		private final String username;
 	}
 
 }

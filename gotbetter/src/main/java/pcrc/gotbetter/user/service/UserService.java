@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -190,6 +191,45 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
 			findUser.updateRoleType(RoleType.USER);
 		}
 		userRepository.save(findUser);
+	}
+
+	@Override
+	public void deleteUser(Long userId) {
+		User requestUser = validateUser();
+		User findUser = userRepository.findByUserId(userId).orElseThrow(() -> {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		});
+
+		if (Objects.equals(requestUser.getUserId(), findUser.getUserId())
+			|| (requestUser.getRoleType() == RoleType.ADMIN || requestUser.getRoleType() == RoleType.MAIN_ADMIN)) {
+			userRepository.delete(findUser);
+			return;
+		}
+		throw new GotBetterException(MessageType.FORBIDDEN);
+	}
+
+	@Override
+	public void logoutUser(Boolean isAdmin) {
+		User findUser = validateUser();
+
+		findUser.updateRefreshToken(null);
+		userRepository.save(findUser);
+	}
+
+	@Override
+	public void updateUserInfo(UserUpdateCommand command) {
+		User requestUser = validateUser();
+		User findUser = userRepository.findByUserId(command.getUserId()).orElseThrow(() -> {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		});
+
+		if (Objects.equals(requestUser.getUserId(), findUser.getUserId())
+			|| (requestUser.getRoleType() == RoleType.ADMIN || requestUser.getRoleType() == RoleType.MAIN_ADMIN)) {
+			findUser.updateUsername(command.getUsername());
+			userRepository.save(findUser);
+			return;
+		}
+		throw new GotBetterException(MessageType.FORBIDDEN);
 	}
 
 	/**
