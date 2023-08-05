@@ -5,13 +5,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
@@ -21,6 +25,7 @@ import pcrc.gotbetter.user.service.UserReadUseCase;
 import pcrc.gotbetter.user.ui.requestBody.AdminChangeRequest;
 import pcrc.gotbetter.user.ui.requestBody.UserJoinRequest;
 import pcrc.gotbetter.user.ui.requestBody.UserLoginRequest;
+import pcrc.gotbetter.user.ui.requestBody.UserUpdateRequest;
 import pcrc.gotbetter.user.ui.requestBody.UserVerifyIdRequest;
 import pcrc.gotbetter.user.ui.view.UserView;
 
@@ -109,7 +114,7 @@ public class UserController {
 		return ResponseEntity.ok(userViews);
 	}
 
-	@PostMapping(value = "/{user_id}/admin")
+	@PatchMapping(value = "/{user_id}/admin")
 	public void changeAuthentication(
 		@PathVariable(value = "user_id") Long userId,
 		@Valid @RequestBody AdminChangeRequest request
@@ -123,4 +128,36 @@ public class UserController {
 			.build();
 		userOperationUseCase.changeAuthentication(command);
 	}
+
+	@DeleteMapping(value = "/{user_id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void deleteUser(@PathVariable(value = "user_id") Long userId) {
+
+		log.info("\"DELETE USER\"");
+
+		userOperationUseCase.deleteUser(userId);
+	}
+
+	@PostMapping(value = "/logout")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void logout(@RequestParam(name = "admin", required = false) Boolean isAdmin) {
+
+		log.info("\"LOGOUT\"");
+
+		userReadUseCase.logoutUser(isAdmin);
+	}
+
+	@PatchMapping(value = "/{user_id}")
+	public void updateUser(@PathVariable(value = "user_id") Long userId, @RequestBody UserUpdateRequest request) {
+
+		log.info("\"UPDATE USER INFO\"");
+
+		var command = UserOperationUseCase.UserUpdateCommand.builder()
+			.userId(userId)
+			.username(request.getUsername())
+			.build();
+
+		userOperationUseCase.updateUserInfo(command);
+	}
+
 }
