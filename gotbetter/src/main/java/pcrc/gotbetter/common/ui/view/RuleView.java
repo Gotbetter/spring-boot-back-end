@@ -15,6 +15,8 @@ public class RuleView {
 	private final String rule_description;
 	private final String rule_attribute1;
 	private final String rule_attribute2;
+	private final String updated_date;
+	private final String updated_by;
 
 	@Builder
 	public RuleView(CommonCodeReadUseCase.FindCommonCodeResult commonCodeResult) {
@@ -22,5 +24,7 @@ public class RuleView {
 		this.rule_description = commonCodeResult.getCodeDescription();
 		this.rule_attribute1 = commonCodeResult.getAttribute1();
 		this.rule_attribute2 = commonCodeResult.getAttribute2();
+		this.updated_date = commonCodeResult.getUpdatedDate();
+		this.updated_by = commonCodeResult.getUpdatedBy();
 	}
 }
