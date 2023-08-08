@@ -11,6 +11,7 @@ import pcrc.gotbetter.common.service.CommonCodeReadUseCase;
 @ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RoomCategoryView {
+	private final Integer order;
 	private final String room_category_code;
 	private final String room_category_description;
 	private final String room_category_image;
@@ -19,6 +20,7 @@ public class RoomCategoryView {
 
 	@Builder
 	public RoomCategoryView(CommonCodeReadUseCase.FindCommonCodeResult commonCodeResult) {
+		this.order = commonCodeResult.getCommonOrder();
 		this.room_category_code = commonCodeResult.getCode();
 		this.room_category_description = commonCodeResult.getCodeDescription();
 		this.room_category_image = commonCodeResult.getAttribute1();

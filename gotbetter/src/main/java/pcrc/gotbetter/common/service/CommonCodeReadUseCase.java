@@ -24,6 +24,7 @@ public interface CommonCodeReadUseCase {
 		private final String attribute3;
 		private final String updatedDate;
 		private final String updatedBy;
+		private final Integer commonOrder;
 
 		public static FindCommonCodeResult findByCommonCode(CommonCode commonCode, String updatedBy) {
 			return FindCommonCodeResult.builder()
@@ -34,6 +35,7 @@ public interface CommonCodeReadUseCase {
 				.attribute3(commonCode.getAttribute3())
 				.updatedDate(updatedBy == null ? null : commonCode.getUpdatedDate().toLocalDate().toString())
 				.updatedBy(updatedBy)
+				.commonOrder(commonCode.getCommonOrder())
 				.build();
 		}
 	}

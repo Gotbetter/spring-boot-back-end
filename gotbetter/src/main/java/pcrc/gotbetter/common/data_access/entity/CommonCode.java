@@ -27,7 +27,8 @@ public class CommonCode extends BaseTimeEntity {
 	private String attribute1;
 	private String attribute2;
 	private String attribute3;
-	private Integer order;
+	@Column(name = "common_order")
+	private Integer commonOrder;
 
 	@Builder
 	public CommonCode(
@@ -36,14 +37,14 @@ public class CommonCode extends BaseTimeEntity {
 		String attribute1,
 		String attribute2,
 		String attribute3,
-		Integer order
+		Integer commonOrder
 	) {
 		this.commonCodeId = commonCodeId;
 		this.codeDescription = codeDescription;
 		this.attribute1 = attribute1;
 		this.attribute2 = attribute2;
 		this.attribute3 = attribute3;
-		this.order = order;
+		this.commonOrder = commonOrder;
 	}
 
 	public void changeImageToByte(String bytes) {

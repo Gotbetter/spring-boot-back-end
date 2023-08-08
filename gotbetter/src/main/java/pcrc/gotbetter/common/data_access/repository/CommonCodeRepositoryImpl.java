@@ -32,7 +32,7 @@ public class CommonCodeRepositoryImpl implements CommonCodeQueryRepository {
 		return queryFactory
 			.selectFrom(commonCode)
 			.where(eqGroupCode(groupCode))
-			.orderBy(commonCode.order.asc())
+			.orderBy(commonCode.commonOrder.asc())
 			.fetch();
 	}
 
