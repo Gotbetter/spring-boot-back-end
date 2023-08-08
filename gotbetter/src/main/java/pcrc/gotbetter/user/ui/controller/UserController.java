@@ -148,7 +148,10 @@ public class UserController {
 	}
 
 	@PatchMapping(value = "/{user_id}")
-	public void updateUser(@PathVariable(value = "user_id") Long userId, @RequestBody UserUpdateRequest request) {
+	public void updateUser(
+		@PathVariable(value = "user_id") Long userId,
+		@Valid @RequestBody UserUpdateRequest request
+	) {
 
 		log.info("\"UPDATE USER INFO\"");
 

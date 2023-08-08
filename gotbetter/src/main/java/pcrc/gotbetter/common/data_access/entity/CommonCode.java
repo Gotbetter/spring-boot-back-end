@@ -1,6 +1,7 @@
 package pcrc.gotbetter.common.data_access.entity;
 
 import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
@@ -10,13 +11,15 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import pcrc.gotbetter.setting.common.BaseTimeEntity;
 
 @Entity
 @Table(name = "CommonCode")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
-public class CommonCode {
+@DynamicUpdate
+public class CommonCode extends BaseTimeEntity {
 	@EmbeddedId
 	private CommonCodeId commonCodeId;
 	@Column(name = "code_description")
@@ -24,7 +27,8 @@ public class CommonCode {
 	private String attribute1;
 	private String attribute2;
 	private String attribute3;
-	private Integer order;
+	@Column(name = "common_order")
+	private Integer commonOrder;
 
 	@Builder
 	public CommonCode(
@@ -33,13 +37,23 @@ public class CommonCode {
 		String attribute1,
 		String attribute2,
 		String attribute3,
-		Integer order
+		Integer commonOrder
 	) {
 		this.commonCodeId = commonCodeId;
 		this.codeDescription = codeDescription;
 		this.attribute1 = attribute1;
 		this.attribute2 = attribute2;
 		this.attribute3 = attribute3;
-		this.order = order;
+		this.commonOrder = commonOrder;
+	}
+
+	public void changeImageToByte(String bytes) {
+		this.attribute1 = bytes;
+	}
+
+	public void updateInfo(String codeDescription, String attribute1, String attribute2) {
+		this.codeDescription = codeDescription;
+		this.attribute1 = attribute1;
+		this.attribute2 = attribute2;
 	}
 }

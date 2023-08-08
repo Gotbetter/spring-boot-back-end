@@ -47,6 +47,8 @@ public class SecurityConfig implements WebMvcConfigurer {
 	private String prodLocalBack;
 	@Value("${external.localFront.admin}")
 	private String localFrontAdmin;
+	@Value("${external.localFront.admin2}")
+	private String localFrontAdmin2;
 
 	@Autowired
 	public SecurityConfig(
@@ -99,6 +101,7 @@ public class SecurityConfig implements WebMvcConfigurer {
 		configuration.addAllowedOrigin(prodBackend);
 		configuration.addAllowedOrigin(prodLocalBack);
 		configuration.addAllowedOrigin(localFrontAdmin);
+		configuration.addAllowedOrigin(localFrontAdmin2);
 		configuration.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization"));
 		configuration.addAllowedHeader(localFront);
 		configuration.addAllowedHeader(frontend);
