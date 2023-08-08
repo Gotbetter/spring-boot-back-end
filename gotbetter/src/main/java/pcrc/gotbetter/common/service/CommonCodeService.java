@@ -40,6 +40,10 @@ public class CommonCodeService implements CommonCodeReadUseCase, CommonCodeOpera
 
 	@Override
 	public List<FindCommonCodeResult> getRoomCategories(Boolean admin) throws IOException {
+		if (admin) {
+			validateIsAdmin();
+		}
+
 		List<FindCommonCodeResult> results = new ArrayList<>();
 		List<CommonCode> roomCategories = commonCodeRepository.findListByGroupCode("ROOM_CATEGORY");
 
@@ -70,6 +74,10 @@ public class CommonCodeService implements CommonCodeReadUseCase, CommonCodeOpera
 
 	@Override
 	public List<FindCommonCodeResult> getRules(Boolean admin) {
+		if (admin) {
+			validateIsAdmin();
+		}
+
 		List<FindCommonCodeResult> results = new ArrayList<>();
 		List<CommonCode> rules = commonCodeRepository.findListByGroupCode("RULE");
 
@@ -90,13 +98,7 @@ public class CommonCodeService implements CommonCodeReadUseCase, CommonCodeOpera
 
 	@Override
 	public void updateCommonInfo(CommonCodeUpdateCommand command) {
-		User requestUser = userRepository.findByUserId(getCurrentUserId()).orElseThrow(() -> {
-			throw new GotBetterException(MessageType.NOT_FOUND);
-		});
-
-		if (requestUser.getRoleType() != RoleType.MAIN_ADMIN && requestUser.getRoleType() != RoleType.ADMIN) {
-			throw new GotBetterException(MessageType.FORBIDDEN);
-		}
+		validateIsAdmin();
 
 		CommonCode commonCode = commonCodeRepository.findByCommonCodeId(CommonCodeId.builder()
 			.groupCode(command.getGroupCode())
@@ -110,5 +112,39 @@ public class CommonCodeService implements CommonCodeReadUseCase, CommonCodeOpera
 			Objects.equals(command.getGroupCode(),
 				"ROOM_CATEGORY") ? commonCode.getAttribute1() : command.getAttribute1(), command.getAttribute2());
 		commonCodeRepository.save(commonCode);
+	}
+
+	@Override
+	public void createCommonInfo(CommonCodeUpdateCommand command) {
+		validateIsAdmin();
+
+		List<CommonCode> commonCodes = commonCodeRepository.findListByGroupCode(command.getGroupCode());
+		int commonOrder = 1;
+		if (commonCodes.size() != 0) {
+			commonOrder = commonCodes.get(commonCodes.size() - 1).getCommonOrder() + 1;
+		}
+
+		CommonCode newCommonCode = CommonCode.builder()
+			.commonCodeId(CommonCodeId.builder()
+				.groupCode(command.getGroupCode())
+				.code(command.getCode())
+				.build())
+			.codeDescription(command.getCodeDescription())
+			.attribute1(command.getAttribute1())
+			.attribute2(command.getAttribute2())
+			.commonOrder(commonOrder)
+			.build();
+		commonCodeRepository.save(newCommonCode);
+	}
+
+	private User validateIsAdmin() {
+		User requestUser = userRepository.findByUserId(getCurrentUserId()).orElseThrow(() -> {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		});
+
+		if (requestUser.getRoleType() == RoleType.ADMIN || requestUser.getRoleType() == RoleType.MAIN_ADMIN) {
+			return requestUser;
+		}
+		throw new GotBetterException(MessageType.FORBIDDEN);
 	}
 }

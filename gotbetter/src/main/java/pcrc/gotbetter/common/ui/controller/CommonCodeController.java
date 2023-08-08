@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -78,4 +79,34 @@ public class CommonCodeController {
 			.build();
 		commonCodeOperationUseCase.updateCommonInfo(command);
 	}
+
+	@PostMapping(value = "")
+	public void createCommonInfo(@Valid @RequestBody CommonUpdateRequest request) {
+		log.info("\"CREATE COMMON INFO\"");
+
+		var command = CommonCodeOperationUseCase.CommonCodeUpdateCommand.builder()
+			.groupCode(request.getGroup_code())
+			.code(request.getCode())
+			.codeDescription(request.getCode_description())
+			.attribute1(request.getAttribute1())
+			.attribute2(request.getAttribute2())
+			.build();
+		commonCodeOperationUseCase.createCommonInfo(command);
+
+		// return ResponseEntity.created(null).body(UserView.builder().userResult(result).build());
+	}
+
+	// @DeleteMapping(value = "")
+	// public void deleteCommonInfo(@RequestParam(name = "groupCode") String groupCode,
+	// 	@RequestParam(name = "code") String code) {
+	// 	log.info("\"DELETE COMMON INFO\"");
+	//
+	// 	var command = CommonCodeOperationUseCase.CommonCodeDeleteCommand.builder()
+	// 		.groupCode(groupCode)
+	// 		.code(code)
+	// 		.build();
+	// 	// commonCodeOperationUseCase.createCommonInfo(command);
+	//
+	// 	// return ResponseEntity.created(null).body(UserView.builder().userResult(result).build());
+	// }
 }
