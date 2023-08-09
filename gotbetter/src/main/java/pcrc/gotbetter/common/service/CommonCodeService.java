@@ -97,7 +97,7 @@ public class CommonCodeService implements CommonCodeReadUseCase, CommonCodeOpera
 	}
 
 	@Override
-	public void updateCommonInfo(CommonCodeUpdateCommand command) {
+	public void updateCommonInfo(CommonCodeCommand command) {
 		validateIsAdmin();
 
 		CommonCode commonCode = commonCodeRepository.findByCommonCodeId(CommonCodeId.builder()
@@ -115,7 +115,7 @@ public class CommonCodeService implements CommonCodeReadUseCase, CommonCodeOpera
 	}
 
 	@Override
-	public void createCommonInfo(CommonCodeUpdateCommand command) {
+	public void createCommonInfo(CommonCodeCommand command) {
 		validateIsAdmin();
 
 		List<CommonCode> commonCodes = commonCodeRepository.findListByGroupCode(command.getGroupCode());
@@ -145,6 +145,6 @@ public class CommonCodeService implements CommonCodeReadUseCase, CommonCodeOpera
 		if (requestUser.getRoleType() == RoleType.ADMIN || requestUser.getRoleType() == RoleType.MAIN_ADMIN) {
 			return requestUser;
 		}
-		throw new GotBetterException(MessageType.FORBIDDEN);
+		throw new GotBetterException(MessageType.FORBIDDEN_ADMIN);
 	}
 }

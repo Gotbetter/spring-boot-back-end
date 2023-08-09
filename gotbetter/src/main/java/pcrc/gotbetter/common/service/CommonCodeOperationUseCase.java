@@ -6,17 +6,28 @@ import lombok.Getter;
 import lombok.ToString;
 
 public interface CommonCodeOperationUseCase {
-	void updateCommonInfo(CommonCodeUpdateCommand command);
+	void updateCommonInfo(CommonCodeCommand command);
+
+	void createCommonInfo(CommonCodeCommand command);
 
 	@EqualsAndHashCode(callSuper = false)
 	@Builder
 	@Getter
 	@ToString
-	class CommonCodeUpdateCommand {
+	class CommonCodeCommand {
 		private String groupCode;
 		private String code;
 		private String codeDescription;
 		private String attribute1;
 		private String attribute2;
+	}
+
+	@EqualsAndHashCode(callSuper = false)
+	@Builder
+	@Getter
+	@ToString
+	class CommonCodeDeleteCommand {
+		private String groupCode;
+		private String code;
 	}
 }
