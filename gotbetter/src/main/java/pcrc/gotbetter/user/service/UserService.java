@@ -113,9 +113,9 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
 		// jwt
 		TokenInfo tokenInfo = jwtProvider.generateToken(findUserSet.getUserId().toString(), findUser.getRoleType());
 
-		if ((query.getIsAdmin() != null && query.getIsAdmin())
+		if (query.getIsAdmin()
 			&& (findUser.getRoleType() != RoleType.ADMIN && findUser.getRoleType() != RoleType.MAIN_ADMIN)) {
-			throw new GotBetterException(MessageType.FORBIDDEN);
+			throw new GotBetterException(MessageType.FORBIDDEN_ADMIN);
 		}
 		findUser.updateRefreshToken(tokenInfo.getRefreshToken());
 		findUser.updateById(findUser.getUserId().toString());
@@ -149,7 +149,7 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
 		User requestUser = validateUser();
 
 		if (requestUser.getRoleType() != RoleType.ADMIN && requestUser.getRoleType() != RoleType.MAIN_ADMIN) {
-			throw new GotBetterException(MessageType.FORBIDDEN);
+			throw new GotBetterException(MessageType.FORBIDDEN_ADMIN);
 		}
 
 		List<UserDto> allUsers = userRepository.findAllUserUserSet();
@@ -171,6 +171,9 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
 	public void changeAuthentication(UserAdminUpdateCommand command) {
 		User requestUser = validateUser();
 
+		if (requestUser.getRoleType() != RoleType.ADMIN && requestUser.getRoleType() != RoleType.MAIN_ADMIN) {
+			throw new GotBetterException(MessageType.FORBIDDEN_ADMIN);
+		}
 		if (requestUser.getRoleType() != RoleType.MAIN_ADMIN) {
 			throw new GotBetterException(MessageType.FORBIDDEN);
 		}
@@ -205,7 +208,7 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
 			userRepository.delete(findUser);
 			return;
 		}
-		throw new GotBetterException(MessageType.FORBIDDEN);
+		throw new GotBetterException(MessageType.FORBIDDEN_ADMIN);
 	}
 
 	@Override
@@ -229,7 +232,7 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
 			userRepository.save(findUser);
 			return;
 		}
-		throw new GotBetterException(MessageType.FORBIDDEN);
+		throw new GotBetterException(MessageType.FORBIDDEN_ADMIN);
 	}
 
 	/**

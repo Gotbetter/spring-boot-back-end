@@ -13,6 +13,7 @@ public enum MessageType {
 	CONFLICT_JOIN("Already in the room.", HttpStatus.CONFLICT),
 	CONFLICT_MAX("Already full.", HttpStatus.CONFLICT),
 	FORBIDDEN("Do not have an authorization.", HttpStatus.FORBIDDEN),
+	FORBIDDEN_ADMIN("You do not have admin authentication", HttpStatus.FORBIDDEN),
 	FORBIDDEN_DATE("It's not the day.", HttpStatus.FORBIDDEN),
 	ExpiredJwtException("Access Token is expired.", HttpStatus.UNAUTHORIZED),
 	UNAUTHORIZED("You can use it after login.", HttpStatus.UNAUTHORIZED),

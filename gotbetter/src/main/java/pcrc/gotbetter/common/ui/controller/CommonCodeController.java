@@ -70,7 +70,7 @@ public class CommonCodeController {
 	public void updateCommonInfo(@Valid @RequestBody CommonUpdateRequest request) {
 		log.info("\"UPDATE COMMON INFO\"");
 
-		var command = CommonCodeOperationUseCase.CommonCodeUpdateCommand.builder()
+		var command = CommonCodeOperationUseCase.CommonCodeCommand.builder()
 			.groupCode(request.getGroup_code())
 			.code(request.getCode())
 			.codeDescription(request.getCode_description())
@@ -84,7 +84,7 @@ public class CommonCodeController {
 	public void createCommonInfo(@Valid @RequestBody CommonUpdateRequest request) {
 		log.info("\"CREATE COMMON INFO\"");
 
-		var command = CommonCodeOperationUseCase.CommonCodeUpdateCommand.builder()
+		var command = CommonCodeOperationUseCase.CommonCodeCommand.builder()
 			.groupCode(request.getGroup_code())
 			.code(request.getCode())
 			.codeDescription(request.getCode_description())

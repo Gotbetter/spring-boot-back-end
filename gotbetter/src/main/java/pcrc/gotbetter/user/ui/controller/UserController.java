@@ -83,7 +83,7 @@ public class UserController {
 		var query = UserReadUseCase.UserFindQuery.builder()
 			.authId(request.getAuth_id())
 			.password(request.getPassword())
-			.isAdmin(isAdmin)
+			.isAdmin(isAdmin != null && isAdmin)
 			.build();
 		UserReadUseCase.FindUserResult result = userReadUseCase.loginUser(query);
 
