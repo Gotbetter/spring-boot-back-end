@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import pcrc.gotbetter.common.data_access.entity.CommonCode;
 import pcrc.gotbetter.participant.data_access.dto.ParticipantDto;
 import pcrc.gotbetter.room.data_access.entity.Room;
 
@@ -48,6 +49,8 @@ public interface RoomReadUseCase {
 		private final String rule;
 		private final Long participantId;
 		// for admin
+		private final String roomCategoryCode;
+		private final String ruleCode;
 		private final String leader;
 		private final String endDate;
 
@@ -93,8 +96,8 @@ public interface RoomReadUseCase {
 
 		public static FindRoomResult findByRoom(
 			ParticipantDto participantDto,
-			String roomCategory,
-			String rule,
+			CommonCode roomCategory,
+			CommonCode rule,
 			String endDate
 		) {
 			return FindRoomResult.builder()
@@ -108,11 +111,13 @@ public interface RoomReadUseCase {
 				.entryFee(participantDto.getRoom().getEntryFee())
 				.roomCode(participantDto.getRoom().getRoomCode())
 				.account(participantDto.getRoom().getAccount())
-				.roomCategory(roomCategory)
+				.roomCategoryCode(roomCategory.getCommonCodeId().getCode())
+				.roomCategory(roomCategory.getCodeDescription())
 				.description(
 					participantDto.getRoom().getDescription() == null ? "" : participantDto.getRoom().getDescription())
 				.totalEntryFee(participantDto.getRoom().getTotalEntryFee())
-				.rule(rule)
+				.ruleCode(rule.getCommonCodeId().getCode())
+				.rule(rule.getCodeDescription())
 				.leader(participantDto.getUser().getUsername())
 				.endDate(endDate)
 				.build();

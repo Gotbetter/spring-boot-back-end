@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,7 +126,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 	}
 
 	@Override
-	public FindRoomResult updateRoom(RoomUpdateCommand command) {
+	public FindRoomResult updateDescriptionRoom(RoomUpdateDescriptionCommand command) {
 		// 사용자가 방에 속해있는지 확인
 		ParticipantDto participantDto = participantRepository.findParticipantByUserIdAndRoomId(getCurrentUserId(),
 			command.getRoom_id());
@@ -188,8 +189,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 					.getStartDate()
 					.plusDays(7L * participantDto.getRoom().getWeek() - 1)
 					.toString();
-				results.add(FindRoomResult.findByRoom(participantDto, roomCategoryInfo.getCodeDescription(),
-					ruleInfo.getCodeDescription(), endDate));
+				results.add(FindRoomResult.findByRoom(participantDto, roomCategoryInfo, ruleInfo, endDate));
 			}
 		}
 		return results;
@@ -227,8 +227,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 				.getStartDate()
 				.plusDays(7L * participantDto.getRoom().getWeek() - 1)
 				.toString();
-			return FindRoomResult.findByRoom(participantDto, roomCategoryInfo.getCodeDescription(),
-				ruleInfo.getCodeDescription(), endDate);
+			return FindRoomResult.findByRoom(participantDto, roomCategoryInfo, ruleInfo, endDate);
 		}
 	}
 
@@ -295,6 +294,46 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 			rank += percentMap.get(key).size();
 		}
 		return findRankResultList;
+	}
+
+	@Override
+	public void updateRoomInfo(RoomUpdateCommand command) {
+		validateIsAdmin();
+
+		// 방 소개 수정 - room
+		Room room = roomRepository.findByRoomId(command.getRoom_id()).orElseThrow(() -> {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		});
+		// category 정보
+		CommonCode roomCategoryInfo = findRoomCategoryInfo(command.getRoomCategoryCode());
+		// rule 정보 - 고정된 규칙
+		CommonCode ruleInfo = findRuleInfo(command.getRuleCode());
+
+		if (!Objects.equals(command.getRoomCode(), room.getRoomCode()) && roomRepository.existByRoomCode(
+			command.getRoomCode())) {
+			throw new GotBetterException(MessageType.CONFLICT);
+		}
+		if (command.getMaxUserNum() < 1 || command.getMaxUserNum() < room.getCurrentUserNum()) {
+			throw new GotBetterException(MessageType.BAD_REQUEST);
+		}
+		if (command.getWeek() < 1 || command.getWeek() < room.getCurrentWeek()) {
+			throw new GotBetterException(MessageType.BAD_REQUEST);
+		}
+		if (command.getEntryFee() < 0) {
+			throw new GotBetterException(MessageType.BAD_REQUEST);
+		}
+
+		room.updateRoomInfo(
+			command.getTitle(),
+			command.getMaxUserNum(),
+			command.getWeek(),
+			command.getEntryFee(),
+			room.getTotalEntryFee(),// command.getEntryFee() * room.getCurrentUserNum(),
+			command.getRoomCode(),
+			command.getAccount(),
+			roomCategoryInfo.getCommonCodeId().getCode(),
+			ruleInfo.getCommonCodeId().getCode());
+		roomRepository.save(room);
 	}
 
 	/**

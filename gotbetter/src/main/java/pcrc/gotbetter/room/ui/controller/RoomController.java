@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import pcrc.gotbetter.room.service.RoomOperationUseCase;
 import pcrc.gotbetter.room.service.RoomReadUseCase;
 import pcrc.gotbetter.room.ui.requestBody.RoomCreateRequest;
+import pcrc.gotbetter.room.ui.requestBody.RoomDescriptionRequest;
 import pcrc.gotbetter.room.ui.requestBody.RoomUpdateRequest;
 import pcrc.gotbetter.room.ui.view.RankView;
 import pcrc.gotbetter.room.ui.view.RoomView;
@@ -94,15 +95,15 @@ public class RoomController {
 
 	@PatchMapping(value = "/{room_id}")
 	public ResponseEntity<RoomView> modifyDescription(@PathVariable Long room_id,
-		@Valid @RequestBody RoomUpdateRequest roomUpdateRequest) {
+		@Valid @RequestBody RoomDescriptionRequest roomUpdateRequest) {
 
 		log.info("\"MODIFY ROOM DESCRIPTION\"");
 
-		var command = RoomOperationUseCase.RoomUpdateCommand.builder()
+		var command = RoomOperationUseCase.RoomUpdateDescriptionCommand.builder()
 			.room_id(room_id)
 			.description(roomUpdateRequest.getDescription())
 			.build();
-		RoomReadUseCase.FindRoomResult result = roomOperationUseCase.updateRoom(command);
+		RoomReadUseCase.FindRoomResult result = roomOperationUseCase.updateDescriptionRoom(command);
 
 		return ResponseEntity.ok(RoomView.builder().roomResult(result).build());
 	}
@@ -119,5 +120,24 @@ public class RoomController {
 			rankViewList.add(RankView.builder().rankResult(rank).build());
 		}
 		return ResponseEntity.ok(rankViewList);
+	}
+
+	@PatchMapping("/{room_id}/admin")
+	public void modifyInfo(@PathVariable Long room_id, @Valid @RequestBody RoomUpdateRequest request) {
+
+		log.info("\"UPDATE ROOM INFO\"");
+
+		var command = RoomOperationUseCase.RoomUpdateCommand.builder()
+			.room_id(room_id)
+			.title(request.getTitle())
+			.maxUserNum(request.getMax_user_num())
+			.week(request.getWeek())
+			.entryFee(request.getEntry_fee())
+			.roomCode(request.getRoom_code())
+			.account(request.getAccount())
+			.roomCategoryCode(request.getRoom_category_code())
+			.ruleCode(request.getRule_code())
+			.build();
+		roomOperationUseCase.updateRoomInfo(command);
 	}
 }

@@ -9,7 +9,9 @@ public interface RoomOperationUseCase {
 
 	RoomReadUseCase.FindRoomResult createRoom(RoomCreateCommand command);
 
-	RoomReadUseCase.FindRoomResult updateRoom(RoomUpdateCommand command);
+	RoomReadUseCase.FindRoomResult updateDescriptionRoom(RoomUpdateDescriptionCommand command);
+
+	void updateRoomInfo(RoomUpdateCommand command);
 
 	@EqualsAndHashCode(callSuper = false)
 	@Builder
@@ -32,8 +34,24 @@ public interface RoomOperationUseCase {
 	@Builder
 	@Getter
 	@ToString
-	class RoomUpdateCommand {
+	class RoomUpdateDescriptionCommand {
 		private final Long room_id;
 		private final String description;
+	}
+
+	@EqualsAndHashCode(callSuper = false)
+	@Builder
+	@Getter
+	@ToString
+	class RoomUpdateCommand {
+		private final Long room_id;
+		private final String title;
+		private final Integer maxUserNum;
+		private final Integer week;
+		private final Integer entryFee;
+		private final String roomCode;
+		private final String account;
+		private final String roomCategoryCode;
+		private final String ruleCode;
 	}
 }
