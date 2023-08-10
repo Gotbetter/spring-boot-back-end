@@ -120,6 +120,42 @@ public class ParticipantRepositoryImpl implements ParticipantQueryRepository {
 			.fetchFirst();
 	}
 
+	@Override
+	public List<ParticipantDto> findRoomsWithLeader() {
+		return queryFactory
+			.select(Projections.constructor(ParticipantDto.class,
+				participant, room, user))
+			.from(participant)
+			.leftJoin(room).on(participant.roomId.eq(room.roomId)).fetchJoin()
+			.leftJoin(user).on(participant.userId.eq(user.userId)).fetchJoin()
+			.where(participant.authority.eq(true))
+			.fetch();
+	}
+
+	@Override
+	public List<ParticipantDto> findRoomsByUserId(Long userId) {
+		return queryFactory
+			.select(Projections.constructor(ParticipantDto.class,
+				participant, room, user))
+			.from(participant)
+			.leftJoin(room).on(participant.roomId.eq(room.roomId)).fetchJoin()
+			.leftJoin(user).on(participant.userId.eq(user.userId)).fetchJoin()
+			.where(participantEqUserId(userId))
+			.fetch();
+	}
+
+	@Override
+	public ParticipantDto findRoomWithLeaderByRoomId(Long roomId) {
+		return queryFactory
+			.select(Projections.constructor(ParticipantDto.class,
+				participant, room, user))
+			.from(participant)
+			.leftJoin(room).on(participant.roomId.eq(room.roomId)).fetchJoin()
+			.leftJoin(user).on(participant.userId.eq(user.userId)).fetchJoin()
+			.where(participant.authority.eq(true), participantEqRoomId(roomId))
+			.fetchFirst();
+	}
+
 	/**
 	 * participant eq
 	 */

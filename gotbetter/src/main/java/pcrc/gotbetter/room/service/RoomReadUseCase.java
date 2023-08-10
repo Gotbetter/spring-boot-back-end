@@ -5,18 +5,28 @@ import java.util.HashMap;
 import java.util.List;
 
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
-import pcrc.gotbetter.participant.data_access.dto.JoinRequestDto;
+import pcrc.gotbetter.participant.data_access.dto.ParticipantDto;
 import pcrc.gotbetter.room.data_access.entity.Room;
 
 public interface RoomReadUseCase {
 
-	List<FindRoomResult> getUserRoomList();
+	List<FindRoomResult> getUserRoomList(Boolean admin);
 
-	FindRoomResult getOneRoomInfo(Long roomId);
+	FindRoomResult getOneRoomInfo(RoomFindQuery query);
 
 	List<FindRankResult> getRank(Long roomId) throws IOException;
+
+	@EqualsAndHashCode(callSuper = false)
+	@Getter
+	@ToString
+	@Builder
+	class RoomFindQuery {
+		private final Long roomId;
+		private final Boolean admin;
+	}
 
 	@Getter
 	@ToString
@@ -37,6 +47,9 @@ public interface RoomReadUseCase {
 		private final Integer totalEntryFee;
 		private final String rule;
 		private final Long participantId;
+		// for admin
+		private final String leader;
+		private final String endDate;
 
 		public static FindRoomResult findByRoom(Room room, Long participantId, String roomCategory, String rule) {
 			return FindRoomResult.builder()
@@ -58,23 +71,50 @@ public interface RoomReadUseCase {
 				.build();
 		}
 
-		public static FindRoomResult findByRoom(JoinRequestDto joinRequestDto, String roomCategory, String rule) {
+		public static FindRoomResult findByRoom(ParticipantDto participantDto, String roomCategory, String rule) {
 			return FindRoomResult.builder()
-				.roomId(joinRequestDto.getRoom().getRoomId())
-				.title(joinRequestDto.getRoom().getTitle())
-				.maxUserNum(joinRequestDto.getRoom().getMaxUserNum())
-				.currentUserNum(joinRequestDto.getRoom().getCurrentUserNum())
-				.startDate(joinRequestDto.getRoom().getStartDate().toString())
-				.week(joinRequestDto.getRoom().getWeek())
-				.currentWeek(joinRequestDto.getRoom().getCurrentWeek())
-				.entryFee(joinRequestDto.getRoom().getEntryFee())
-				.roomCode(joinRequestDto.getRoom().getRoomCode())
-				.account(joinRequestDto.getRoom().getAccount())
+				.roomId(participantDto.getRoom().getRoomId())
+				.title(participantDto.getRoom().getTitle())
+				.maxUserNum(participantDto.getRoom().getMaxUserNum())
+				.currentUserNum(participantDto.getRoom().getCurrentUserNum())
+				.startDate(participantDto.getRoom().getStartDate().toString())
+				.week(participantDto.getRoom().getWeek())
+				.currentWeek(participantDto.getRoom().getCurrentWeek())
+				.entryFee(participantDto.getRoom().getEntryFee())
+				.roomCode(participantDto.getRoom().getRoomCode())
+				.account(participantDto.getRoom().getAccount())
 				.roomCategory(roomCategory)
 				.description(
-					joinRequestDto.getRoom().getDescription() == null ? "" : joinRequestDto.getRoom().getDescription())
-				.totalEntryFee(joinRequestDto.getRoom().getTotalEntryFee())
+					participantDto.getRoom().getDescription() == null ? "" : participantDto.getRoom().getDescription())
+				.totalEntryFee(participantDto.getRoom().getTotalEntryFee())
 				.rule(rule)
+				.build();
+		}
+
+		public static FindRoomResult findByRoom(
+			ParticipantDto participantDto,
+			String roomCategory,
+			String rule,
+			String endDate
+		) {
+			return FindRoomResult.builder()
+				.roomId(participantDto.getRoom().getRoomId())
+				.title(participantDto.getRoom().getTitle())
+				.maxUserNum(participantDto.getRoom().getMaxUserNum())
+				.currentUserNum(participantDto.getRoom().getCurrentUserNum())
+				.startDate(participantDto.getRoom().getStartDate().toString())
+				.week(participantDto.getRoom().getWeek())
+				.currentWeek(participantDto.getRoom().getCurrentWeek())
+				.entryFee(participantDto.getRoom().getEntryFee())
+				.roomCode(participantDto.getRoom().getRoomCode())
+				.account(participantDto.getRoom().getAccount())
+				.roomCategory(roomCategory)
+				.description(
+					participantDto.getRoom().getDescription() == null ? "" : participantDto.getRoom().getDescription())
+				.totalEntryFee(participantDto.getRoom().getTotalEntryFee())
+				.rule(rule)
+				.leader(participantDto.getUser().getUsername())
+				.endDate(endDate)
 				.build();
 		}
 	}

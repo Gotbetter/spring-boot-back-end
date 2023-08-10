@@ -24,4 +24,10 @@ public interface ParticipantQueryRepository {
 
 	ParticipantDto findParticipantByUserIdAndRoomId(Long userId, Long roomId);
 
+	List<ParticipantDto> findRoomsWithLeader();
+
+	List<ParticipantDto> findRoomsByUserId(Long userId);
+
+	ParticipantDto findRoomWithLeaderByRoomId(Long roomId);
+
 }

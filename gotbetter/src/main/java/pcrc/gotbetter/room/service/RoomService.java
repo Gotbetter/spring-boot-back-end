@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import pcrc.gotbetter.common.data_access.entity.CommonCode;
 import pcrc.gotbetter.common.data_access.entity.CommonCodeId;
 import pcrc.gotbetter.common.data_access.repository.CommonCodeRepository;
-import pcrc.gotbetter.participant.data_access.dto.JoinRequestDto;
 import pcrc.gotbetter.participant.data_access.dto.ParticipantDto;
 import pcrc.gotbetter.participant.data_access.entity.JoinRequest;
 import pcrc.gotbetter.participant.data_access.entity.JoinRequestId;
@@ -34,6 +33,8 @@ import pcrc.gotbetter.room.data_access.repository.RoomRepository;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 import pcrc.gotbetter.user.data_access.entity.User;
+import pcrc.gotbetter.user.data_access.repository.UserRepository;
+import pcrc.gotbetter.user.login_method.login_type.RoleType;
 
 @Service
 public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
@@ -45,18 +46,20 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 	private final JoinRequestRepository joinRequestRepository;
 	private final ParticipantRepository participantRepository;
 	private final CommonCodeRepository commonCodeRepository;
+	private final UserRepository userRepository;
 
 	@Autowired
 	public RoomService(
 		RoomRepository roomRepository,
 		JoinRequestRepository joinRequestRepository,
 		ParticipantRepository participantRepository,
-		CommonCodeRepository commonCodeRepository
-	) {
+		CommonCodeRepository commonCodeRepository,
+		UserRepository userRepository) {
 		this.roomRepository = roomRepository;
 		this.joinRequestRepository = joinRequestRepository;
 		this.participantRepository = participantRepository;
 		this.commonCodeRepository = commonCodeRepository;
+		this.userRepository = userRepository;
 	}
 
 	@Override
@@ -150,12 +153,21 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 	}
 
 	@Override
-	public List<FindRoomResult> getUserRoomList() {
-		Long currentUserId = getCurrentUserId();
-		List<FindRoomResult> result = new ArrayList<>();
+	public List<FindRoomResult> getUserRoomList(Boolean admin) {
+		if (admin) {
+			validateIsAdmin();
+		}
+
 		// 유저가 속한 방 리스트 - JoinRequest 대신 Participant에서 사용 가능 - room 정보
-		List<JoinRequestDto> joinRequestDtoList = joinRequestRepository.findJoinRequestJoinList(currentUserId, null,
-			true);
+		List<ParticipantDto> participantDtoList;
+		List<FindRoomResult> results = new ArrayList<>();
+
+		if (!admin) {
+			participantDtoList = participantRepository.findRoomsByUserId(getCurrentUserId());
+		} else {
+			participantDtoList = participantRepository.findRoomsWithLeader();
+		}
+
 		// common code 모든 데이터 (ROOM_CATEGORY + RULE)
 		List<CommonCode> commonCodes = commonCodeRepository.findListByGroupCode("");
 		HashMap<String, CommonCode> commonCodeHashMap = new HashMap<>();
@@ -164,31 +176,60 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 			commonCodeHashMap.put(commonCode.getCommonCodeId().getGroupCode()
 				+ "/" + commonCode.getCommonCodeId().getCode(), commonCode);
 		}
-		for (JoinRequestDto joinRequest : joinRequestDtoList) {
+		for (ParticipantDto participantDto : participantDtoList) {
 			CommonCode roomCategoryInfo = commonCodeHashMap.get(
-				"ROOM_CATEGORY/" + joinRequest.getRoom().getRoomCategory());
-			CommonCode ruleInfo = commonCodeHashMap.get("RULE/" + joinRequest.getRoom().getRule());
-			result.add(FindRoomResult.findByRoom(joinRequest, roomCategoryInfo.getCodeDescription(),
-				ruleInfo.getCodeDescription()));
+				"ROOM_CATEGORY/" + participantDto.getRoom().getRoomCategory());
+			CommonCode ruleInfo = commonCodeHashMap.get("RULE/" + participantDto.getRoom().getRule());
+			if (!admin) {
+				results.add(FindRoomResult.findByRoom(participantDto, roomCategoryInfo.getCodeDescription(),
+					ruleInfo.getCodeDescription()));
+			} else {
+				String endDate = participantDto.getRoom()
+					.getStartDate()
+					.plusDays(7L * participantDto.getRoom().getWeek() - 1)
+					.toString();
+				results.add(FindRoomResult.findByRoom(participantDto, roomCategoryInfo.getCodeDescription(),
+					ruleInfo.getCodeDescription(), endDate));
+			}
 		}
-		return result;
+		return results;
 	}
 
 	@Override
-	public FindRoomResult getOneRoomInfo(Long roomId) {
-		Long currentUserId = getCurrentUserId();
-		// 유저가 속한 방 정보
-		JoinRequestDto joinRequestDto = joinRequestRepository.findJoinRequestJoin(currentUserId, roomId, true);
+	public FindRoomResult getOneRoomInfo(RoomFindQuery query) {
+		if (query.getAdmin()) {
+			validateIsAdmin();
+		}
 
-		if (joinRequestDto == null) {
+		ParticipantDto participantDto;
+
+		if (!query.getAdmin()) {
+			// 유저가 속한 방 정보
+			participantDto = participantRepository.findParticipantByUserIdAndRoomId(getCurrentUserId(),
+				query.getRoomId());
+		} else {
+			participantDto = participantRepository.findRoomWithLeaderByRoomId(query.getRoomId());
+		}
+		if (participantDto == null) {
 			throw new GotBetterException(MessageType.NOT_FOUND);
 		}
+
 		// 카테고리 정보
-		CommonCode roomCategoryInfo = findRoomCategoryInfo(joinRequestDto.getRoom().getRoomCategory());
+		CommonCode roomCategoryInfo = findRoomCategoryInfo(participantDto.getRoom().getRoomCategory());
 		// rule 정보 - 고정된 규칙
-		CommonCode ruleInfo = findRuleInfo(joinRequestDto.getRoom().getRule());
-		return FindRoomResult.findByRoom(joinRequestDto,
-			roomCategoryInfo.getCodeDescription(), ruleInfo.getCodeDescription());
+		CommonCode ruleInfo = findRuleInfo(participantDto.getRoom().getRule());
+
+		if (!query.getAdmin()) {
+			return FindRoomResult.findByRoom(participantDto, roomCategoryInfo.getCodeDescription(),
+				ruleInfo.getCodeDescription());
+		} else {
+			String endDate = participantDto.getRoom()
+				.getStartDate()
+				.plusDays(7L * participantDto.getRoom().getWeek() - 1)
+				.toString();
+			return FindRoomResult.findByRoom(participantDto, roomCategoryInfo.getCodeDescription(),
+				ruleInfo.getCodeDescription(), endDate);
+		}
 	}
 
 	@Override
@@ -310,5 +351,16 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 			bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
 		}
 		return bytes;
+	}
+
+	private User validateIsAdmin() {
+		User requestUser = userRepository.findByUserId(getCurrentUserId()).orElseThrow(() -> {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		});
+
+		if (requestUser.getRoleType() == RoleType.ADMIN || requestUser.getRoleType() == RoleType.MAIN_ADMIN) {
+			return requestUser;
+		}
+		throw new GotBetterException(MessageType.FORBIDDEN_ADMIN);
 	}
 }
