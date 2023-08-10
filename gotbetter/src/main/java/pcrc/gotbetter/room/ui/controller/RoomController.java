@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
@@ -59,11 +60,13 @@ public class RoomController {
 	}
 
 	@GetMapping(value = "")
-	public ResponseEntity<List<RoomView>> showIncludedRooms() {
+	public ResponseEntity<List<RoomView>> showIncludedRooms(
+		@RequestParam(name = "admin", required = false) Boolean admin
+	) {
 
 		log.info("\"GET USER'S ROOMS\"");
 
-		List<RoomReadUseCase.FindRoomResult> result = roomReadUseCase.getUserRoomList();
+		List<RoomReadUseCase.FindRoomResult> result = roomReadUseCase.getUserRoomList(admin != null && admin);
 
 		List<RoomView> roomViews = new ArrayList<>();
 		for (RoomReadUseCase.FindRoomResult r : result) {
@@ -73,11 +76,18 @@ public class RoomController {
 	}
 
 	@GetMapping(value = "/{room_id}")
-	public ResponseEntity<RoomView> showOneRoom(@PathVariable Long room_id) {
+	public ResponseEntity<RoomView> showOneRoom(
+		@PathVariable Long room_id,
+		@RequestParam(name = "admin", required = false) Boolean admin
+	) {
 
 		log.info("\"GET A ROOM INFO\"");
 
-		RoomReadUseCase.FindRoomResult result = roomReadUseCase.getOneRoomInfo(room_id);
+		var query = RoomReadUseCase.RoomFindQuery.builder()
+			.roomId(room_id)
+			.admin(admin != null && admin)
+			.build();
+		RoomReadUseCase.FindRoomResult result = roomReadUseCase.getOneRoomInfo(query);
 
 		return ResponseEntity.ok(RoomView.builder().roomResult(result).build());
 	}

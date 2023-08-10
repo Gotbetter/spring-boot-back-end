@@ -26,6 +26,9 @@ public class RoomView {
 	private final Integer total_entry_fee;
 	private final String rule;
 	private final Long participant_id;
+	// for admin
+	private final String leader;
+	private final String end_date;
 
 	@Builder
 	public RoomView(RoomReadUseCase.FindRoomResult roomResult) {
@@ -44,5 +47,8 @@ public class RoomView {
 		this.total_entry_fee = roomResult.getTotalEntryFee();
 		this.rule = roomResult.getRule();
 		this.participant_id = roomResult.getParticipantId();
+		// for admin
+		this.leader = roomResult.getLeader();
+		this.end_date = roomResult.getEndDate();
 	}
 }
