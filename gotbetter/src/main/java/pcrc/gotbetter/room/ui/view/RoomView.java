@@ -29,6 +29,8 @@ public class RoomView {
 	// for admin
 	private final String leader;
 	private final String end_date;
+	private final String room_category_code;
+	private final String rule_code;
 
 	@Builder
 	public RoomView(RoomReadUseCase.FindRoomResult roomResult) {
@@ -50,5 +52,7 @@ public class RoomView {
 		// for admin
 		this.leader = roomResult.getLeader();
 		this.end_date = roomResult.getEndDate();
+		this.room_category_code = roomResult.getRoomCategoryCode();
+		this.rule_code = roomResult.getRuleCode();
 	}
 }
