@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -123,5 +124,14 @@ public class ParticipantController {
 		Integer refund = participantReadUseCase.getMyRefund(participant_id);
 
 		return ResponseEntity.ok(RefundView.builder().refund(refund).build());
+	}
+
+	@DeleteMapping(value = "/{participant_id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void deleteParticipant(@PathVariable(value = "participant_id") Long participantId) {
+
+		log.info("\"DELETE PARTICIPANT\"");
+
+		participantOperationUseCase.deleteParticipant(participantId);
 	}
 }

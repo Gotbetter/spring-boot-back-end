@@ -15,6 +15,8 @@ public interface ParticipantOperationUseCase {
 
 	void rejectJoinRoom(UserRoomAcceptedCommand command);
 
+	void deleteParticipant(Long participantId);
+
 	@EqualsAndHashCode(callSuper = false)
 	@Builder
 	@Getter
