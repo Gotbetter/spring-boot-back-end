@@ -336,6 +336,17 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 		roomRepository.save(room);
 	}
 
+	@Override
+	public void deleteRoom(Long roomId) {
+		validateIsAdmin();
+
+		Room room = roomRepository.findByRoomId(roomId).orElseThrow(() -> {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		});
+
+		roomRepository.deleteById(room.getRoomId());
+	}
+
 	/**
 	 * other
 	 */
