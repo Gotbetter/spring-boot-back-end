@@ -91,9 +91,14 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 				validateUserInRoom(query.getRoomId(), false); // 방에 속한 멤버인지 검증
 			}
 			List<ParticipantDto> participantDtoList = participantRepository.findUserInfoList(query.getRoomId());
+			int weekPercent = roomRepository.findWeek(query.getRoomId()) * 100;
+
 			for (ParticipantDto p : participantDtoList) {
+				float divide = (float)p.getParticipant().getRefund() / (float)weekPercent;
+				Float percent = Math.round(divide * 1000) / 10.0F;
+
 				result.add(FindParticipantResult.findByParticipant(
-					p, getProfileBytes(p.getUser().getProfile()), query.getAdmin()));
+					p, getProfileBytes(p.getUser().getProfile()), percent, query.getAdmin()));
 			}
 		} else { // (방장만) 승인 대기 중인 사용자 조회
 			if (query.getAdmin()) {
