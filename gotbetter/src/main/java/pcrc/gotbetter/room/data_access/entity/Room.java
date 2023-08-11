@@ -110,4 +110,8 @@ public class Room extends BaseTimeEntity {
 		this.roomCategory = roomCategory;
 		this.rule = rule;
 	}
+
+	public void decreaseCurrentUserNum() {
+		this.currentUserNum -= 1;
+	}
 }

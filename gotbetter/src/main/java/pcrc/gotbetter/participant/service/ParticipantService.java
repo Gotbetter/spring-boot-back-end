@@ -15,6 +15,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import pcrc.gotbetter.participant.data_access.dto.JoinRequestDto;
 import pcrc.gotbetter.participant.data_access.dto.ParticipantDto;
@@ -195,6 +196,42 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 			}
 		}
 		return participant.getRefund();
+	}
+
+	@Override
+	@Transactional
+	public void deleteParticipant(Long participantId) {
+		validateIsAdmin();
+
+		Participant participant = participantRepository.findByParticipantId(participantId);
+
+		// participantId 있는지 확인
+		if (participant == null) {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		}
+		// 방장인 경우 - 일단 거절
+		if (participant.getAuthority()) {
+			throw new GotBetterException(MessageType.FORBIDDEN);
+		}
+
+		// 인원 수 -1
+		Room room = roomRepository.findByRoomId(participant.getRoomId()).orElseThrow(() -> {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		});
+
+		// total_entry_fee는 어떻게 하지?
+		room.decreaseCurrentUserNum();
+		roomRepository.save(room);
+
+		// join-request delete
+		JoinRequest joinRequest = joinRequestRepository.findByJoinRequestId(JoinRequestId.builder()
+			.userId(participant.getUserId())
+			.roomId(participant.getRoomId())
+			.build()).orElseThrow(() -> {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		});
+
+		joinRequestRepository.delete(joinRequest);
 	}
 
 	/**
