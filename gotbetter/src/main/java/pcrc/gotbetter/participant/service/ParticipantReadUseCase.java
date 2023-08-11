@@ -39,10 +39,12 @@ public interface ParticipantReadUseCase {
 		// for admin
 		private final Float percentSum;
 		private final Integer refund;
+		private final String createdDate;
 		private final String updatedDate;
 
 		public static FindParticipantResult findByParticipant(
-			ParticipantDto participantDto, String profile,
+			ParticipantDto participantDto,
+			String profile,
 			Boolean isAdmin
 		) {
 			return FindParticipantResult.builder()
@@ -63,7 +65,8 @@ public interface ParticipantReadUseCase {
 			JoinRequestDto joinRequestResultDTO,
 			Long participantId,
 			Boolean authority,
-			String profile
+			String profile,
+			Boolean isAdmin
 		) {
 			return FindParticipantResult.builder()
 				.participantId(participantId)
@@ -73,6 +76,8 @@ public interface ParticipantReadUseCase {
 				.email(joinRequestResultDTO.getUser().getEmail())
 				.profile(profile)
 				.authority(authority)
+				.createdDate(
+					isAdmin ? joinRequestResultDTO.getJoinRequest().getUpdatedDate().toLocalDate().toString() : null)
 				.build();
 		}
 	}
