@@ -28,6 +28,9 @@ import pcrc.gotbetter.room.data_access.repository.RoomRepository;
 import pcrc.gotbetter.room.service.RoomReadUseCase;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
+import pcrc.gotbetter.user.data_access.entity.User;
+import pcrc.gotbetter.user.data_access.repository.UserRepository;
+import pcrc.gotbetter.user.login_method.login_type.RoleType;
 
 @Service
 public class ParticipantService implements ParticipantOperationUseCase, ParticipantReadUseCase {
@@ -38,16 +41,18 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 	private final ParticipantRepository participantRepository;
 	private final JoinRequestRepository joinRequestRepository;
 	private final RoomRepository roomRepository;
+	private final UserRepository userRepository;
 
 	@Autowired
 	public ParticipantService(
 		ParticipantRepository participantRepository,
 		JoinRequestRepository joinRequestRepository,
-		RoomRepository roomRepository
-	) {
+		RoomRepository roomRepository,
+		UserRepository userRepository) {
 		this.participantRepository = participantRepository;
 		this.joinRequestRepository = joinRequestRepository;
 		this.roomRepository = roomRepository;
+		this.userRepository = userRepository;
 	}
 
 	@Override
@@ -76,18 +81,28 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 	}
 
 	@Override
-	public List<FindParticipantResult> getMemberListInARoom(Long roomId, Boolean accepted) throws IOException {
+	public List<FindParticipantResult> getMemberListInARoom(ParticipantsFindQuery query) throws IOException {
 		List<FindParticipantResult> result = new ArrayList<>();
 
-		if (accepted) { // (방장 포함 일반 멤버) 방에 속한 멤버들 조회
-			validateUserInRoom(roomId, false); // 방에 속한 멤버인지 검증
-			List<ParticipantDto> participantDtoList = participantRepository.findUserInfoList(roomId);
+		if (query.getAccepted()) { // (방장 포함 일반 멤버) 방에 속한 멤버들 조회
+			if (query.getAdmin()) {
+				validateIsAdmin();
+			} else {
+				validateUserInRoom(query.getRoomId(), false); // 방에 속한 멤버인지 검증
+			}
+			List<ParticipantDto> participantDtoList = participantRepository.findUserInfoList(query.getRoomId());
 			for (ParticipantDto p : participantDtoList) {
-				result.add(FindParticipantResult.findByParticipant(p, getProfileBytes(p.getUser().getProfile())));
+				result.add(FindParticipantResult.findByParticipant(
+					p, getProfileBytes(p.getUser().getProfile()), query.getAdmin()));
 			}
 		} else { // (방장만) 승인 대기 중인 사용자 조회
-			validateUserInRoom(roomId, true); // 방장인지 검증
-			List<JoinRequestDto> joinRequestList = joinRequestRepository.findJoinRequestJoinList(null, roomId, false);
+			if (query.getAdmin()) {
+				validateIsAdmin();
+			} else {
+				validateUserInRoom(query.getRoomId(), true); // 방장인지 검증
+			}
+			List<JoinRequestDto> joinRequestList = joinRequestRepository.findJoinRequestJoinList(null,
+				query.getRoomId(), false);
 			for (JoinRequestDto joinRequest : joinRequestList) {
 				result.add(FindParticipantResult.findByParticipant(joinRequest,
 					-1L, false, getProfileBytes(joinRequest.getUser().getProfile())));
@@ -240,5 +255,16 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 			bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
 		}
 		return bytes;
+	}
+
+	private void validateIsAdmin() {
+		User requestUser = userRepository.findByUserId(getCurrentUserId()).orElseThrow(() -> {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		});
+
+		if (requestUser.getRoleType() == RoleType.ADMIN || requestUser.getRoleType() == RoleType.MAIN_ADMIN) {
+			return;
+		}
+		throw new GotBetterException(MessageType.FORBIDDEN_ADMIN);
 	}
 }

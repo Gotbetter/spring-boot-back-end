@@ -59,7 +59,8 @@ public class ParticipantController {
 	@GetMapping(value = "/{room_id}")
 	public ResponseEntity<List<ParticipantView>> getUserListAboutRoom(
 		@PathVariable Long room_id,
-		@RequestParam(value = "accepted") Boolean accepted
+		@RequestParam(value = "accepted") Boolean accepted,
+		@RequestParam(name = "admin", required = false) Boolean admin
 	) throws IOException {
 
 		if (accepted == null) {
@@ -70,9 +71,13 @@ public class ParticipantController {
 			log.info("\"WAIT LIST FOR APPROVE\"");
 		}
 
+		var query = ParticipantReadUseCase.ParticipantsFindQuery.builder()
+			.roomId(room_id)
+			.accepted(accepted)
+			.admin(admin != null && admin)
+			.build();
+		List<ParticipantReadUseCase.FindParticipantResult> result = participantReadUseCase.getMemberListInARoom(query);
 		List<ParticipantView> participantViews = new ArrayList<>();
-		List<ParticipantReadUseCase.FindParticipantResult> result = participantReadUseCase.getMemberListInARoom(room_id,
-			accepted);
 		for (ParticipantReadUseCase.FindParticipantResult r : result) {
 			participantViews.add(ParticipantView.builder().participantResult(r).build());
 		}

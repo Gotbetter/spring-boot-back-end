@@ -18,6 +18,10 @@ public class ParticipantView {
 	private final String email;
 	private final String profile;
 	private final Boolean authority;
+	// for admin
+	private final Float percent_sum;
+	private final Integer refund;
+	private final String updated_date;
 
 	@Builder
 	public ParticipantView(ParticipantReadUseCase.FindParticipantResult participantResult) {
@@ -28,5 +32,8 @@ public class ParticipantView {
 		this.email = participantResult.getEmail();
 		this.profile = participantResult.getProfile();
 		this.authority = participantResult.getAuthority();
+		this.percent_sum = participantResult.getPercentSum();
+		this.refund = participantResult.getRefund();
+		this.updated_date = participantResult.getUpdatedDate();
 	}
 }
