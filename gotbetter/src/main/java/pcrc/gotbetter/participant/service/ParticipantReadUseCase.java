@@ -45,6 +45,7 @@ public interface ParticipantReadUseCase {
 		public static FindParticipantResult findByParticipant(
 			ParticipantDto participantDto,
 			String profile,
+			Float percent,
 			Boolean isAdmin
 		) {
 			return FindParticipantResult.builder()
@@ -55,7 +56,7 @@ public interface ParticipantReadUseCase {
 				.email(participantDto.getUser().getEmail())
 				.profile(profile)
 				.authority(participantDto.getParticipant().getAuthority())
-				.percentSum(isAdmin ? Math.round(participantDto.getParticipant().getPercentSum() * 1000) / 10.0F : null)
+				.percentSum(isAdmin ? percent : null)
 				.refund(isAdmin ? participantDto.getParticipant().getRefund() : null)
 				.updatedDate(isAdmin ? participantDto.getParticipant().getUpdatedDate().toLocalDate().toString() : null)
 				.build();

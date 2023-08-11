@@ -56,6 +56,15 @@ public class RoomRepositoryImpl implements RoomQueryRepository {
 		return exists != null;
 	}
 
+	@Override
+	public Integer findWeek(Long roomId) {
+		return queryFactory
+			.select(room.week)
+			.from(room)
+			.where(roomEqRoomId(roomId))
+			.fetchFirst();
+	}
+
 	/**
 	 * room eq
 	 */

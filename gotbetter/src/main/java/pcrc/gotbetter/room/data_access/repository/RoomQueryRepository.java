@@ -14,4 +14,6 @@ public interface RoomQueryRepository {
 
 	Boolean existByRoomCode(String roomCode);
 
+	Integer findWeek(Long roomId);
+
 }
