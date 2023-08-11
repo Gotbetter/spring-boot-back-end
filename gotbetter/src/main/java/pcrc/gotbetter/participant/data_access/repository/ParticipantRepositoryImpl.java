@@ -60,8 +60,7 @@ public class ParticipantRepositoryImpl implements ParticipantQueryRepository {
 	public List<ParticipantDto> findUserInfoList(Long roomId) {
 		return queryFactory
 			.select(Projections.constructor(ParticipantDto.class,
-				participant.participantId, participant.authority,
-				user, userSet.authId))
+				participant, user, userSet.authId))
 			.from(participant)
 			.leftJoin(user).on(participant.userId.eq(user.userId)).fetchJoin()
 			.leftJoin(userSet).on(participant.userId.eq(userSet.userId)).fetchJoin()

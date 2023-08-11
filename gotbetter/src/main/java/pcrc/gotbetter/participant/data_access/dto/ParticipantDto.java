@@ -11,8 +11,6 @@ import pcrc.gotbetter.user.data_access.entity.User;
 public class ParticipantDto {
 	// participant
 	private Participant participant;
-	private Long participantId;
-	private Boolean authority;
 
 	// room
 	private Room room;
@@ -23,10 +21,8 @@ public class ParticipantDto {
 	// userset
 	private String authId;
 
-	public ParticipantDto(Long participantId, Boolean authority,
-		User user, String authId) {
-		this.participantId = participantId;
-		this.authority = authority;
+	public ParticipantDto(Participant participant, User user, String authId) {
+		this.participant = participant;
 		this.user = user;
 		this.authId = authId;
 	}
