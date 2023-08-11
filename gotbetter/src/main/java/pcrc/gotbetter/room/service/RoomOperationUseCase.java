@@ -13,6 +13,8 @@ public interface RoomOperationUseCase {
 
 	void updateRoomInfo(RoomUpdateCommand command);
 
+	void deleteRoom(Long roomId);
+
 	@EqualsAndHashCode(callSuper = false)
 	@Builder
 	@Getter
