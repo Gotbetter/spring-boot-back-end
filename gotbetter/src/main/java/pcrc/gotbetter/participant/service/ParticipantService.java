@@ -105,7 +105,7 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 				query.getRoomId(), false);
 			for (JoinRequestDto joinRequest : joinRequestList) {
 				result.add(FindParticipantResult.findByParticipant(joinRequest,
-					-1L, false, getProfileBytes(joinRequest.getUser().getProfile())));
+					-1L, false, getProfileBytes(joinRequest.getUser().getProfile()), query.getAdmin()));
 			}
 		}
 		return result;
@@ -149,7 +149,7 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 		roomRepository.save(roomInfo);
 		// 프로필 수정 추가해야함.
 		return FindParticipantResult.findByParticipant(joinRequestDto,
-			participant.getParticipantId(), null, getProfileBytes(joinRequestDto.getUser().getProfile()));
+			participant.getParticipantId(), null, getProfileBytes(joinRequestDto.getUser().getProfile()), false);
 	}
 
 	@Override

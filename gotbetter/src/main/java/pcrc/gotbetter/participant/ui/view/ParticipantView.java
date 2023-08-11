@@ -21,6 +21,7 @@ public class ParticipantView {
 	// for admin
 	private final Float percent_sum;
 	private final Integer refund;
+	private final String created_date;
 	private final String updated_date;
 
 	@Builder
@@ -34,6 +35,7 @@ public class ParticipantView {
 		this.authority = participantResult.getAuthority();
 		this.percent_sum = participantResult.getPercentSum();
 		this.refund = participantResult.getRefund();
+		this.created_date = participantResult.getCreatedDate();
 		this.updated_date = participantResult.getUpdatedDate();
 	}
 }
