@@ -34,12 +34,16 @@ public class PlanController {
 	}
 
 	@PostMapping(value = "")
-	public ResponseEntity<List<PlanView>> createPlans(@Valid @RequestBody PlanCreateRequest request) {
+	public ResponseEntity<List<PlanView>> createPlans(
+		@Valid @RequestBody PlanCreateRequest request,
+		@RequestParam(name = "admin", required = false) Boolean admin
+	) {
 
 		log.info("\"CREATE PLANS\"");
 
 		var command = PlanOperationUseCase.PlanCreateCommand.builder()
 			.participantId(request.getParticipant_id())
+			.admin(admin != null && admin)
 			.build();
 
 		List<PlanView> planViews = new ArrayList<>();

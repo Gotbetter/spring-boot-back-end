@@ -137,9 +137,14 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 	}
 
 	@Override
+	@Transactional
 	public FindParticipantResult approveJoinRoom(UserRoomAcceptedCommand command) throws IOException { // (방장) 방 입장 승인
-		// 방장인지 검증
-		validateUserInRoom(command.getRoomId(), true);
+		if (command.getAdmin()) {
+			validateIsAdmin();
+		} else {
+			// 방장인지 검증
+			validateUserInRoom(command.getRoomId(), true);
+		}
 
 		// 승인하려는 사용자 정보
 		JoinRequestDto joinRequestDto = joinRequestRepository.findJoinRequestJoin(
@@ -179,8 +184,12 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 
 	@Override
 	public void rejectJoinRoom(UserRoomAcceptedCommand command) { // (방장) 방 입장 요청 거절
-		// 방장인지 검증
-		validateUserInRoom(command.getRoomId(), true);
+		if (command.getAdmin()) {
+			validateIsAdmin();
+		} else {
+			// 방장인지 검증
+			validateUserInRoom(command.getRoomId(), true);
+		}
 		// 존재하는 요청자인지 확인 - join request
 		JoinRequest joinRequest = joinRequestRepository.findJoinRequest(command.getUserId(), command.getRoomId());
 

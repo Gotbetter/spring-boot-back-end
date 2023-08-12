@@ -101,7 +101,8 @@ public class ParticipantController {
 
 	@PatchMapping(value = "")
 	public ResponseEntity<ParticipantView> approveJoinRoom(
-		@Valid @RequestBody ParticipantJoinApproveRequest request
+		@Valid @RequestBody ParticipantJoinApproveRequest request,
+		@RequestParam(name = "admin", required = false) Boolean admin
 	) throws IOException {
 
 		log.info("\"APPROVE JOIN ROOM\"");
@@ -109,6 +110,7 @@ public class ParticipantController {
 		var command = ParticipantOperationUseCase.UserRoomAcceptedCommand.builder()
 			.userId(request.getUser_id())
 			.roomId(request.getRoom_id())
+			.admin(admin != null && admin)
 			.build();
 		ParticipantReadUseCase.FindParticipantResult result = participantOperationUseCase.approveJoinRoom(command);
 
@@ -117,13 +119,17 @@ public class ParticipantController {
 
 	@PostMapping(value = "/reject")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void rejectJoinRoom(@Valid @RequestBody ParticipantJoinApproveRequest request) {
+	public void rejectJoinRoom(
+		@Valid @RequestBody ParticipantJoinApproveRequest request,
+		@RequestParam(name = "admin", required = false) Boolean admin
+	) {
 
 		log.info("\"REJECT JOIN ROOM\"");
 
 		var command = ParticipantOperationUseCase.UserRoomAcceptedCommand.builder()
 			.userId(request.getUser_id())
 			.roomId(request.getRoom_id())
+			.admin(admin != null && admin)
 			.build();
 
 		participantOperationUseCase.rejectJoinRoom(command);
