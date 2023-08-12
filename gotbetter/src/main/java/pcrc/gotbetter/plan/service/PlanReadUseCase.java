@@ -1,5 +1,7 @@
 package pcrc.gotbetter.plan.service;
 
+import java.util.List;
+
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -9,6 +11,8 @@ import pcrc.gotbetter.plan.data_access.entity.Plan;
 public interface PlanReadUseCase {
 
 	FindPlanResult getWeekPlan(PlanFindQuery query);
+
+	List<FindPlanResult> getAllWeekPlan(Long participantId);
 
 	@EqualsAndHashCode(callSuper = false)
 	@Getter

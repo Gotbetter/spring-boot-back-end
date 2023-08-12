@@ -70,4 +70,18 @@ public class PlanController {
 
 		return ResponseEntity.ok(PlanView.builder().planResult(result).build());
 	}
+
+	@GetMapping("/{participant_id}/all")
+	public ResponseEntity<List<PlanView>> getAllWeekPlan(@PathVariable("participant_id") Long participantId) {
+
+		log.info("\"GET ALL WEEK PLAN\"");
+
+		List<PlanReadUseCase.FindPlanResult> results = planReadUseCase.getAllWeekPlan(participantId);
+		List<PlanView> planViews = new ArrayList<>();
+
+		for (PlanReadUseCase.FindPlanResult r : results) {
+			planViews.add(PlanView.builder().planResult(r).build());
+		}
+		return ResponseEntity.ok(planViews);
+	}
 }

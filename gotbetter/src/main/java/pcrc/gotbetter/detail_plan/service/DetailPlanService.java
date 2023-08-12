@@ -23,6 +23,9 @@ import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
 import pcrc.gotbetter.room.data_access.entity.Room;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
+import pcrc.gotbetter.user.data_access.entity.User;
+import pcrc.gotbetter.user.data_access.repository.UserRepository;
+import pcrc.gotbetter.user.login_method.login_type.RoleType;
 
 @Service
 public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlanReadUseCase {
@@ -30,17 +33,19 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 	private final PlanRepository planRepository;
 	private final DetailPlanEvalRepository detailPlanEvalRepository;
 	private final ParticipantRepository participantRepository;
+	private final UserRepository userRepository;
 
 	public DetailPlanService(
 		DetailPlanRepository detailPlanRepository,
 		PlanRepository planRepository,
 		DetailPlanEvalRepository detailPlanEvalRepository,
-		ParticipantRepository participantRepository
-	) {
+		ParticipantRepository participantRepository,
+		UserRepository userRepository) {
 		this.detailPlanRepository = detailPlanRepository;
 		this.planRepository = planRepository;
 		this.detailPlanEvalRepository = detailPlanEvalRepository;
 		this.participantRepository = participantRepository;
+		this.userRepository = userRepository;
 	}
 
 	@Override
@@ -78,16 +83,21 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 	}
 
 	@Override
-	public List<FindDetailPlanResult> getDetailPlans(Long planId) {
-		Plan plan = validatePlan(planId);
-		Long currentUserId = getCurrentUserId();
+	public List<FindDetailPlanResult> getDetailPlans(DetailPlanFindQuery query) {
+		Plan plan = validatePlan(query.getPlanId());
 
-		if (!participantRepository.existsByUserIdAndRoomId(currentUserId, plan.getParticipantInfo().getRoomId())) {
-			throw new GotBetterException(MessageType.NOT_FOUND);
+		if (!query.getAdmin()) {
+			Long currentUserId = getCurrentUserId();
+
+			if (!participantRepository.existsByUserIdAndRoomId(currentUserId, plan.getParticipantInfo().getRoomId())) {
+				throw new GotBetterException(MessageType.NOT_FOUND);
+			}
+		} else {
+			validateIsAdmin();
 		}
 
 		/** Todo detailPlanEval - detailPlan 좀 더 생각해보기 */
-		List<DetailPlan> detailPlans = detailPlanRepository.findByPlanId(planId);
+		List<DetailPlan> detailPlans = detailPlanRepository.findByPlanId(query.getPlanId());
 		List<FindDetailPlanResult> findDetailPlanResults = new ArrayList<>();
 
 		for (DetailPlan d : detailPlans) {
@@ -96,7 +106,7 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 			Integer dislike_cnt = detailPlanEvals.size();
 			boolean checked = false;
 			for (DetailPlanEval de : detailPlanEvals) {
-				if (Objects.equals(de.getDetailPlanEvalId().getUserId(), currentUserId)) {
+				if (Objects.equals(de.getDetailPlanEvalId().getUserId(), plan.getParticipantInfo().getUserId())) {
 					checked = true;
 					break;
 				}
@@ -183,5 +193,16 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 		if (plan.getThreeDaysPassed()) {
 			throw new GotBetterException(MessageType.FORBIDDEN_DATE);
 		}
+	}
+
+	private void validateIsAdmin() {
+		User requestUser = userRepository.findByUserId(getCurrentUserId()).orElseThrow(() -> {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		});
+
+		if (requestUser.getRoleType() == RoleType.ADMIN || requestUser.getRoleType() == RoleType.MAIN_ADMIN) {
+			return;
+		}
+		throw new GotBetterException(MessageType.FORBIDDEN_ADMIN);
 	}
 }

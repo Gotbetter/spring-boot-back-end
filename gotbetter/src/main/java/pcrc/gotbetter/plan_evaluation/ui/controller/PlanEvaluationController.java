@@ -1,5 +1,8 @@
 package pcrc.gotbetter.plan_evaluation.ui.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.extern.slf4j.Slf4j;
 import pcrc.gotbetter.plan_evaluation.service.PlanEvaluationOperationUseCase;
 import pcrc.gotbetter.plan_evaluation.service.PlanEvaluationReadUseCase;
+import pcrc.gotbetter.plan_evaluation.ui.view.PlanDislikeListView;
 import pcrc.gotbetter.plan_evaluation.ui.view.PlanEvaluationView;
 
 @Slf4j
@@ -56,6 +60,25 @@ public class PlanEvaluationController {
 		PlanEvaluationReadUseCase.FindPlanEvaluationResult result = planEvaluationReadUseCase.getPlanDislike(query);
 
 		return ResponseEntity.ok(PlanEvaluationView.builder().planEvaluationResult(result).build());
+	}
+
+	@GetMapping(value = "/admin")
+	public ResponseEntity<List<PlanDislikeListView>> getPlanDislikeList(@PathVariable(value = "plan_id") Long planId) {
+
+		log.info("\"GET A PLAN DISLIKE LIST (admin)\"");
+
+		var query = PlanEvaluationReadUseCase.PlanEvaluationFindQuery.builder()
+			.planId(planId)
+			.build();
+		List<PlanEvaluationReadUseCase.FindPlanDislikeListResult> results = planEvaluationReadUseCase.getPlanDislikeList(
+			query);
+		List<PlanDislikeListView> planDislikeListViews = new ArrayList<>();
+
+		for (PlanEvaluationReadUseCase.FindPlanDislikeListResult result : results) {
+			planDislikeListViews.add(PlanDislikeListView.builder().planDislikeListResult(result).build());
+		}
+
+		return ResponseEntity.ok(planDislikeListViews);
 	}
 
 	@DeleteMapping(value = "")

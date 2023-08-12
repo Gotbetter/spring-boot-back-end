@@ -18,6 +18,9 @@ public class DetailPlanView {
 	private final Long plan_id;
 	private final Integer detail_plan_dislike_count;
 	private final Boolean detail_plan_dislike_checked;
+	// for admin
+	private final String created_date;
+	private final String updated_date;
 
 	@Builder
 	public DetailPlanView(DetailPlanReadUseCase.FindDetailPlanResult detailPlanResult) {
@@ -28,5 +31,7 @@ public class DetailPlanView {
 		this.plan_id = detailPlanResult.getPlanId();
 		this.detail_plan_dislike_count = detailPlanResult.getDetailPlanDislikeCount();
 		this.detail_plan_dislike_checked = detailPlanResult.getDetailPlanDislikeChecked();
+		this.created_date = detailPlanResult.getCreatedDate();
+		this.updated_date = detailPlanResult.getUpdatedDate();
 	}
 }

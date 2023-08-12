@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import pcrc.gotbetter.participant.data_access.dto.ParticipantDto;
 import pcrc.gotbetter.participant.data_access.entity.Participant;
@@ -39,6 +40,7 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
 	}
 
 	@Override
+	@Transactional
 	public List<FindPlanResult> createPlans(PlanCreateCommand command) { // (방장) 자신 및 멤버들의 플랜 틀 생성
 		// 사용자가 방의 멤버인지 확인
 		ParticipantDto participantRoom = validateParticipantRoom(command.getParticipantId());
@@ -55,6 +57,10 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
 		validateDuplicateCreatePlans(command.getParticipantId());
 		// 현재 진행 중인 방인지 확인 - 종료된 방이면 생성되지 않음.
 		validateDate(roomInfo);
+
+		/**TODO
+		 * throw 생길때마다 participant 삭제
+		 */
 
 		// 플랜 틀 생성
 		List<Plan> plans = new ArrayList<>();
@@ -81,6 +87,9 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
 		for (Plan plan : planList) {
 			results.add(FindPlanResult.findByPlan(plan));
 		}
+		/**TODO
+		 * join request - accepted=true로 수정
+		 */
 		return results;
 	}
 
@@ -97,6 +106,21 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
 			throw new GotBetterException(MessageType.NOT_FOUND);
 		}
 		return FindPlanResult.findByPlan(plan);
+	}
+
+	@Override
+	public List<FindPlanResult> getAllWeekPlan(Long participantId) {
+		validateIsAdmin();
+
+		// 사용자가 방의 멤버인지 확인
+		Participant participant = validateParticipant(participantId);
+		List<Plan> planList = planRepository.findByParticipantInfoParticipantId(participant.getParticipantId());
+		List<FindPlanResult> results = new ArrayList<>();
+
+		for (Plan plan : planList) {
+			results.add(FindPlanResult.findByPlan(plan));
+		}
+		return results;
 	}
 
 	/**
