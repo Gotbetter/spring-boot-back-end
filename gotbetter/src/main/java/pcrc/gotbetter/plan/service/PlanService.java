@@ -2,6 +2,7 @@ package pcrc.gotbetter.plan.service;
 
 import static pcrc.gotbetter.setting.security.SecurityUtil.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,19 +18,24 @@ import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
 import pcrc.gotbetter.room.data_access.entity.Room;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
+import pcrc.gotbetter.user.data_access.entity.User;
+import pcrc.gotbetter.user.data_access.repository.UserRepository;
+import pcrc.gotbetter.user.login_method.login_type.RoleType;
 
 @Service
 public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
 	private final PlanRepository planRepository;
 	private final ParticipantRepository participantRepository;
+	private final UserRepository userRepository;
 
 	@Autowired
 	public PlanService(
 		PlanRepository planRepository,
-		ParticipantRepository participantRepository
-	) {
+		ParticipantRepository participantRepository,
+		UserRepository userRepository) {
 		this.planRepository = planRepository;
 		this.participantRepository = participantRepository;
+		this.userRepository = userRepository;
 	}
 
 	@Override
@@ -39,10 +45,16 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
 		Participant participantInfo = participantRoom.getParticipant();
 		Room roomInfo = participantRoom.getRoom();
 
-		// 방장인지 확인
-		validateSenderIsLeader(roomInfo.getRoomId());
+		if (command.getAdmin()) {
+			validateIsAdmin();
+		} else {
+			// 방장인지 확인
+			validateSenderIsLeader(roomInfo.getRoomId());
+		}
 		// 이미 존재하는지 확인
 		validateDuplicateCreatePlans(command.getParticipantId());
+		// 현재 진행 중인 방인지 확인 - 종료된 방이면 생성되지 않음.
+		validateDate(roomInfo);
 
 		// 플랜 틀 생성
 		List<Plan> plans = new ArrayList<>();
@@ -127,5 +139,24 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
 		if (!participantRepository.existsByUserIdAndRoomId(currentUserId, roomId)) {
 			throw new GotBetterException(MessageType.NOT_FOUND);
 		}
+	}
+
+	private void validateDate(Room room) {
+		LocalDate lastDate = room.getStartDate().plusDays(7L * room.getWeek() - 1);
+
+		if (lastDate.isBefore(LocalDate.now())) {
+			throw new GotBetterException(MessageType.FORBIDDEN_DATE);
+		}
+	}
+
+	private void validateIsAdmin() {
+		User requestUser = userRepository.findByUserId(getCurrentUserId()).orElseThrow(() -> {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		});
+
+		if (requestUser.getRoleType() == RoleType.ADMIN || requestUser.getRoleType() == RoleType.MAIN_ADMIN) {
+			return;
+		}
+		throw new GotBetterException(MessageType.FORBIDDEN_ADMIN);
 	}
 }

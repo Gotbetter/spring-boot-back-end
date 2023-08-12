@@ -17,5 +17,6 @@ public interface PlanOperationUseCase {
 	@ToString
 	class PlanCreateCommand {
 		private final Long participantId;
+		private final Boolean admin;
 	}
 }

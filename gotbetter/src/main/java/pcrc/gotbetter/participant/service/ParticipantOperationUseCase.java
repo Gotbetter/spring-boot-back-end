@@ -26,6 +26,7 @@ public interface ParticipantOperationUseCase {
 	class UserRoomAcceptedCommand {
 		private final Long userId;
 		private final Long roomId;
+		private final Boolean admin;
 	}
 
 	@EqualsAndHashCode(callSuper = false)
