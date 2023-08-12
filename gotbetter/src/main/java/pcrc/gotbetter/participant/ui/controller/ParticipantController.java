@@ -22,6 +22,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import pcrc.gotbetter.participant.service.ParticipantOperationUseCase;
 import pcrc.gotbetter.participant.service.ParticipantReadUseCase;
+import pcrc.gotbetter.participant.ui.requestBody.AdminParticipantJoinRequest;
 import pcrc.gotbetter.participant.ui.requestBody.ParticipantJoinApproveRequest;
 import pcrc.gotbetter.participant.ui.requestBody.ParticipantJoinRequest;
 import pcrc.gotbetter.participant.ui.view.ParticipantView;
@@ -55,6 +56,18 @@ public class ParticipantController {
 		RoomReadUseCase.FindRoomResult result = participantOperationUseCase.requestJoinRoom(request.getRoom_code());
 
 		return ResponseEntity.created(null).body(RoomView.builder().roomResult(result).build());
+	}
+
+	@PostMapping(value = "/admin")
+	public void adminJoinTheRoom(@Valid @RequestBody AdminParticipantJoinRequest request) {
+
+		log.info("\"REQUEST JOIN THE ROOM\"");
+
+		var command = ParticipantOperationUseCase.AdminJoinRequestCommand.builder()
+			.userId(request.getUser_id())
+			.roomCode(request.getRoom_code())
+			.build();
+		participantOperationUseCase.adminRequestJoinRoom(command);
 	}
 
 	@GetMapping(value = "/{room_id}")

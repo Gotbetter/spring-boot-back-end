@@ -13,6 +13,8 @@ public interface ParticipantOperationUseCase {
 
 	ParticipantReadUseCase.FindParticipantResult approveJoinRoom(UserRoomAcceptedCommand command) throws IOException;
 
+	void adminRequestJoinRoom(AdminJoinRequestCommand command);
+
 	void rejectJoinRoom(UserRoomAcceptedCommand command);
 
 	void deleteParticipant(Long participantId);
@@ -24,5 +26,14 @@ public interface ParticipantOperationUseCase {
 	class UserRoomAcceptedCommand {
 		private final Long userId;
 		private final Long roomId;
+	}
+
+	@EqualsAndHashCode(callSuper = false)
+	@Builder
+	@Getter
+	@ToString
+	class AdminJoinRequestCommand {
+		private final Long userId;
+		private final String roomCode;
 	}
 }

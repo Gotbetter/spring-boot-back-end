@@ -59,7 +59,7 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 	@Override
 	public RoomReadUseCase.FindRoomResult requestJoinRoom(String roomCode) { // 방 입장 (멤버x)
 		Room room = validateRoomWithRoomCode(roomCode); // 방 코드에 해당하는 방이 있는지 확인
-		Long currentUserId = validateAbleToJoinRoom(room); // 해당 방에 사용자가 입장할 수 있는지 확인
+		Long currentUserId = validateAbleToJoinRoom(room, getCurrentUserId()); // 해당 방에 사용자가 입장할 수 있는지 확인
 
 		// 종료된 방인지 확인
 		validateDate(room);
@@ -79,6 +79,25 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 			.entryFee(room.getEntryFee())
 			.account(room.getAccount())
 			.build();
+	}
+
+	@Override
+	public void adminRequestJoinRoom(AdminJoinRequestCommand command) {
+		Room room = validateRoomWithRoomCode(command.getRoomCode()); // 방 코드에 해당하는 방이 있는지 확인
+		Long currentUserId = validateAbleToJoinRoom(room, command.getUserId()); // 해당 방에 사용자가 입장할 수 있는지 확인
+
+		// 종료된 방인지 확인
+		validateDate(room);
+
+		// 승인 요청
+		JoinRequest joinRequest = JoinRequest.builder()
+			.joinRequestId(JoinRequestId.builder()
+				.userId(currentUserId)
+				.roomId(room.getRoomId())
+				.build())
+			.accepted(false)
+			.build();
+		joinRequestRepository.save(joinRequest);
 	}
 
 	@Override
@@ -243,11 +262,10 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 		});
 	}
 
-	private Long validateAbleToJoinRoom(Room room) {
-		Long currentUserId = getCurrentUserId();
+	private Long validateAbleToJoinRoom(Room room, Long userId) {
 		Optional<JoinRequest> participate = joinRequestRepository.findByJoinRequestId(
 			JoinRequestId.builder()
-				.userId(currentUserId)
+				.userId(userId)
 				.roomId(room.getRoomId()).build()
 		);
 
@@ -263,7 +281,7 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 		if (room.getCurrentUserNum() >= room.getMaxUserNum()) {
 			throw new GotBetterException(MessageType.CONFLICT_MAX);
 		}
-		return currentUserId;
+		return userId;
 	}
 
 	private void validateUserInRoom(Long roomId, Boolean needLeader) {
