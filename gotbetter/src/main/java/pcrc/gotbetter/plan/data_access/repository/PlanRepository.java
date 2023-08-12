@@ -13,4 +13,6 @@ public interface PlanRepository extends JpaRepository<Plan, Long>, PlanQueryRepo
 	Optional<Plan> findByPlanId(Long planId);
 
 	List<Plan> findByThreeDaysPassed(Boolean threeDaysPassed);
+
+	List<Plan> findByParticipantInfoParticipantId(Long participantId);
 }
