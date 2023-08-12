@@ -107,9 +107,13 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 		if (query.getAccepted()) { // (방장 포함 일반 멤버) 방에 속한 멤버들 조회
 			if (query.getAdmin()) {
 				validateIsAdmin();
+				roomRepository.findByRoomId(query.getRoomId()).orElseThrow(() -> {
+					throw new GotBetterException(MessageType.NOT_FOUND);
+				});
 			} else {
 				validateUserInRoom(query.getRoomId(), false); // 방에 속한 멤버인지 검증
 			}
+
 			List<ParticipantDto> participantDtoList = participantRepository.findUserInfoList(query.getRoomId());
 			int weekPercent = roomRepository.findWeek(query.getRoomId()) * 100;
 
@@ -123,6 +127,9 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 		} else { // (방장만) 승인 대기 중인 사용자 조회
 			if (query.getAdmin()) {
 				validateIsAdmin();
+				roomRepository.findByRoomId(query.getRoomId()).orElseThrow(() -> {
+					throw new GotBetterException(MessageType.NOT_FOUND);
+				});
 			} else {
 				validateUserInRoom(query.getRoomId(), true); // 방장인지 검증
 			}
@@ -247,6 +254,7 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 			throw new GotBetterException(MessageType.NOT_FOUND);
 		});
 
+		validateDate(room);
 		// total_entry_fee는 어떻게 하지?
 		room.decreaseCurrentUserNum();
 		roomRepository.save(room);
