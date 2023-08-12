@@ -55,8 +55,8 @@ public class BatchPlan {
 		log.info("\">>>>> Run Job <<<<<\"");
 		return new JobBuilder("job", jobRepository)
 			.start(stepThreeDaysPassed())
-			.next(stepSetRefund())
 			.next(stepWeekPassed())
+			.next(stepSetRefund())
 			.build();
 	}
 
@@ -165,6 +165,9 @@ public class BatchPlan {
 				float percent = Math.round(divide * 1000) / 10.0F;
 
 				// log.info("3. divide = " + divide + ", percent = " + percent);
+				plan.updateScore(percent);
+				plan.updateById(RoleType.SERVER.getCode());
+				planRepository.save(plan);
 				participant.updatePercentSum(percent);
 				participant.updateById(RoleType.SERVER.getCode());
 				participantRepository.save(participant);

@@ -76,4 +76,8 @@ public class Plan extends BaseTimeEntity {
 		this.updateCreatedById(userId);
 		this.updateUpdatedById(userId);
 	}
+
+	public void updateScore(Float score) {
+		this.score = score;
+	}
 }
