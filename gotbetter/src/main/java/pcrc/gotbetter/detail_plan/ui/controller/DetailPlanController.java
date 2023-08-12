@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -57,11 +58,18 @@ public class DetailPlanController {
 	}
 
 	@GetMapping(value = "")
-	public ResponseEntity<List<DetailPlanView>> getDetailPlan(@PathVariable(value = "plan_id") Long plan_id) {
+	public ResponseEntity<List<DetailPlanView>> getDetailPlan(
+		@PathVariable(value = "plan_id") Long plan_id,
+		@RequestParam(name = "admin", required = false) Boolean admin
+	) {
 
 		log.info("\"GET DETAIL PLAN LIST\"");
 
-		List<DetailPlanReadUseCase.FindDetailPlanResult> detailPlans = detailPlanReadUseCase.getDetailPlans(plan_id);
+		var query = DetailPlanReadUseCase.DetailPlanFindQuery.builder()
+			.planId(plan_id)
+			.admin(admin != null && admin)
+			.build();
+		List<DetailPlanReadUseCase.FindDetailPlanResult> detailPlans = detailPlanReadUseCase.getDetailPlans(query);
 		List<DetailPlanView> detailPlanViews = new ArrayList<>();
 
 		for (DetailPlanReadUseCase.FindDetailPlanResult d : detailPlans) {

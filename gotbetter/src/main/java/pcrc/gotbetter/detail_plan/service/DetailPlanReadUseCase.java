@@ -3,13 +3,23 @@ package pcrc.gotbetter.detail_plan.service;
 import java.util.List;
 
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 import pcrc.gotbetter.detail_plan.data_access.entity.DetailPlan;
 
 public interface DetailPlanReadUseCase {
 
-	List<FindDetailPlanResult> getDetailPlans(Long planId);
+	List<FindDetailPlanResult> getDetailPlans(DetailPlanFindQuery query);
+
+	@EqualsAndHashCode(callSuper = false)
+	@Getter
+	@ToString
+	@Builder
+	class DetailPlanFindQuery {
+		private final Long planId;
+		private final Boolean admin;
+	}
 
 	@Getter
 	@ToString
@@ -22,6 +32,9 @@ public interface DetailPlanReadUseCase {
 		private final Long planId;
 		private final Integer detailPlanDislikeCount;
 		private final Boolean detailPlanDislikeChecked;
+		// for admin
+		private final String createdDate;
+		private final String updatedDate;
 
 		public static FindDetailPlanResult findByDetailPlan(
 			DetailPlan detailPlan,
@@ -36,6 +49,8 @@ public interface DetailPlanReadUseCase {
 				.planId(detailPlan.getPlanId())
 				.detailPlanDislikeCount(dislikeCount)
 				.detailPlanDislikeChecked(checked)
+				.createdDate(detailPlan.getCreatedDate().toLocalDate().toString())
+				.updatedDate(detailPlan.getUpdatedDate().toLocalDate().toString())
 				.build();
 		}
 	}
