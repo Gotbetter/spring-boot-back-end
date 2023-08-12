@@ -3,6 +3,7 @@ package pcrc.gotbetter.plan_evaluation.service;
 import static pcrc.gotbetter.setting.security.SecurityUtil.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -16,12 +17,16 @@ import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
 import pcrc.gotbetter.plan.data_access.dto.PlanDto;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
 import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
+import pcrc.gotbetter.plan_evaluation.data_access.dto.PlanEvaluationDto;
 import pcrc.gotbetter.plan_evaluation.data_access.entity.PlanEvaluation;
 import pcrc.gotbetter.plan_evaluation.data_access.entity.PlanEvaluationId;
 import pcrc.gotbetter.plan_evaluation.data_access.repository.PlanEvaluationRepository;
 import pcrc.gotbetter.room.data_access.entity.Room;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
+import pcrc.gotbetter.user.data_access.entity.User;
+import pcrc.gotbetter.user.data_access.repository.UserRepository;
+import pcrc.gotbetter.user.login_method.login_type.RoleType;
 
 @Service
 public class PlanEvaluationService implements PlanEvaluationOperationUseCase, PlanEvaluationReadUseCase {
@@ -29,14 +34,17 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase, Pl
 	private final PlanRepository planRepository;
 	private final DetailPlanRepository detailPlanRepository;
 	private final ParticipantRepository participantRepository;
+	private final UserRepository userRepository;
 
 	@Autowired
 	public PlanEvaluationService(PlanEvaluationRepository planEvaluationRepository, PlanRepository planRepository,
-		DetailPlanRepository detailPlanRepository, ParticipantRepository participantRepository) {
+		DetailPlanRepository detailPlanRepository, ParticipantRepository participantRepository,
+		UserRepository userRepository) {
 		this.planEvaluationRepository = planEvaluationRepository;
 		this.planRepository = planRepository;
 		this.detailPlanRepository = detailPlanRepository;
 		this.participantRepository = participantRepository;
+		this.userRepository = userRepository;
 	}
 
 	@Override
@@ -95,6 +103,20 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase, Pl
 			}
 		}
 		return FindPlanEvaluationResult.findByPlanEvaluation(plan, planEvaluations.size(), checked);
+	}
+
+	@Override
+	public List<FindPlanDislikeListResult> getPlanDislikeList(PlanEvaluationFindQuery query) {
+		validateIsAdmin();
+
+		Plan plan = validatePlan(query.getPlanId());
+		List<PlanEvaluationDto> planEvaluationDtos = planEvaluationRepository.findDislikeUsers(plan.getPlanId());
+		List<FindPlanDislikeListResult> results = new ArrayList<>();
+
+		for (PlanEvaluationDto planEvaluationDto : planEvaluationDtos) {
+			results.add(FindPlanDislikeListResult.findByPlanDislikeList(planEvaluationDto));
+		}
+		return results;
 	}
 
 	@Override
@@ -184,5 +206,16 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase, Pl
 		if (plan.getThreeDaysPassed()) {
 			throw new GotBetterException(MessageType.FORBIDDEN_DATE);
 		}
+	}
+
+	private void validateIsAdmin() {
+		User requestUser = userRepository.findByUserId(getCurrentUserId()).orElseThrow(() -> {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		});
+
+		if (requestUser.getRoleType() == RoleType.ADMIN || requestUser.getRoleType() == RoleType.MAIN_ADMIN) {
+			return;
+		}
+		throw new GotBetterException(MessageType.FORBIDDEN_ADMIN);
 	}
 }
