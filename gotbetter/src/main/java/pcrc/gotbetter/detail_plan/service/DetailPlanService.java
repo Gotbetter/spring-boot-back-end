@@ -162,6 +162,7 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 
 		List<DetailPlan> detailPlanList = detailPlanRepository.findByPlanId(detailPlan.getPlanId());
 
+		/** TODO  plan eval 데이터 지워야하나?*/
 		if (detailPlanList.size() == 1) {
 			planEvaluationRepository.deleteByPlanEvaluationIdPlanId(detailPlan.getPlanId());
 		}
