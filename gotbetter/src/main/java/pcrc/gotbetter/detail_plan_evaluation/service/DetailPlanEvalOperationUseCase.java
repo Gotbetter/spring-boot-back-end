@@ -16,5 +16,7 @@ public interface DetailPlanEvalOperationUseCase {
 	@ToString
 	class DetailPlanEvaluationCommand {
 		private final Long detailPlanId;
+		private final Long userId;
+		private final Boolean admin;
 	}
 }

@@ -70,9 +70,13 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase, De
 	public DetailPlanEvalReadUseCase.FindDetailPlanEvalResult createDetailPlanEvaluation(
 		DetailPlanEvaluationCommand command
 	) {
+		if (command.getAdmin()) {
+			validateIsAdmin();
+		}
+
 		DetailPlan detailPlan = validateDetailPlan(command.getDetailPlanId());
 		PlanDto planDto = validatePlanRoom(detailPlan.getPlanId());
-		Participant evaluator = validateCanEvaluate(planDto, detailPlan);
+		Participant evaluator = validateCanEvaluate(planDto, detailPlan, command);
 		Room room = planDto.getRoom();
 		Integer detailPlanEvalSize = detailPlanEvalRepository.countByDetailPlanEvalIdDetailPlanId(
 			command.getDetailPlanId());
@@ -110,7 +114,7 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase, De
 	) {
 		DetailPlan detailPlan = validateDetailPlan(command.getDetailPlanId());
 		PlanDto planDto = validatePlanRoom(detailPlan.getPlanId());
-		Participant participant = validateUserInRoom(detailPlan.getParticipantInfo().getRoomId());
+		Participant participant = validateUserInRoom(detailPlan.getParticipantInfo().getRoomId(), getCurrentUserId());
 
 		validateWeekPassed(planDto);
 		if (detailPlanEvalRepository.existsEval(detailPlan.getDetailPlanId(), participant.getParticipantId())) {
@@ -205,15 +209,23 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase, De
 		return planDto;
 	}
 
-	private Participant validateCanEvaluate(PlanDto planDto, DetailPlan detailPlan) {
+	private Participant validateCanEvaluate(
+		PlanDto planDto,
+		DetailPlan detailPlan,
+		DetailPlanEvaluationCommand command
+	) {
 		Room roomInfo = planDto.getRoom();
-		Participant evaluator = validateUserInRoom(roomInfo.getRoomId());
+		Participant evaluator = validateUserInRoom(roomInfo.getRoomId(),
+			command.getAdmin() ? command.getUserId() : getCurrentUserId());
 
 		// 자기 자신
-		if (Objects.equals(detailPlan.getParticipantInfo().getUserId(), getCurrentUserId())) {
+		if (Objects.equals(detailPlan.getParticipantInfo().getUserId(),
+			command.getAdmin() ? command.getUserId() : getCurrentUserId())) {
 			throw new GotBetterException(MessageType.FORBIDDEN);
 		}
-		validateWeekPassed(planDto);
+		if (!command.getAdmin()) {
+			validateWeekPassed(planDto);
+		}
 		if (detailPlan.getRejected()) {
 			throw new GotBetterException(MessageType.FORBIDDEN);
 		}
@@ -226,8 +238,8 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase, De
 		return evaluator;
 	}
 
-	private Participant validateUserInRoom(Long roomId) {
-		Participant participant = participantRepository.findByUserIdAndRoomId(getCurrentUserId(), roomId);
+	private Participant validateUserInRoom(Long roomId, Long userId) {
+		Participant participant = participantRepository.findByUserIdAndRoomId(userId, roomId);
 
 		if (participant == null) {
 			throw new GotBetterException(MessageType.NOT_FOUND);
