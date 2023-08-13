@@ -80,6 +80,23 @@ public class DetailPlanController {
 		return ResponseEntity.ok(detailPlanViews);
 	}
 
+	@GetMapping(value = "/{detail_plan_id}")
+	public ResponseEntity<DetailPlanView> getDetailPlan(
+		@PathVariable(value = "plan_id") Long plan_id,
+		@PathVariable(value = "detail_plan_id") Long detail_plan_id
+	) {
+
+		log.info("\"GET A DETAIL PLAN\"");
+
+		var query = DetailPlanReadUseCase.DetailPlanOneFindQuery.builder()
+			.planId(plan_id)
+			.detailPlanId(detail_plan_id)
+			.build();
+		DetailPlanReadUseCase.FindDetailPlanResult detailPlan = detailPlanReadUseCase.getDetailPlan(query);
+
+		return ResponseEntity.ok(DetailPlanView.builder().detailPlanResult(detailPlan).build());
+	}
+
 	@PatchMapping(value = "/{detail_plan_id}")
 	public ResponseEntity<DetailPlanView> updateDetailPlan(
 		@PathVariable(value = "plan_id") Long plan_id,
