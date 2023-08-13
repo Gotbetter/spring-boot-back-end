@@ -223,6 +223,29 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase, Pl
 		throw new GotBetterException(MessageType.NOT_FOUND);
 	}
 
+	@Override
+	public void deletePlanEvaluationAdmin(PlanEvaluationDeleteAdminCommand command) {
+		validateIsAdmin();
+
+		// plan 정보 조회
+		Plan plan = validatePlan(command.getPlanId());
+		Participant participant = participantRepository.findByParticipantId(command.getParticipantId());
+
+		if (participant == null) {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		}
+		if (planEvaluationRepository.existsEval(plan.getPlanId(), participant.getParticipantId())) {
+			planEvaluationRepository.deleteById(PlanEvaluationId.builder()
+				.planId(plan.getPlanId())
+				.participantId(participant.getParticipantId())
+				.roomId(participant.getRoomId())
+				.userId(participant.getUserId())
+				.build());
+			return;
+		}
+		throw new GotBetterException(MessageType.NOT_FOUND);
+	}
+
 	/**
 	 * validate
 	 */

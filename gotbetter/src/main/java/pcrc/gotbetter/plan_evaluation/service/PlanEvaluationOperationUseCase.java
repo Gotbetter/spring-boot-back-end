@@ -12,6 +12,8 @@ public interface PlanEvaluationOperationUseCase {
 
 	void deletePlanEvaluation(PlanEvaluationCommand command);
 
+	void deletePlanEvaluationAdmin(PlanEvaluationDeleteAdminCommand command);
+
 	@EqualsAndHashCode(callSuper = false)
 	@Builder
 	@Getter
@@ -27,5 +29,14 @@ public interface PlanEvaluationOperationUseCase {
 	class PlanEvaluationAdminCommand {
 		private final Long planId;
 		private final Long userId;
+	}
+
+	@EqualsAndHashCode(callSuper = false)
+	@Builder
+	@Getter
+	@ToString
+	class PlanEvaluationDeleteAdminCommand {
+		private final Long planId;
+		private final Long participantId;
 	}
 }

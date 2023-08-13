@@ -16,6 +16,8 @@ public class PlanDislikeListView {
 	private final String username;
 	private final String profile;
 	private final String created_date;
+	// for admin
+	private final Long participant_id;
 
 	@Builder
 	public PlanDislikeListView(PlanEvaluationReadUseCase.FindPlanDislikeListResult planDislikeListResult) {
@@ -24,5 +26,6 @@ public class PlanDislikeListView {
 		this.username = planDislikeListResult.getUsername();
 		this.profile = planDislikeListResult.getProfile();
 		this.created_date = planDislikeListResult.getCreatedDate();
+		this.participant_id = planDislikeListResult.getParticipantId();
 	}
 }

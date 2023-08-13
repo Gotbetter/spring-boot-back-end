@@ -137,4 +137,21 @@ public class PlanEvaluationController {
 			.build();
 		planEvaluationOperationUseCase.deletePlanEvaluation(command);
 	}
+
+	@DeleteMapping(value = "/{participant_id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void deletePlanDislikeAdmin(
+		@PathVariable(value = "plan_id") Long plan_id,
+		@PathVariable(value = "participant_id") Long participant_id
+	) {
+
+		log.info("\"DELETE A PLAN DISLIKE (admin)\"");
+
+		var command =
+			PlanEvaluationOperationUseCase.PlanEvaluationDeleteAdminCommand.builder()
+				.planId(plan_id)
+				.participantId(participant_id)
+				.build();
+		planEvaluationOperationUseCase.deletePlanEvaluationAdmin(command);
+	}
 }
