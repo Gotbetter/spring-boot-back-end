@@ -59,6 +59,8 @@ public interface PlanEvaluationReadUseCase {
 		private final String username;
 		private final String profile;
 		private final String createdDate;
+		// for admin
+		private final Long participantId;
 
 		public static FindPlanDislikeListResult findByPlanDislikeList(
 			PlanEvaluationDto planEvaluationDto,
@@ -70,6 +72,7 @@ public interface PlanEvaluationReadUseCase {
 				.username(planEvaluationDto.getUser().getUsername())
 				.profile(bytes)
 				.createdDate(planEvaluationDto.getPlanEvaluation().getCreatedDate().toLocalDate().toString())
+				.participantId(planEvaluationDto.getPlanEvaluation().getPlanEvaluationId().getParticipantId())
 				.build();
 		}
 
