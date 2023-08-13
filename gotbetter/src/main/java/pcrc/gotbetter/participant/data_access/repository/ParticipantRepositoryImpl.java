@@ -173,6 +173,23 @@ public class ParticipantRepositoryImpl implements ParticipantQueryRepository {
 			.fetch();
 	}
 
+	@Override
+	public List<ParticipantDto> findMembersByDetailId(Long detailPlanId) {
+		return queryFactory
+			.select(Projections.constructor(ParticipantDto.class,
+				participant, user))
+			.from(participant)
+			.leftJoin(user).on(participant.userId.eq(user.userId)).fetchJoin()
+			.where(participant.roomId.eq(
+				queryFactory
+					.select(detailPlan.participantInfo.roomId)
+					.from(detailPlan)
+					.where(detailPlan.detailPlanId.eq(detailPlanId))
+					.fetchFirst()
+			))
+			.fetch();
+	}
+
 	/**
 	 * participant eq
 	 */

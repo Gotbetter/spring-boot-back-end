@@ -32,4 +32,6 @@ public interface ParticipantQueryRepository {
 
 	List<ParticipantDto> findMembersByPlanId(Long planId);
 
+	List<ParticipantDto> findMembersByDetailId(Long detailPlanId);
+
 }

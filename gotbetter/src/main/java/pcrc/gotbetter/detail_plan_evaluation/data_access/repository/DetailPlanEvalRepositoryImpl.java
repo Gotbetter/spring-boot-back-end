@@ -1,9 +1,15 @@
 package pcrc.gotbetter.detail_plan_evaluation.data_access.repository;
 
 import static pcrc.gotbetter.detail_plan_evaluation.data_access.entity.QDetailPlanEval.*;
+import static pcrc.gotbetter.user.data_access.entity.QUser.*;
 
+import java.util.List;
+
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+
+import pcrc.gotbetter.detail_plan_evaluation.data_access.dto.DetailPlanEvalDto;
 
 public class DetailPlanEvalRepositoryImpl implements DetailPlanEvalQueryRepository {
 	private final JPAQueryFactory queryFactory;
@@ -21,6 +27,17 @@ public class DetailPlanEvalRepositoryImpl implements DetailPlanEvalQueryReposito
 				detailPlanEvalEqParticipantId(participantId))
 			.fetchFirst();
 		return exists != null;
+	}
+
+	@Override
+	public List<DetailPlanEvalDto> findDislikeUsers(Long detailPlanId) {
+		return queryFactory
+			.select(Projections.constructor(DetailPlanEvalDto.class,
+				detailPlanEval, user))
+			.from(detailPlanEval)
+			.leftJoin(user).on(detailPlanEval.detailPlanEvalId.userId.eq(user.userId)).fetchJoin()
+			.where(detailPlanEvalEqDetailPlanId(detailPlanId))
+			.fetch();
 	}
 
 	/**

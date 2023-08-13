@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -67,13 +68,18 @@ public class DetailPlanRecordController {
 
 	@GetMapping(value = "")
 	public ResponseEntity<List<DetailPlanRecordView>> getRecordList(
-		@PathVariable(value = "detail_plan_id") Long detail_plan_id
+		@PathVariable(value = "detail_plan_id") Long detail_plan_id,
+		@RequestParam(name = "admin", required = false) Boolean admin
 	) throws IOException {
 
 		log.info("\"GET A DETAIL PLAN RECORD LIST\"");
 
+		var query = DetailPlanRecordReadUseCase.RecordsFindQuery.builder()
+			.detailPlanId(detail_plan_id)
+			.admin(admin != null && admin)
+			.build();
 		List<DetailPlanRecordReadUseCase.FindDetailPlanRecordResult> records = detailPlanRecordReadUseCase.getRecordList(
-			detail_plan_id);
+			query);
 		List<DetailPlanRecordView> detailPlanRecordViews = new ArrayList<>();
 
 		for (DetailPlanRecordReadUseCase.FindDetailPlanRecordResult record : records) {

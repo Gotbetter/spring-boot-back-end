@@ -31,6 +31,9 @@ import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
 import pcrc.gotbetter.room.data_access.entity.Room;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
+import pcrc.gotbetter.user.data_access.entity.User;
+import pcrc.gotbetter.user.data_access.repository.UserRepository;
+import pcrc.gotbetter.user.login_method.login_type.RoleType;
 
 @Service
 public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase, DetailPlanRecordReadUseCase {
@@ -46,15 +49,17 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 	private final DetailPlanRepository detailPlanRepository;
 	private final PlanRepository planRepository;
 	private final ParticipantRepository participantRepository;
+	private final UserRepository userRepository;
 
 	@Autowired
 	public DetailPlanRecordService(DetailPlanRecordRepository detailPlanRecordRepository,
 		DetailPlanRepository detailPlanRepository, PlanRepository planRepository,
-		ParticipantRepository participantRepository) {
+		ParticipantRepository participantRepository, UserRepository userRepository) {
 		this.detailPlanRecordRepository = detailPlanRecordRepository;
 		this.detailPlanRepository = detailPlanRepository;
 		this.planRepository = planRepository;
 		this.participantRepository = participantRepository;
+		this.userRepository = userRepository;
 	}
 
 	@Override
@@ -78,17 +83,23 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 		detailPlanRecordRepository.save(detailPlanRecord);
 		// 이미지
 		String bytes = storePhoto(detailPlanRecord, null, null, command.getRecordPhoto());
-		return FindDetailPlanRecordResult.findByDetailPlanRecord(detailPlanRecord, bytes);
+		return FindDetailPlanRecordResult.findByDetailPlanRecord(detailPlanRecord, bytes, false);
 	}
 
 	@Override
-	public List<FindDetailPlanRecordResult> getRecordList(Long detailPlanId) throws IOException {
-		// 방에 속한 사용자인지 확인
-		if (!participantRepository.existsByDetailPlanId(getCurrentUserId(), detailPlanId)) {
-			throw new GotBetterException(MessageType.NOT_FOUND);
+	public List<FindDetailPlanRecordResult> getRecordList(RecordsFindQuery query) throws IOException {
+		if (query.getAdmin()) {
+			validateIsAdmin();
+		} else {
+			// 방에 속한 사용자인지 확인
+			if (!participantRepository.existsByDetailPlanId(getCurrentUserId(), query.getDetailPlanId())) {
+				throw new GotBetterException(MessageType.NOT_FOUND);
+			}
 		}
+
 		// 인증 리스트 조회
-		List<DetailPlanRecord> records = detailPlanRecordRepository.findByDetailPlanIdDetailPlanId(detailPlanId);
+		List<DetailPlanRecord> records = detailPlanRecordRepository.findByDetailPlanIdDetailPlanId(
+			query.getDetailPlanId());
 		List<FindDetailPlanRecordResult> results = new ArrayList<>();
 		String os = System.getProperty("os.name").toLowerCase();
 
@@ -103,7 +114,7 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 				String dir = os.contains("win") ? RECORD_LOCAL_DEFAULT_IMG : RECORD_SERVER_DEFAULT_IMG;
 				bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
 			}
-			results.add(FindDetailPlanRecordResult.findByDetailPlanRecord(record, bytes));
+			results.add(FindDetailPlanRecordResult.findByDetailPlanRecord(record, bytes, query.getAdmin()));
 		}
 		return results;
 	}
@@ -113,7 +124,7 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 		DetailPlanRecord detailPlanRecord = validateRecord(command.getRecordId(), command.getDetailPlanId());
 		String bytes = storePhoto(detailPlanRecord, command.getRecordTitle(), command.getRecordBody(),
 			command.getRecordPhoto());
-		return FindDetailPlanRecordResult.findByDetailPlanRecord(detailPlanRecord, bytes);
+		return FindDetailPlanRecordResult.findByDetailPlanRecord(detailPlanRecord, bytes, false);
 	}
 
 	@Override
@@ -248,5 +259,16 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 			}
 
 		}
+	}
+
+	private void validateIsAdmin() {
+		User requestUser = userRepository.findByUserId(getCurrentUserId()).orElseThrow(() -> {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		});
+
+		if (requestUser.getRoleType() == RoleType.ADMIN || requestUser.getRoleType() == RoleType.MAIN_ADMIN) {
+			return;
+		}
+		throw new GotBetterException(MessageType.FORBIDDEN_ADMIN);
 	}
 }
