@@ -11,13 +11,16 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import pcrc.gotbetter.detail_plan_evaluation.service.DetailPlanEvalOperationUseCase;
 import pcrc.gotbetter.detail_plan_evaluation.service.DetailPlanEvalReadUseCase;
+import pcrc.gotbetter.detail_plan_evaluation.ui.request_body.DetailDislikeRequest;
 import pcrc.gotbetter.detail_plan_evaluation.ui.view.DetailDislikeView;
 import pcrc.gotbetter.detail_plan_evaluation.ui.view.DetailPlanEvaluationView;
 
@@ -44,6 +47,26 @@ public class DetailPlanEvalController {
 
 		var command = DetailPlanEvalOperationUseCase.DetailPlanEvaluationCommand.builder()
 			.detailPlanId(detail_plan_id)
+			.admin(false)
+			.build();
+		DetailPlanEvalReadUseCase.FindDetailPlanEvalResult result = detailPlanEvalOperationUseCase.createDetailPlanEvaluation(
+			command);
+		return ResponseEntity.created(null)
+			.body(DetailPlanEvaluationView.builder().detailPlanEvalResult(result).build());
+	}
+
+	@PostMapping(value = "/admin")
+	public ResponseEntity<DetailPlanEvaluationView> createDetailPlanEvaluationAdmin(
+		@PathVariable(value = "detail_plan_id") Long detail_plan_id,
+		@Valid @RequestBody DetailDislikeRequest request
+	) {
+
+		log.info("\"CREATE A DETAIL PLAN DISLIKE (admin)\"");
+
+		var command = DetailPlanEvalOperationUseCase.DetailPlanEvaluationCommand.builder()
+			.detailPlanId(detail_plan_id)
+			.userId(request.getUser_id())
+			.admin(true)
 			.build();
 		DetailPlanEvalReadUseCase.FindDetailPlanEvalResult result = detailPlanEvalOperationUseCase.createDetailPlanEvaluation(
 			command);
