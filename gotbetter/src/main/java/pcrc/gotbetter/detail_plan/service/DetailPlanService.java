@@ -53,12 +53,17 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 		PlanDto planDto = validatePlanRoom(command.getPlanId());
 		Plan plan = planDto.getPlan();
 		Room room = planDto.getRoom();
-		Long currentUserId = getCurrentUserId();
 
-		if (!Objects.equals(currentUserId, plan.getParticipantInfo().getUserId())) {
-			throw new GotBetterException(MessageType.FORBIDDEN);
+		if (command.getAdmin()) {
+			validateIsAdmin();
+		} else {
+			Long currentUserId = getCurrentUserId();
+
+			if (!Objects.equals(currentUserId, plan.getParticipantInfo().getUserId())) {
+				throw new GotBetterException(MessageType.FORBIDDEN);
+			}
+			validateThreeDaysPassed(plan.getPlanId(), room.getCurrentWeek());
 		}
-		validateThreeDaysPassed(plan.getPlanId(), room.getCurrentWeek());
 		if (plan.getRejected()) {
 			plan.updateRejected(false);
 			planRepository.save(plan);
@@ -118,11 +123,16 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 
 	@Override
 	public FindDetailPlanResult updateDetailPlan(DetailPlanUpdateCommand command) {
-		DetailPlanDto detailPlanDto = validateDetailPlanRoom(command.getDetailPlanId(), command.getPlanId());
+		DetailPlanDto detailPlanDto = validateDetailPlanRoom(command.getDetailPlanId(), command.getPlanId(),
+			command.getAdmin());
 		DetailPlan detailPlan = detailPlanDto.getDetailPlan();
 		Room room = detailPlanDto.getRoom();
 
-		validateThreeDaysPassed(detailPlan.getPlanId(), room.getCurrentWeek());
+		if (command.getAdmin()) {
+			validateIsAdmin();
+		} else {
+			validateThreeDaysPassed(detailPlan.getPlanId(), room.getCurrentWeek());
+		}
 		detailPlan.updateContent(command.getContent());
 		detailPlanRepository.save(detailPlan);
 		/** Todo detail plan eval 삭제하고, 완료 사항도 삭제? => ?? */
@@ -135,11 +145,16 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 	@Override
 	@Transactional
 	public void deleteDetailPlan(DetailPlanDeleteCommand command) {
-		DetailPlanDto detailPlanDto = validateDetailPlanRoom(command.getDetailPlanId(), command.getPlanId());
+		DetailPlanDto detailPlanDto = validateDetailPlanRoom(command.getDetailPlanId(), command.getPlanId(),
+			command.getAdmin());
 		DetailPlan detailPlan = detailPlanDto.getDetailPlan();
 		Room room = detailPlanDto.getRoom();
 
-		validateThreeDaysPassed(detailPlan.getPlanId(), room.getCurrentWeek());
+		if (command.getAdmin()) {
+			validateIsAdmin();
+		} else {
+			validateThreeDaysPassed(detailPlan.getPlanId(), room.getCurrentWeek());
+		}
 		detailPlanRepository.deleteByDetailPlanId(detailPlan.getDetailPlanId());
 	}
 
@@ -153,7 +168,7 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 			});
 	}
 
-	private DetailPlanDto validateDetailPlanRoom(Long detailPlanId, Long planId) {
+	private DetailPlanDto validateDetailPlanRoom(Long detailPlanId, Long planId, Boolean admin) {
 		DetailPlanDto detailPlanDto = detailPlanRepository.findByDetailJoinRoom(detailPlanId);
 
 		if (detailPlanDto == null) {
@@ -161,11 +176,16 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 		}
 
 		DetailPlan detailPlan = detailPlanDto.getDetailPlan();
-		Long user_id = getCurrentUserId();
 
-		if (!(Objects.equals(detailPlan.getPlanId(), planId)
-			&& Objects.equals(detailPlan.getParticipantInfo().getUserId(), user_id))) {
-			throw new GotBetterException(MessageType.FORBIDDEN);
+		if (admin) {
+			validateIsAdmin();
+		} else {
+			Long user_id = getCurrentUserId();
+
+			if (!(Objects.equals(detailPlan.getPlanId(), planId)
+				&& Objects.equals(detailPlan.getParticipantInfo().getUserId(), user_id))) {
+				throw new GotBetterException(MessageType.FORBIDDEN);
+			}
 		}
 		return detailPlanDto;
 	}

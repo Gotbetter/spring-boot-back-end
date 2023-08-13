@@ -43,7 +43,8 @@ public class DetailPlanController {
 	@PostMapping(value = "")
 	public ResponseEntity<DetailPlanView> createDetailPlan(
 		@PathVariable(value = "plan_id") Long plan_id,
-		@Valid @RequestBody DetailPlanRequest request
+		@Valid @RequestBody DetailPlanRequest request,
+		@RequestParam(name = "admin", required = false) Boolean admin
 	) {
 
 		log.info("\"CREATE A DETAIL PLAN\"");
@@ -51,6 +52,7 @@ public class DetailPlanController {
 		var command = DetailPlanOperationUseCase.DetailPlanCreateCommand.builder()
 			.planId(plan_id)
 			.content(request.getContent())
+			.admin(admin != null && admin)
 			.build();
 		DetailPlanReadUseCase.FindDetailPlanResult result = detailPlanOperationUseCase.createDetailPlan(command);
 
@@ -82,6 +84,7 @@ public class DetailPlanController {
 	public ResponseEntity<DetailPlanView> updateDetailPlan(
 		@PathVariable(value = "plan_id") Long plan_id,
 		@PathVariable(value = "detail_plan_id") Long detail_plan_id,
+		@RequestParam(name = "admin", required = false) Boolean admin,
 		@Valid @RequestBody DetailPlanRequest request
 	) {
 
@@ -91,6 +94,7 @@ public class DetailPlanController {
 			.detailPlanId(detail_plan_id)
 			.planId(plan_id)
 			.content(request.getContent())
+			.admin(admin != null && admin)
 			.build();
 		DetailPlanReadUseCase.FindDetailPlanResult result = detailPlanOperationUseCase.updateDetailPlan(command);
 		return ResponseEntity.ok(DetailPlanView.builder().detailPlanResult(result).build());
@@ -100,7 +104,8 @@ public class DetailPlanController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteDetailPlan(
 		@PathVariable(value = "plan_id") Long plan_id,
-		@PathVariable(value = "detail_plan_id") Long detail_plan_id
+		@PathVariable(value = "detail_plan_id") Long detail_plan_id,
+		@RequestParam(name = "admin", required = false) Boolean admin
 	) {
 
 		log.info("\"DELETE A DETAIL PLAN\"");
@@ -108,6 +113,7 @@ public class DetailPlanController {
 		var command = DetailPlanOperationUseCase.DetailPlanDeleteCommand.builder()
 			.detailPlanId(detail_plan_id)
 			.planId(plan_id)
+			.admin(admin != null && admin)
 			.build();
 		detailPlanOperationUseCase.deleteDetailPlan(command);
 	}
