@@ -16,6 +16,8 @@ public class DetailPlanRecordView {
 	private final String record_body;
 	private final String record_photo;
 	private final String last_update_date;
+	// for admin
+	private final String create_date;
 
 	@Builder
 	public DetailPlanRecordView(DetailPlanRecordReadUseCase.FindDetailPlanRecordResult detailPlanRecordResult) {
@@ -24,5 +26,6 @@ public class DetailPlanRecordView {
 		this.record_body = detailPlanRecordResult.getRecordBody();
 		this.record_photo = detailPlanRecordResult.getRecordPhoto();
 		this.last_update_date = detailPlanRecordResult.getLastUpdateDate();
+		this.create_date = detailPlanRecordResult.getCreatedDate();
 	}
 }

@@ -27,6 +27,7 @@ public interface DetailPlanRecordOperationUseCase {
 		private final String recordTitle;
 		private final String recordBody;
 		private final MultipartFile recordPhoto;
+		private final Boolean admin;
 	}
 
 	@EqualsAndHashCode(callSuper = false)
@@ -39,6 +40,7 @@ public interface DetailPlanRecordOperationUseCase {
 		private final String recordTitle;
 		private final String recordBody;
 		private final MultipartFile recordPhoto;
+		private final Boolean admin;
 	}
 
 	@EqualsAndHashCode(callSuper = false)

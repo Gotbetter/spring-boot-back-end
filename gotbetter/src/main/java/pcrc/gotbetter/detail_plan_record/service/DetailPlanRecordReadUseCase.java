@@ -34,16 +34,6 @@ public interface DetailPlanRecordReadUseCase {
 		// for admin
 		private final String createdDate;
 
-		public static FindDetailPlanRecordResult findByDetailPlanRecord(DetailPlanRecord record) {
-			return FindDetailPlanRecordResult.builder()
-				.recordId(record.getRecordId())
-				.recordTitle(record.getRecordTitle())
-				.recordBody(record.getRecordBody())
-				.recordPhoto(record.getRecordPhoto())
-				.lastUpdateDate(record.getUpdatedDate().toString().split("\\.")[0].replace("T", " "))
-				.build();
-		}
-
 		public static FindDetailPlanRecordResult findByDetailPlanRecord(
 			DetailPlanRecord record,
 			String bytes,
@@ -55,7 +45,7 @@ public interface DetailPlanRecordReadUseCase {
 				.recordBody(record.getRecordBody())
 				.recordPhoto(bytes)
 				.lastUpdateDate(record.getUpdatedDate().toString().split("\\.")[0].replace("T", " "))
-				.createdDate(admin ? record.getCreatedDate().toLocalDate().toString() : null)
+				.createdDate(admin ? record.getCreatedDate().toString().split("\\.")[0].replace("T", " ") : null)
 				.build();
 		}
 	}

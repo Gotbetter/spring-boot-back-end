@@ -64,8 +64,15 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 
 	@Override
 	public FindDetailPlanRecordResult createRecord(DetailPlanRecordCreateCommand command) {
-		DetailPlan detailPlan = validateDetailPlan(command.getDetailPlanId());
+		if (command.getAdmin()) {
+			validateIsAdmin();
+		}
+		DetailPlan detailPlan = validateDetailPlan(command.getDetailPlanId(), command.getAdmin());
 
+		if (detailPlan.getRejected()) {
+			detailPlan.updateRejected(false);
+			detailPlanRepository.save(detailPlan);
+		}
 		// 계획 인증 생성
 		DetailPlanRecord detailPlanRecord = DetailPlanRecord.builder()
 			.detailPlanId(DetailPlanId.builder()
@@ -82,8 +89,8 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 
 		detailPlanRecordRepository.save(detailPlanRecord);
 		// 이미지
-		String bytes = storePhoto(detailPlanRecord, null, null, command.getRecordPhoto());
-		return FindDetailPlanRecordResult.findByDetailPlanRecord(detailPlanRecord, bytes, false);
+		String bytes = storePhoto(detailPlanRecord, null, null, command.getAdmin() ? null : command.getRecordPhoto());
+		return FindDetailPlanRecordResult.findByDetailPlanRecord(detailPlanRecord, bytes, command.getAdmin());
 	}
 
 	@Override
@@ -121,15 +128,19 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 
 	@Override
 	public FindDetailPlanRecordResult updateRecord(DetailPlanRecordUpdateCommand command) {
-		DetailPlanRecord detailPlanRecord = validateRecord(command.getRecordId(), command.getDetailPlanId());
+		if (command.getAdmin()) {
+			validateIsAdmin();
+		}
+		DetailPlanRecord detailPlanRecord = validateRecord(command.getRecordId(), command.getDetailPlanId(),
+			command.getAdmin());
 		String bytes = storePhoto(detailPlanRecord, command.getRecordTitle(), command.getRecordBody(),
-			command.getRecordPhoto());
-		return FindDetailPlanRecordResult.findByDetailPlanRecord(detailPlanRecord, bytes, false);
+			command.getAdmin() ? null : command.getRecordPhoto());
+		return FindDetailPlanRecordResult.findByDetailPlanRecord(detailPlanRecord, bytes, command.getAdmin());
 	}
 
 	@Override
 	public void deleteRecord(DetailPlanRecordDeleteCommand command) {
-		DetailPlanRecord detailPlanRecord = validateRecord(command.getRecordId(), command.getDetailPlanId());
+		DetailPlanRecord detailPlanRecord = validateRecord(command.getRecordId(), command.getDetailPlanId(), false);
 
 		try {
 			String os = System.getProperty("os.name").toLowerCase();
@@ -147,17 +158,21 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 	/**
 	 * validate
 	 */
-	private DetailPlan validateDetailPlan(Long detailPlanId) {
+	private DetailPlan validateDetailPlan(Long detailPlanId, Boolean admin) {
 		DetailPlan detailPlan = detailPlanRepository.findByDetailPlanId(detailPlanId);
 
 		if (detailPlan == null) {
 			throw new GotBetterException(MessageType.NOT_FOUND);
 		}
-		validateAboutDetail(detailPlan);
+		validateAboutDetail(detailPlan, admin);
+		// 계획 완료된 상태인지 확인
+		if (detailPlan.getComplete()) {
+			throw new GotBetterException(MessageType.FORBIDDEN);
+		}
 		return detailPlan;
 	}
 
-	private DetailPlanRecord validateRecord(Long recordId, Long detailPlanId) {
+	private DetailPlanRecord validateRecord(Long recordId, Long detailPlanId, Boolean admin) {
 		DetailPlanRecordDto detailPlanRecordDto = detailPlanRecordRepository.findDetailPlanJoinRecord(recordId);
 
 		if (detailPlanRecordDto == null) {
@@ -170,27 +185,30 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 		if (!Objects.equals(detailPlan.getDetailPlanId(), detailPlanId)) {
 			throw new GotBetterException(MessageType.NOT_FOUND);
 		}
-		validateAboutDetail(detailPlan);
+		validateAboutDetail(detailPlan, admin);
+		// 계획 완료된 상태인지 확인
+		// 세부 계획 평가가 불가능한 상태인지 확인
+		if (detailPlan.getComplete() || detailPlan.getRejected()) {
+			throw new GotBetterException(MessageType.FORBIDDEN);
+		}
 		return detailPlanRecord;
 	}
 
-	private void validateAboutDetail(DetailPlan detailPlan) {
+	private void validateAboutDetail(DetailPlan detailPlan, Boolean admin) {
 		PlanDto planDto = planRepository.findPlanJoinRoom(detailPlan.getPlanId());
 
 		if (planDto == null) {
 			throw new GotBetterException(MessageType.NOT_FOUND);
 		}
-		// 인증할 수 있는 기간에 해당되는지 확인
-		if (!validateDate(planDto.getPlan(), planDto.getRoom())) {
-			throw new GotBetterException(MessageType.FORBIDDEN_DATE);
-		}
-		// 사용자가 세부 계획의 주인인지 확인
-		// 계획 완료된 상태인지 확인
-		// 세부 계획 평가가 불가능한 상태인지 확인
-		if (!Objects.equals(detailPlan.getParticipantInfo().getUserId(), getCurrentUserId())
-			|| detailPlan.getComplete()
-			|| detailPlan.getRejected()) {
-			throw new GotBetterException(MessageType.FORBIDDEN);
+		if (!admin) {
+			// 인증할 수 있는 기간에 해당되는지 확인
+			if (!validateDate(planDto.getPlan(), planDto.getRoom())) {
+				throw new GotBetterException(MessageType.FORBIDDEN_DATE);
+			}
+			// 사용자가 세부 계획의 주인인지 확인
+			if (!Objects.equals(detailPlan.getParticipantInfo().getUserId(), getCurrentUserId())) {
+				throw new GotBetterException(MessageType.FORBIDDEN);
+			}
 		}
 	}
 
@@ -214,16 +232,28 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 		String bytes;
 
 		try {
-			String photoDir = defaultDir + "/" + detailPlanRecord.getDetailPlanId().getDetailPlanId();
-			String extension = Objects.requireNonNull(photo.getOriginalFilename())
-				.substring(photo.getOriginalFilename().lastIndexOf(".") + 1);
-			String fileName = photoDir + "/" + detailPlanRecord.getRecordId() + "." + extension;
+			String fileName;
+			if (photo != null) {
+				String photoDir = defaultDir + "/" + detailPlanRecord.getDetailPlanId().getDetailPlanId();
+				String extension = Objects.requireNonNull(photo.getOriginalFilename())
+					.substring(photo.getOriginalFilename().lastIndexOf(".") + 1);
 
-			bytes = Base64.getEncoder().encodeToString(IOUtils.toByteArray(photo.getInputStream()));
-
-			// 저장소에 사진 저장
-			deleteImages(photoDir, detailPlanRecord.getRecordId(), false);
-			photo.transferTo(new File(fileName));
+				fileName = photoDir + "/" + detailPlanRecord.getRecordId() + "." + extension;
+				bytes = Base64.getEncoder().encodeToString(IOUtils.toByteArray(photo.getInputStream()));
+				// 저장소에 사진 저장
+				deleteImages(photoDir, detailPlanRecord.getRecordId(), false);
+				photo.transferTo(new File(fileName));
+			} else {
+				if (Objects.equals(detailPlanRecord.getRecordPhoto(), "to be continued")) {
+					fileName = os.contains("win") ? RECORD_LOCAL_DEFAULT_IMG : RECORD_SERVER_DEFAULT_IMG;
+					bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(fileName)));
+					fileName = RECORD_SERVER_DEFAULT_IMG;
+				} else {
+					fileName = os.contains("win") ? RECORD_LOCAL_DEFAULT_IMG : RECORD_SERVER_DEFAULT_IMG;
+					bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(fileName)));
+					fileName = detailPlanRecord.getRecordPhoto();
+				}
+			}
 			// 경로 수정
 			String updateRecordTitle = recordTitle == null ? detailPlanRecord.getRecordTitle() : recordTitle;
 			String updateRecordBody = recordTitle == null ? detailPlanRecord.getRecordBody() : recordBody;

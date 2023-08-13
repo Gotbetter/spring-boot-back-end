@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -23,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import pcrc.gotbetter.detail_plan_record.service.DetailPlanRecordOperationUseCase;
 import pcrc.gotbetter.detail_plan_record.service.DetailPlanRecordReadUseCase;
 import pcrc.gotbetter.detail_plan_record.ui.request_body.DetailPlanRecordRequest;
+import pcrc.gotbetter.detail_plan_record.ui.request_body.DetailRecordAdminRequest;
 import pcrc.gotbetter.detail_plan_record.ui.view.DetailPlanRecordView;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
@@ -59,6 +61,27 @@ public class DetailPlanRecordController {
 			.recordTitle(request.getRecord_title())
 			.recordBody(request.getRecord_body())
 			.recordPhoto(request.getRecord_photo())
+			.admin(false)
+			.build();
+		DetailPlanRecordReadUseCase.FindDetailPlanRecordResult result = detailPlanRecordOperationUseCase.createRecord(
+			command);
+
+		return ResponseEntity.created(null).body(DetailPlanRecordView.builder().detailPlanRecordResult(result).build());
+	}
+
+	@PostMapping(value = "/admin")
+	public ResponseEntity<DetailPlanRecordView> createRecordAdmin(
+		@PathVariable(value = "detail_plan_id") Long detail_plan_id,
+		@Valid @RequestBody DetailRecordAdminRequest request
+	) throws IOException {
+
+		log.info("\"CREATE A DETAIL PLAN RECORD (admin)\"");
+
+		var command = DetailPlanRecordOperationUseCase.DetailPlanRecordCreateCommand.builder()
+			.detailPlanId(detail_plan_id)
+			.recordTitle(request.getRecord_title())
+			.recordBody(request.getRecord_body())
+			.admin(true)
 			.build();
 		DetailPlanRecordReadUseCase.FindDetailPlanRecordResult result = detailPlanRecordOperationUseCase.createRecord(
 			command);
@@ -107,6 +130,29 @@ public class DetailPlanRecordController {
 			.recordTitle(request.getRecord_title())
 			.recordBody(request.getRecord_body())
 			.recordPhoto(request.getRecord_photo())
+			.admin(false)
+			.build();
+		DetailPlanRecordReadUseCase.FindDetailPlanRecordResult result = detailPlanRecordOperationUseCase.updateRecord(
+			command);
+
+		return ResponseEntity.ok(DetailPlanRecordView.builder().detailPlanRecordResult(result).build());
+	}
+
+	@PatchMapping(value = "/{record_id}/admin")
+	public ResponseEntity<DetailPlanRecordView> updateRecordAdmin(
+		@PathVariable(value = "detail_plan_id") Long detail_plan_id,
+		@PathVariable(value = "record_id") Long record_id,
+		@Valid @RequestBody DetailRecordAdminRequest request
+	) {
+
+		log.info("\"UPDATE THE DETAIL PLAN RECORD (admin)\"");
+
+		var command = DetailPlanRecordOperationUseCase.DetailPlanRecordUpdateCommand.builder()
+			.detailPlanId(detail_plan_id)
+			.recordId(record_id)
+			.recordTitle(request.getRecord_title())
+			.recordBody(request.getRecord_body())
+			.admin(true)
 			.build();
 		DetailPlanRecordReadUseCase.FindDetailPlanRecordResult result = detailPlanRecordOperationUseCase.updateRecord(
 			command);
