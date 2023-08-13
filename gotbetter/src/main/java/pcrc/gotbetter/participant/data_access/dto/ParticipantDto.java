@@ -37,4 +37,9 @@ public class ParticipantDto {
 		this.room = room;
 		this.user = user;
 	}
+
+	public ParticipantDto(Participant participant, User user) {
+		this.participant = participant;
+		this.user = user;
+	}
 }

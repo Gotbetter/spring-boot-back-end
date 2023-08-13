@@ -8,6 +8,8 @@ import lombok.ToString;
 public interface PlanEvaluationOperationUseCase {
 	PlanEvaluationReadUseCase.FindPlanEvaluationResult createPlanEvaluation(PlanEvaluationCommand command);
 
+	PlanEvaluationReadUseCase.FindPlanEvaluationResult createPlanEvaluationAdmin(PlanEvaluationAdminCommand command);
+
 	void deletePlanEvaluation(PlanEvaluationCommand command);
 
 	@EqualsAndHashCode(callSuper = false)
@@ -16,5 +18,14 @@ public interface PlanEvaluationOperationUseCase {
 	@ToString
 	class PlanEvaluationCommand {
 		private final Long planId;
+	}
+
+	@EqualsAndHashCode(callSuper = false)
+	@Builder
+	@Getter
+	@ToString
+	class PlanEvaluationAdminCommand {
+		private final Long planId;
+		private final Long userId;
 	}
 }

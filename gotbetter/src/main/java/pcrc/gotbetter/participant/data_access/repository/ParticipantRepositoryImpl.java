@@ -3,6 +3,7 @@ package pcrc.gotbetter.participant.data_access.repository;
 import static com.querydsl.jpa.JPAExpressions.*;
 import static pcrc.gotbetter.detail_plan.data_access.entity.QDetailPlan.*;
 import static pcrc.gotbetter.participant.data_access.entity.QParticipant.*;
+import static pcrc.gotbetter.plan.data_access.entity.QPlan.*;
 import static pcrc.gotbetter.room.data_access.entity.QRoom.*;
 import static pcrc.gotbetter.user.data_access.entity.QUser.*;
 import static pcrc.gotbetter.user.data_access.entity.QUserSet.*;
@@ -153,6 +154,23 @@ public class ParticipantRepositoryImpl implements ParticipantQueryRepository {
 			.leftJoin(user).on(participant.userId.eq(user.userId)).fetchJoin()
 			.where(participant.authority.eq(true), participantEqRoomId(roomId))
 			.fetchFirst();
+	}
+
+	@Override
+	public List<ParticipantDto> findMembersByPlanId(Long planId) {
+		return queryFactory
+			.select(Projections.constructor(ParticipantDto.class,
+				participant, user))
+			.from(participant)
+			.leftJoin(user).on(participant.userId.eq(user.userId)).fetchJoin()
+			.where(participant.roomId.eq(
+				queryFactory
+					.select(plan.participantInfo.roomId)
+					.from(plan)
+					.where(plan.planId.eq(planId))
+					.fetchFirst()
+			))
+			.fetch();
 	}
 
 	/**

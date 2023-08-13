@@ -1,11 +1,13 @@
 package pcrc.gotbetter.plan_evaluation.service;
 
+import java.io.IOException;
 import java.util.List;
 
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import pcrc.gotbetter.participant.data_access.dto.ParticipantDto;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
 import pcrc.gotbetter.plan_evaluation.data_access.dto.PlanEvaluationDto;
 
@@ -13,7 +15,9 @@ public interface PlanEvaluationReadUseCase {
 
 	FindPlanEvaluationResult getPlanDislike(PlanEvaluationFindQuery query);
 
-	List<FindPlanDislikeListResult> getPlanDislikeList(PlanEvaluationFindQuery query);
+	List<FindPlanDislikeListResult> getPlanDislikeList(PlanEvaluationFindQuery query) throws IOException;
+
+	List<FindPlanDislikeListResult> getPlanNotDislikeList(PlanEvaluationFindQuery query) throws IOException;
 
 	@EqualsAndHashCode(callSuper = false)
 	@Getter
@@ -56,13 +60,29 @@ public interface PlanEvaluationReadUseCase {
 		private final String profile;
 		private final String createdDate;
 
-		public static FindPlanDislikeListResult findByPlanDislikeList(PlanEvaluationDto planEvaluationDto) {
+		public static FindPlanDislikeListResult findByPlanDislikeList(
+			PlanEvaluationDto planEvaluationDto,
+			String bytes
+		) {
 			return FindPlanDislikeListResult.builder()
 				.planId(planEvaluationDto.getPlanEvaluation().getPlanEvaluationId().getPlanId())
 				.userId(planEvaluationDto.getUser().getUserId())
 				.username(planEvaluationDto.getUser().getUsername())
-				.profile(planEvaluationDto.getUser().getProfile())
+				.profile(bytes)
 				.createdDate(planEvaluationDto.getPlanEvaluation().getCreatedDate().toLocalDate().toString())
+				.build();
+		}
+
+		public static FindPlanDislikeListResult findByPlanNotDislikeList(
+			ParticipantDto participantDto,
+			String bytes,
+			Long planId
+		) {
+			return FindPlanDislikeListResult.builder()
+				.planId(planId)
+				.userId(participantDto.getUser().getUserId())
+				.username(participantDto.getUser().getUsername())
+				.profile(bytes)
 				.build();
 		}
 	}
