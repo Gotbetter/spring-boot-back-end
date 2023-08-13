@@ -20,6 +20,7 @@ import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
 import pcrc.gotbetter.plan.data_access.dto.PlanDto;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
 import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
+import pcrc.gotbetter.plan_evaluation.data_access.repository.PlanEvaluationRepository;
 import pcrc.gotbetter.room.data_access.entity.Room;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
@@ -34,18 +35,21 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 	private final DetailPlanEvalRepository detailPlanEvalRepository;
 	private final ParticipantRepository participantRepository;
 	private final UserRepository userRepository;
+	private final PlanEvaluationRepository planEvaluationRepository;
 
 	public DetailPlanService(
 		DetailPlanRepository detailPlanRepository,
 		PlanRepository planRepository,
 		DetailPlanEvalRepository detailPlanEvalRepository,
 		ParticipantRepository participantRepository,
-		UserRepository userRepository) {
+		UserRepository userRepository,
+		PlanEvaluationRepository planEvaluationRepository) {
 		this.detailPlanRepository = detailPlanRepository;
 		this.planRepository = planRepository;
 		this.detailPlanEvalRepository = detailPlanEvalRepository;
 		this.participantRepository = participantRepository;
 		this.userRepository = userRepository;
+		this.planEvaluationRepository = planEvaluationRepository;
 	}
 
 	@Override
@@ -154,6 +158,12 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 			validateIsAdmin();
 		} else {
 			validateThreeDaysPassed(detailPlan.getPlanId(), room.getCurrentWeek());
+		}
+
+		List<DetailPlan> detailPlanList = detailPlanRepository.findByPlanId(detailPlan.getPlanId());
+
+		if (detailPlanList.size() == 1) {
+			planEvaluationRepository.deleteByPlanEvaluationIdPlanId(detailPlan.getPlanId());
 		}
 		detailPlanRepository.deleteByDetailPlanId(detailPlan.getDetailPlanId());
 	}
