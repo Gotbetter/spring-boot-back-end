@@ -12,6 +12,8 @@ public interface DetailPlanReadUseCase {
 
 	List<FindDetailPlanResult> getDetailPlans(DetailPlanFindQuery query);
 
+	FindDetailPlanResult getDetailPlan(DetailPlanOneFindQuery query);
+
 	@EqualsAndHashCode(callSuper = false)
 	@Getter
 	@ToString
@@ -19,6 +21,15 @@ public interface DetailPlanReadUseCase {
 	class DetailPlanFindQuery {
 		private final Long planId;
 		private final Boolean admin;
+	}
+
+	@EqualsAndHashCode(callSuper = false)
+	@Getter
+	@ToString
+	@Builder
+	class DetailPlanOneFindQuery {
+		private final Long planId;
+		private final Long detailPlanId;
 	}
 
 	@Getter

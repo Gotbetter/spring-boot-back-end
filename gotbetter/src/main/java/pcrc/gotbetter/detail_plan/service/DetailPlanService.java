@@ -126,6 +126,18 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 	}
 
 	@Override
+	public FindDetailPlanResult getDetailPlan(DetailPlanOneFindQuery query) {
+		validateIsAdmin();
+
+		DetailPlan detailPlan = detailPlanRepository.findByDetailPlanId(query.getDetailPlanId());
+
+		if (detailPlan == null || !Objects.equals(detailPlan.getPlanId(), query.getPlanId())) {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		}
+		return FindDetailPlanResult.findByDetailPlan(detailPlan, null, null);
+	}
+
+	@Override
 	public FindDetailPlanResult updateDetailPlan(DetailPlanUpdateCommand command) {
 		DetailPlanDto detailPlanDto = validateDetailPlanRoom(command.getDetailPlanId(), command.getPlanId(),
 			command.getAdmin());
@@ -136,6 +148,9 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 			validateIsAdmin();
 		} else {
 			validateThreeDaysPassed(detailPlan.getPlanId(), room.getCurrentWeek());
+			if (detailPlan.getComplete()) {
+				throw new GotBetterException(MessageType.FORBIDDEN);
+			}
 		}
 		detailPlan.updateContent(command.getContent());
 		detailPlanRepository.save(detailPlan);
@@ -158,6 +173,9 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 			validateIsAdmin();
 		} else {
 			validateThreeDaysPassed(detailPlan.getPlanId(), room.getCurrentWeek());
+			if (detailPlan.getComplete()) {
+				throw new GotBetterException(MessageType.FORBIDDEN);
+			}
 		}
 
 		List<DetailPlan> detailPlanList = detailPlanRepository.findByPlanId(detailPlan.getPlanId());
