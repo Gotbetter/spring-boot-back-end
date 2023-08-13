@@ -20,6 +20,7 @@ public interface DetailPlanOperationUseCase {
 	class DetailPlanCreateCommand {
 		private final Long planId;
 		private final String content;
+		private final Boolean admin;
 	}
 
 	@EqualsAndHashCode(callSuper = false)
@@ -30,6 +31,7 @@ public interface DetailPlanOperationUseCase {
 		private final Long detailPlanId;
 		private final Long planId;
 		private final String content;
+		private final Boolean admin;
 	}
 
 	@EqualsAndHashCode(callSuper = false)
@@ -39,5 +41,6 @@ public interface DetailPlanOperationUseCase {
 	class DetailPlanDeleteCommand {
 		private final Long detailPlanId;
 		private final Long planId;
+		private final Boolean admin;
 	}
 }
