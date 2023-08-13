@@ -110,13 +110,21 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase, De
 	@Override
 	@Transactional
 	public DetailPlanEvalReadUseCase.FindDetailPlanEvalResult deleteDetailPlanEvaluation(
-		DetailPlanEvaluationCommand command
+		DetailDislikeDeleteCommand command
 	) {
 		DetailPlan detailPlan = validateDetailPlan(command.getDetailPlanId());
 		PlanDto planDto = validatePlanRoom(detailPlan.getPlanId());
-		Participant participant = validateUserInRoom(detailPlan.getParticipantInfo().getRoomId(), getCurrentUserId());
+		Participant participant;
 
-		validateWeekPassed(planDto);
+		if (command.getAdmin()) {
+			participant = participantRepository.findByParticipantId(command.getParticipantId());
+			if (participant == null) {
+				throw new GotBetterException(MessageType.NOT_FOUND);
+			}
+		} else {
+			participant = validateUserInRoom(detailPlan.getParticipantInfo().getRoomId(), getCurrentUserId());
+			validateWeekPassed(planDto);
+		}
 		if (detailPlanEvalRepository.existsEval(detailPlan.getDetailPlanId(), participant.getParticipantId())) {
 			detailPlanEvalRepository.deleteByDetailPlanEvalId(DetailPlanEvalId.builder()
 				.detailPlanId(detailPlan.getDetailPlanId())

@@ -82,8 +82,29 @@ public class DetailPlanEvalController {
 
 		log.info("\"DELETE A DETAIL PLAN DISLIKE\"");
 
-		var command = DetailPlanEvalOperationUseCase.DetailPlanEvaluationCommand.builder()
+		var command = DetailPlanEvalOperationUseCase.DetailDislikeDeleteCommand.builder()
 			.detailPlanId(detail_plan_id)
+			.admin(false)
+			.build();
+		DetailPlanEvalReadUseCase.FindDetailPlanEvalResult result = detailPlanEvalOperationUseCase.deleteDetailPlanEvaluation(
+			command);
+		return ResponseEntity.created(null)
+			.body(DetailPlanEvaluationView.builder().detailPlanEvalResult(result).build());
+	}
+
+	@DeleteMapping(value = "/{participant_id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public ResponseEntity<DetailPlanEvaluationView> deleteDetailPlanEvaluationAdmin(
+		@PathVariable(value = "detail_plan_id") Long detail_plan_id,
+		@PathVariable(value = "participant_id") Long participant_id
+	) {
+
+		log.info("\"DELETE A DETAIL PLAN DISLIKE (admin)\"");
+
+		var command = DetailPlanEvalOperationUseCase.DetailDislikeDeleteCommand.builder()
+			.detailPlanId(detail_plan_id)
+			.participantId(participant_id)
+			.admin(true)
 			.build();
 		DetailPlanEvalReadUseCase.FindDetailPlanEvalResult result = detailPlanEvalOperationUseCase.deleteDetailPlanEvaluation(
 			command);

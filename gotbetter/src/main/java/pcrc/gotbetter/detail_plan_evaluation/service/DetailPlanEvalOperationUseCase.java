@@ -8,7 +8,7 @@ import lombok.ToString;
 public interface DetailPlanEvalOperationUseCase {
 	DetailPlanEvalReadUseCase.FindDetailPlanEvalResult createDetailPlanEvaluation(DetailPlanEvaluationCommand command);
 
-	DetailPlanEvalReadUseCase.FindDetailPlanEvalResult deleteDetailPlanEvaluation(DetailPlanEvaluationCommand command);
+	DetailPlanEvalReadUseCase.FindDetailPlanEvalResult deleteDetailPlanEvaluation(DetailDislikeDeleteCommand command);
 
 	@EqualsAndHashCode(callSuper = false)
 	@Builder
@@ -17,6 +17,16 @@ public interface DetailPlanEvalOperationUseCase {
 	class DetailPlanEvaluationCommand {
 		private final Long detailPlanId;
 		private final Long userId;
+		private final Boolean admin;
+	}
+
+	@EqualsAndHashCode(callSuper = false)
+	@Builder
+	@Getter
+	@ToString
+	class DetailDislikeDeleteCommand {
+		private final Long detailPlanId;
+		private final Long participantId;
 		private final Boolean admin;
 	}
 }
