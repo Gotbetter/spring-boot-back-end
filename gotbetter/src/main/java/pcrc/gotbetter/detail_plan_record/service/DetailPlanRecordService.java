@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import pcrc.gotbetter.detail_plan.data_access.entity.DetailPlan;
 import pcrc.gotbetter.detail_plan.data_access.repository.DetailPlanRepository;
+import pcrc.gotbetter.detail_plan_evaluation.data_access.repository.DetailPlanEvalRepository;
 import pcrc.gotbetter.detail_plan_record.data_access.dto.DetailPlanRecordDto;
 import pcrc.gotbetter.detail_plan_record.data_access.entity.DetailPlanId;
 import pcrc.gotbetter.detail_plan_record.data_access.entity.DetailPlanRecord;
@@ -50,16 +51,19 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 	private final PlanRepository planRepository;
 	private final ParticipantRepository participantRepository;
 	private final UserRepository userRepository;
+	private final DetailPlanEvalRepository detailPlanEvalRepository;
 
 	@Autowired
 	public DetailPlanRecordService(DetailPlanRecordRepository detailPlanRecordRepository,
 		DetailPlanRepository detailPlanRepository, PlanRepository planRepository,
-		ParticipantRepository participantRepository, UserRepository userRepository) {
+		ParticipantRepository participantRepository, UserRepository userRepository,
+		DetailPlanEvalRepository detailPlanEvalRepository) {
 		this.detailPlanRecordRepository = detailPlanRecordRepository;
 		this.detailPlanRepository = detailPlanRepository;
 		this.planRepository = planRepository;
 		this.participantRepository = participantRepository;
 		this.userRepository = userRepository;
+		this.detailPlanEvalRepository = detailPlanEvalRepository;
 	}
 
 	@Override
@@ -140,14 +144,30 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 
 	@Override
 	public void deleteRecord(DetailPlanRecordDeleteCommand command) {
-		DetailPlanRecord detailPlanRecord = validateRecord(command.getRecordId(), command.getDetailPlanId(), false);
+		if (command.getAdmin()) {
+			validateIsAdmin();
+		}
+		DetailPlanRecord detailPlanRecord = validateRecord(command.getRecordId(), command.getDetailPlanId(),
+			command.getAdmin());
 
 		try {
 			String os = System.getProperty("os.name").toLowerCase();
 			String defaultDir = os.contains("win") ? RECORD_LOCAL_PATH : RECORD_SERVER_PATH;
-			String photoDir = defaultDir + "/" + detailPlanRecord.getDetailPlanId().getDetailPlanId();
 
-			deleteImages(photoDir, detailPlanRecord.getRecordId(), true);
+			if (!command.getAdmin()) {
+				String photoDir = defaultDir + "/" + detailPlanRecord.getDetailPlanId().getDetailPlanId();
+
+				deleteImages(photoDir, detailPlanRecord.getRecordId(), true);
+			}
+
+			List<DetailPlanRecord> detailPlanRecords = detailPlanRecordRepository.findByDetailPlanIdDetailPlanId(
+				detailPlanRecord.getDetailPlanId().getDetailPlanId());
+
+			/** TODO  detail eval 데이터 지워야하나?*/
+			if (detailPlanRecords.size() == 1) {
+				detailPlanEvalRepository.deleteByDetailPlanEvalIdDetailPlanId(
+					detailPlanRecord.getDetailPlanId().getDetailPlanId());
+			}
 			detailPlanRecordRepository.deleteById(detailPlanRecord.getRecordId());
 		} catch (Exception e) {
 			throw new GotBetterException(MessageType.BAD_REQUEST);

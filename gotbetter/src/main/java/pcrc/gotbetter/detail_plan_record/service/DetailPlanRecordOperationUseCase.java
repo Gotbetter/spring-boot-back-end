@@ -50,5 +50,6 @@ public interface DetailPlanRecordOperationUseCase {
 	class DetailPlanRecordDeleteCommand {
 		private final Long detailPlanId;
 		private final Long recordId;
+		private final Boolean admin;
 	}
 }

@@ -162,14 +162,18 @@ public class DetailPlanRecordController {
 
 	@DeleteMapping(value = "/{record_id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void deleteRecord(@PathVariable(value = "detail_plan_id") Long detail_plan_id,
-		@PathVariable(value = "record_id") Long record_id) {
+	public void deleteRecord(
+		@PathVariable(value = "detail_plan_id") Long detail_plan_id,
+		@PathVariable(value = "record_id") Long record_id,
+		@RequestParam(name = "admin", required = false) Boolean admin
+	) {
 
 		log.info("\"DELETE THE DETAIL PLAN RECORD\"");
 
 		var command = DetailPlanRecordOperationUseCase.DetailPlanRecordDeleteCommand.builder()
 			.detailPlanId(detail_plan_id)
 			.recordId(record_id)
+			.admin(admin != null && admin)
 			.build();
 		detailPlanRecordOperationUseCase.deleteRecord(command);
 	}
