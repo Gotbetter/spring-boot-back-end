@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,6 +104,76 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 		JoinRequest joinRequest = JoinRequest.builder()
 			.joinRequestId(JoinRequestId.builder()
 				.userId(currentUserId)
+				.roomId(room.getRoomId())
+				.build())
+			.accepted(true)
+			.build();
+		joinRequestRepository.save(joinRequest);
+
+		// participant 데이터 insert
+		Participant participant = Participant.builder()
+			.userId(joinRequest.getJoinRequestId().getUserId())
+			.roomId(joinRequest.getJoinRequestId().getRoomId())
+			.authority(true)
+			.refund(0)
+			.build();
+		participantRepository.save(participant);
+
+		return FindRoomResult.findByRoom(room, participant.getParticipantId(),
+			roomCategoryInfo.getCodeDescription(),
+			ruleInfo.getCodeDescription());
+	}
+
+	@Override
+	public FindRoomResult createRoomAdmin(RoomCreateCommand command) {
+		validateIsAdmin();
+		// 방 코드 생성
+		String roomCode = getRandomCode();
+		// 방 계획 시작 날짜
+		LocalDate startDate = LocalDate.parse(command.getStartDate(), DateTimeFormatter.ISO_DATE);
+
+		// category 정보
+		CommonCode roomCategoryInfo = findRoomCategoryInfo(command.getRoomCategoryCode());
+
+		// rule 정보 - 고정된 규칙
+		CommonCode ruleInfo = findRuleInfo(command.getRuleCode());
+		// rule 정보 - 커스텀
+
+		Integer currentWeek = 1;
+		LocalDate startDateOfTargetWeek = startDate;
+		LocalDate now = LocalDate.now();
+		for (int i = 1; i <= command.getWeek(); i++) {
+			LocalDate endDateOfTargetWeek = startDateOfTargetWeek.plusDays(6L);
+			if (startDateOfTargetWeek.isAfter(now) || !(startDateOfTargetWeek.isAfter(now) || now.isAfter(
+				endDateOfTargetWeek))) {
+				break;
+			}
+			currentWeek++;
+			startDateOfTargetWeek = startDateOfTargetWeek.plusDays(7L);
+		}
+
+		// 방 데이터 insert
+		Room room = Room.builder()
+			.title(command.getTitle())
+			.maxUserNum(command.getMaxUserNum())
+			.currentUserNum(1)
+			.startDate(startDate)
+			.week(command.getWeek())
+			.currentWeek(currentWeek)
+			.entryFee(command.getEntryFee())
+			.roomCode(roomCode)
+			.account(command.getAccount())
+			.roomCategory(roomCategoryInfo.getCommonCodeId().getCode())
+			.rule(ruleInfo.getCommonCodeId().getCode())
+			.description(command.getDescription())
+			.totalEntryFee(command.getEntryFee())
+			.build();
+		roomRepository.save(room);
+
+		// join request 데이터 insert
+		JoinRequest joinRequest = JoinRequest.builder()
+			.joinRequestId(JoinRequestId.builder()
+				.userId(command.getUserId())
 				.roomId(room.getRoomId())
 				.build())
 			.accepted(true)
@@ -301,7 +370,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 		validateIsAdmin();
 
 		// 방 소개 수정 - room
-		Room room = roomRepository.findByRoomId(command.getRoom_id()).orElseThrow(() -> {
+		Room room = roomRepository.findByRoomId(command.getRoomId()).orElseThrow(() -> {
 			throw new GotBetterException(MessageType.NOT_FOUND);
 		});
 		// category 정보
@@ -309,31 +378,43 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 		// rule 정보 - 고정된 규칙
 		CommonCode ruleInfo = findRuleInfo(command.getRuleCode());
 
-		if (!Objects.equals(command.getRoomCode(), room.getRoomCode()) && roomRepository.existByRoomCode(
-			command.getRoomCode())) {
-			throw new GotBetterException(MessageType.CONFLICT);
-		}
 		if (command.getMaxUserNum() < 1 || command.getMaxUserNum() < room.getCurrentUserNum()) {
 			throw new GotBetterException(MessageType.BAD_REQUEST);
 		}
-		if (command.getWeek() < 1 || command.getWeek() < room.getCurrentWeek()) {
-			throw new GotBetterException(MessageType.BAD_REQUEST);
+		// 방장 바꾸기
+		Participant prevLeader = participantRepository.findLeaderByRoomId(room.getRoomId());
+
+		if (prevLeader == null) {
+			throw new GotBetterException(MessageType.NOT_FOUND);
 		}
-		if (command.getEntryFee() < 0) {
-			throw new GotBetterException(MessageType.BAD_REQUEST);
+		prevLeader.updateAuthority(false);
+
+		Participant newLeader = participantRepository.findByUserIdAndRoomId(command.getUserId(), room.getRoomId());
+
+		if (newLeader == null) {
+			throw new GotBetterException(MessageType.NOT_FOUND);
 		}
+		newLeader.updateAuthority(true);
+		// if (!Objects.equals(command.getRoomCode(), room.getRoomCode()) && roomRepository.existByRoomCode(
+		// 	command.getRoomCode())) {
+		// 	throw new GotBetterException(MessageType.CONFLICT);
+		// }
+		// if (command.getWeek() < 1 || command.getWeek() < room.getCurrentWeek()) {
+		// 	throw new GotBetterException(MessageType.BAD_REQUEST);
+		// }
+		// if (command.getEntryFee() < 0) {
+		// 	throw new GotBetterException(MessageType.BAD_REQUEST);
+		// }
 
 		room.updateRoomInfo(
 			command.getTitle(),
-			command.getMaxUserNum(),
-			command.getWeek(),
-			command.getEntryFee(),
-			room.getTotalEntryFee(),// command.getEntryFee() * room.getCurrentUserNum(),
-			command.getRoomCode(),
 			command.getAccount(),
+			command.getMaxUserNum(),
 			roomCategoryInfo.getCommonCodeId().getCode(),
 			ruleInfo.getCommonCodeId().getCode());
 		roomRepository.save(room);
+		participantRepository.save(prevLeader);
+		participantRepository.save(newLeader);
 	}
 
 	@Override

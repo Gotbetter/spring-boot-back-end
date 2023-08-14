@@ -51,7 +51,8 @@ public interface RoomReadUseCase {
 		// for admin
 		private final String roomCategoryCode;
 		private final String ruleCode;
-		private final String leader;
+		private final Long leaderId;
+		private final String leaderUsername;
 		private final String endDate;
 
 		public static FindRoomResult findByRoom(Room room, Long participantId, String roomCategory, String rule) {
@@ -118,7 +119,8 @@ public interface RoomReadUseCase {
 				.totalEntryFee(participantDto.getRoom().getTotalEntryFee())
 				.ruleCode(rule.getCommonCodeId().getCode())
 				.rule(rule.getCodeDescription())
-				.leader(participantDto.getUser().getUsername())
+				.leaderId(participantDto.getUser().getUserId())
+				.leaderUsername(participantDto.getUser().getUsername())
 				.endDate(endDate)
 				.build();
 		}

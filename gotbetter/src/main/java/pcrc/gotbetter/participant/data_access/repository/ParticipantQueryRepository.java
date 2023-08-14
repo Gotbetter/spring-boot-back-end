@@ -9,6 +9,8 @@ public interface ParticipantQueryRepository {
 
 	Boolean isMatchedLeader(Long userId, Long roomId);
 
+	Participant findLeaderByRoomId(Long roomId);
+
 	Participant findByUserIdAndRoomId(Long userId, Long roomId);
 
 	Boolean existsByUserIdAndRoomId(Long userId, Long roomId);

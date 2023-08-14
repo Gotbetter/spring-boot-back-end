@@ -27,7 +27,8 @@ public class RoomView {
 	private final String rule;
 	private final Long participant_id;
 	// for admin
-	private final String leader;
+	private final Long leader_id;
+	private final String leader_username;
 	private final String end_date;
 	private final String room_category_code;
 	private final String rule_code;
@@ -50,7 +51,8 @@ public class RoomView {
 		this.rule = roomResult.getRule();
 		this.participant_id = roomResult.getParticipantId();
 		// for admin
-		this.leader = roomResult.getLeader();
+		this.leader_id = roomResult.getLeaderId();
+		this.leader_username = roomResult.getLeaderUsername();
 		this.end_date = roomResult.getEndDate();
 		this.room_category_code = roomResult.getRoomCategoryCode();
 		this.rule_code = roomResult.getRuleCode();

@@ -22,6 +22,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import pcrc.gotbetter.room.service.RoomOperationUseCase;
 import pcrc.gotbetter.room.service.RoomReadUseCase;
+import pcrc.gotbetter.room.ui.requestBody.RoomCreateAdminRequest;
 import pcrc.gotbetter.room.ui.requestBody.RoomCreateRequest;
 import pcrc.gotbetter.room.ui.requestBody.RoomDescriptionRequest;
 import pcrc.gotbetter.room.ui.requestBody.RoomUpdateRequest;
@@ -59,6 +60,28 @@ public class RoomController {
 			.description(request.getDescription())
 			.build();
 		RoomReadUseCase.FindRoomResult result = roomOperationUseCase.createRoom(command);
+
+		return ResponseEntity.created(null).body(RoomView.builder().roomResult(result).build());
+	}
+
+	@PostMapping(value = "/admin")
+	public ResponseEntity<RoomView> createNewRoomAdmin(@Valid @RequestBody RoomCreateAdminRequest request) {
+
+		log.info("\"CREATE A ROOM (admin)\"");
+
+		var command = RoomOperationUseCase.RoomCreateCommand.builder()
+			.title(request.getTitle())
+			.maxUserNum(request.getMax_user_num())
+			.startDate(request.getStart_date())
+			.week(request.getWeek())
+			.entryFee(request.getEntry_fee())
+			.account(request.getAccount())
+			.roomCategoryCode(request.getRoom_category_code())
+			.ruleCode(request.getRule_code())
+			.description(request.getDescription())
+			.userId(request.getUser_id())
+			.build();
+		RoomReadUseCase.FindRoomResult result = roomOperationUseCase.createRoomAdmin(command);
 
 		return ResponseEntity.created(null).body(RoomView.builder().roomResult(result).build());
 	}
@@ -131,15 +154,13 @@ public class RoomController {
 		log.info("\"UPDATE ROOM INFO\"");
 
 		var command = RoomOperationUseCase.RoomUpdateCommand.builder()
-			.room_id(room_id)
+			.roomId(room_id)
 			.title(request.getTitle())
-			.maxUserNum(request.getMax_user_num())
-			.week(request.getWeek())
-			.entryFee(request.getEntry_fee())
-			.roomCode(request.getRoom_code())
 			.account(request.getAccount())
+			.maxUserNum(request.getMax_user_num())
 			.roomCategoryCode(request.getRoom_category_code())
 			.ruleCode(request.getRule_code())
+			.userId(request.getLeader_id())
 			.build();
 		roomOperationUseCase.updateRoomInfo(command);
 	}
