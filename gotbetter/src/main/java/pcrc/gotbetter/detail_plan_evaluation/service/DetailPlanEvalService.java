@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -88,6 +89,9 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase, De
 			detailPlanRepository.save(detailPlan);
 			detailPlanRecordRepository.deleteByDetailPlanIdDetailPlanId(detailPlan.getDetailPlanId());
 			detailPlanEvalRepository.deleteByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());
+			if (command.getAdmin()) {
+				updateScore(detailPlan.getPlanId());
+			}
 			detailPlanEvalSize = 0;
 		} else {
 			DetailPlanEval detailPlanEval = DetailPlanEval.builder()
@@ -295,5 +299,37 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase, De
 			bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
 		}
 		return bytes;
+	}
+
+	private void updateScore(Long planId) {
+		Plan plan = planRepository.findByPlanId(planId).orElseThrow(() -> {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		});
+		LocalDate now = LocalDate.now();
+
+		if (!now.isAfter(plan.getTargetDate())) {
+			return;
+		}
+		Participant participant = participantRepository.findByParticipantId(
+			plan.getParticipantInfo().getParticipantId());
+
+		if (participant == null) {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		}
+
+		HashMap<String, Long> map = detailPlanRepository.countCompleteTrue(plan.getPlanId());
+		Long size = map.get("size");
+		Long completeCount = map.get("completeCount");
+
+		float divide = size != 0 ? (float)completeCount / (float)size : 0;
+		float percent = Math.round(divide * 1000) / 10.0F;
+		Float prevScore = plan.getScore();
+
+		plan.updateScore(percent);
+		planRepository.save(plan);
+
+		participant.updatePercentSum(-prevScore + percent);
+		participantRepository.save(participant);
+
 	}
 }

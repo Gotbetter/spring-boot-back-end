@@ -155,13 +155,7 @@ public class BatchPlan {
 				Long completeCount = map.get("completeCount");
 				// log.info("2. detail_size = " + size + ", complete_count = " + completeCount);
 
-				if (size == 0 || completeCount == 0) {
-					log.info("(no change to the percent | participantId=" +
-						plan.getParticipantInfo().getParticipantId() + ")");
-					continue;
-				}
-
-				float divide = (float)completeCount / (float)size;
+				float divide = size != 0 ? (float)completeCount / (float)size : 0;
 				float percent = Math.round(divide * 1000) / 10.0F;
 
 				// log.info("3. divide = " + divide + ", percent = " + percent);

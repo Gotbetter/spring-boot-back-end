@@ -52,11 +52,11 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
 		} else {
 			// 방장인지 확인
 			validateSenderIsLeader(roomInfo.getRoomId());
+			// 현재 진행 중인 방인지 확인 - 종료된 방이면 생성되지 않음.
+			validateDate(roomInfo);
 		}
 		// 이미 존재하는지 확인
 		validateDuplicateCreatePlans(command.getParticipantId());
-		// 현재 진행 중인 방인지 확인 - 종료된 방이면 생성되지 않음.
-		validateDate(roomInfo);
 
 		/**TODO
 		 * throw 생길때마다 participant 삭제
@@ -65,17 +65,19 @@ public class PlanService implements PlanOperationUseCase, PlanReadUseCase {
 		// 플랜 틀 생성
 		List<Plan> plans = new ArrayList<>();
 		for (int i = 1; i <= roomInfo.getWeek(); i++) {
+			LocalDate now = LocalDate.now();
+			LocalDate startDate = roomInfo.getStartDate().plusDays((i - 1) * 7L);
 			Plan plan = Plan.builder()
 				.participantInfo(ParticipantInfo.builder()
 					.participantId(participantInfo.getParticipantId())
 					.userId(participantInfo.getUserId())
 					.roomId(participantInfo.getRoomId())
 					.build())
-				.startDate(roomInfo.getStartDate().plusDays((i - 1) * 7L))
+				.startDate(startDate)
 				.targetDate(roomInfo.getStartDate().plusDays(i * 7L - 1))
 				.score(0.0F)
 				.week(i)
-				.threeDaysPassed(false)
+				.threeDaysPassed(now.isAfter(startDate.plusDays(2L)))
 				.rejected(false)
 				.build();
 			plans.add(plan);

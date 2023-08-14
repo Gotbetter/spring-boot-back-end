@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -16,6 +17,7 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import pcrc.gotbetter.detail_plan.data_access.entity.DetailPlan;
@@ -25,6 +27,7 @@ import pcrc.gotbetter.detail_plan_record.data_access.dto.DetailPlanRecordDto;
 import pcrc.gotbetter.detail_plan_record.data_access.entity.DetailPlanId;
 import pcrc.gotbetter.detail_plan_record.data_access.entity.DetailPlanRecord;
 import pcrc.gotbetter.detail_plan_record.data_access.repository.DetailPlanRecordRepository;
+import pcrc.gotbetter.participant.data_access.entity.Participant;
 import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
 import pcrc.gotbetter.plan.data_access.dto.PlanDto;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
@@ -143,6 +146,7 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 	}
 
 	@Override
+	@Transactional
 	public void deleteRecord(DetailPlanRecordDeleteCommand command) {
 		if (command.getAdmin()) {
 			validateIsAdmin();
@@ -162,13 +166,25 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 
 			List<DetailPlanRecord> detailPlanRecords = detailPlanRecordRepository.findByDetailPlanIdDetailPlanId(
 				detailPlanRecord.getDetailPlanId().getDetailPlanId());
+			DetailPlan detailPlan = detailPlanRepository.findByDetailPlanId(
+				detailPlanRecord.getDetailPlanId().getDetailPlanId());
 
+			if (detailPlan == null) {
+				throw new GotBetterException(MessageType.NOT_FOUND);
+			}
 			/** TODO  detail eval 데이터 지워야하나?*/
 			if (detailPlanRecords.size() == 1) {
 				detailPlanEvalRepository.deleteByDetailPlanEvalIdDetailPlanId(
 					detailPlanRecord.getDetailPlanId().getDetailPlanId());
+
+				/** TODO */
+				detailPlan.updateDetailPlanUndo(false);
+				detailPlanRepository.save(detailPlan);
 			}
 			detailPlanRecordRepository.deleteById(detailPlanRecord.getRecordId());
+			if (command.getAdmin()) {
+				updateScore(detailPlan.getPlanId());
+			}
 		} catch (Exception e) {
 			throw new GotBetterException(MessageType.BAD_REQUEST);
 		}
@@ -186,8 +202,10 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 		}
 		validateAboutDetail(detailPlan, admin);
 		// 계획 완료된 상태인지 확인
-		if (detailPlan.getComplete()) {
-			throw new GotBetterException(MessageType.FORBIDDEN);
+		if (!admin) {
+			if (detailPlan.getComplete()) {
+				throw new GotBetterException(MessageType.FORBIDDEN);
+			}
 		}
 		return detailPlan;
 	}
@@ -208,8 +226,10 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 		validateAboutDetail(detailPlan, admin);
 		// 계획 완료된 상태인지 확인
 		// 세부 계획 평가가 불가능한 상태인지 확인
-		if (detailPlan.getComplete() || detailPlan.getRejected()) {
-			throw new GotBetterException(MessageType.FORBIDDEN);
+		if (!admin) {
+			if (detailPlan.getComplete() || detailPlan.getRejected()) {
+				throw new GotBetterException(MessageType.FORBIDDEN);
+			}
 		}
 		return detailPlanRecord;
 	}
@@ -320,5 +340,36 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 			return;
 		}
 		throw new GotBetterException(MessageType.FORBIDDEN_ADMIN);
+	}
+
+	private void updateScore(Long planId) {
+		Plan plan = planRepository.findByPlanId(planId).orElseThrow(() -> {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		});
+		LocalDate now = LocalDate.now();
+
+		if (!now.isAfter(plan.getTargetDate())) {
+			return;
+		}
+		Participant participant = participantRepository.findByParticipantId(
+			plan.getParticipantInfo().getParticipantId());
+
+		if (participant == null) {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		}
+
+		HashMap<String, Long> map = detailPlanRepository.countCompleteTrue(plan.getPlanId());
+		Long size = map.get("size");
+		Long completeCount = map.get("completeCount");
+
+		float divide = size != 0 ? (float)completeCount / (float)size : 0;
+		float percent = Math.round(divide * 1000) / 10.0F;
+		Float prevScore = plan.getScore();
+
+		plan.updateScore(percent);
+		planRepository.save(plan);
+
+		participant.updatePercentSum(-prevScore + percent);
+		participantRepository.save(participant);
 	}
 }

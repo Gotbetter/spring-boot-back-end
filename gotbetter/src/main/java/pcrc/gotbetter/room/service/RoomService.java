@@ -139,16 +139,16 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 		CommonCode ruleInfo = findRuleInfo(command.getRuleCode());
 		// rule 정보 - 커스텀
 
-		Integer currentWeek = 1;
+		Integer currentWeek = 0;
 		LocalDate startDateOfTargetWeek = startDate;
 		LocalDate now = LocalDate.now();
 		for (int i = 1; i <= command.getWeek(); i++) {
+			currentWeek++;
 			LocalDate endDateOfTargetWeek = startDateOfTargetWeek.plusDays(6L);
 			if (startDateOfTargetWeek.isAfter(now) || !(startDateOfTargetWeek.isAfter(now) || now.isAfter(
 				endDateOfTargetWeek))) {
 				break;
 			}
-			currentWeek++;
 			startDateOfTargetWeek = startDateOfTargetWeek.plusDays(7L);
 		}
 

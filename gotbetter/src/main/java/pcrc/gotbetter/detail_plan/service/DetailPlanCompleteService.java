@@ -3,6 +3,7 @@ package pcrc.gotbetter.detail_plan.service;
 import static pcrc.gotbetter.setting.security.SecurityUtil.*;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -15,6 +16,8 @@ import pcrc.gotbetter.detail_plan.data_access.repository.DetailPlanRepository;
 import pcrc.gotbetter.detail_plan_evaluation.data_access.repository.DetailPlanEvalRepository;
 import pcrc.gotbetter.detail_plan_record.data_access.entity.DetailPlanRecord;
 import pcrc.gotbetter.detail_plan_record.data_access.repository.DetailPlanRecordRepository;
+import pcrc.gotbetter.participant.data_access.entity.Participant;
+import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
 import pcrc.gotbetter.plan.data_access.dto.PlanDto;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
 import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
@@ -32,21 +35,25 @@ public class DetailPlanCompleteService implements DetailPlanCompleteOperationUse
 	private final PlanRepository planRepository;
 	private final UserRepository userRepository;
 	private final DetailPlanRecordRepository detailPlanRecordRepository;
+	private final ParticipantRepository participantRepository;
 
 	@Autowired
 	public DetailPlanCompleteService(
 		DetailPlanRepository detailPlanRepository,
 		DetailPlanEvalRepository detailPlanEvalRepository,
 		PlanRepository planRepository,
-		UserRepository userRepository, DetailPlanRecordRepository detailPlanRecordRepository) {
+		UserRepository userRepository, DetailPlanRecordRepository detailPlanRecordRepository,
+		ParticipantRepository participantRepository) {
 		this.detailPlanRepository = detailPlanRepository;
 		this.detailPlanEvalRepository = detailPlanEvalRepository;
 		this.planRepository = planRepository;
 		this.userRepository = userRepository;
 		this.detailPlanRecordRepository = detailPlanRecordRepository;
+		this.participantRepository = participantRepository;
 	}
 
 	@Override
+	@Transactional
 	public DetailPlanReadUseCase.FindDetailPlanResult completeDetailPlan(DetailPlanCompleteCommand command) {
 		if (command.getAdmin()) {
 			validateIsAdmin();
@@ -72,6 +79,9 @@ public class DetailPlanCompleteService implements DetailPlanCompleteOperationUse
 		}
 		detailPlan.updateDetailPlanCompleted();
 		detailPlanRepository.save(detailPlan);
+		if (command.getAdmin()) {
+			updateScore(command.getPlanId());
+		}
 
 		Integer detailPlanEvalSize = detailPlanEvalRepository.countByDetailPlanEvalIdDetailPlanId(
 			detailPlan.getDetailPlanId());
@@ -101,7 +111,9 @@ public class DetailPlanCompleteService implements DetailPlanCompleteOperationUse
 		detailPlanRepository.save(detailPlan);
 		/** TODO  세부 계획 평가 지워야 하나? */
 		detailPlanEvalRepository.deleteByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());
-
+		if (command.getAdmin()) {
+			updateScore(command.getPlanId());
+		}
 		Integer detailPlanEvalSize = detailPlanEvalRepository.countByDetailPlanEvalIdDetailPlanId(
 			detailPlan.getDetailPlanId());
 
@@ -156,5 +168,36 @@ public class DetailPlanCompleteService implements DetailPlanCompleteOperationUse
 			return;
 		}
 		throw new GotBetterException(MessageType.FORBIDDEN_ADMIN);
+	}
+
+	private void updateScore(Long planId) {
+		Plan plan = planRepository.findByPlanId(planId).orElseThrow(() -> {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		});
+		LocalDate now = LocalDate.now();
+
+		if (!now.isAfter(plan.getTargetDate())) {
+			return;
+		}
+		Participant participant = participantRepository.findByParticipantId(
+			plan.getParticipantInfo().getParticipantId());
+
+		if (participant == null) {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		}
+
+		HashMap<String, Long> map = detailPlanRepository.countCompleteTrue(plan.getPlanId());
+		Long size = map.get("size");
+		Long completeCount = map.get("completeCount");
+
+		float divide = size != 0 ? (float)completeCount / (float)size : 0;
+		float percent = Math.round(divide * 1000) / 10.0F;
+		Float prevScore = plan.getScore();
+
+		plan.updateScore(percent);
+		planRepository.save(plan);
+
+		participant.updatePercentSum(-prevScore + percent);
+		participantRepository.save(participant);
 	}
 }

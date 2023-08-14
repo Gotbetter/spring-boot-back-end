@@ -36,7 +36,7 @@ public class DetailPlanRepositoryImpl implements DetailPlanQueryRepository {
 	@Override
 	public HashMap<String, Long> countCompleteTrue(Long planId) {
 		Query query = em.createQuery(
-			"SELECT count(p) as size, count(if(p.complete=true, p.complete, null))" +
+			"SELECT count(*) as size, count(if(p.complete=true, p.complete, null))" +
 				" FROM DetailPlan p WHERE p.planId = " + planId);
 		Object[] object = (Object[])query.getResultList().get(0);
 		HashMap<String, Long> result = new HashMap<>();
