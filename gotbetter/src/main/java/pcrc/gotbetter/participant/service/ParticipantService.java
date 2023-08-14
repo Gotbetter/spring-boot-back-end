@@ -83,11 +83,9 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 
 	@Override
 	public void adminRequestJoinRoom(AdminJoinRequestCommand command) {
+		validateIsAdmin();
 		Room room = validateRoomWithRoomCode(command.getRoomCode()); // 방 코드에 해당하는 방이 있는지 확인
 		Long currentUserId = validateAbleToJoinRoom(room, command.getUserId()); // 해당 방에 사용자가 입장할 수 있는지 확인
-
-		// 종료된 방인지 확인
-		validateDate(room);
 
 		// 승인 요청
 		JoinRequest joinRequest = JoinRequest.builder()
@@ -118,7 +116,7 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 			int weekPercent = roomRepository.findWeek(query.getRoomId()) * 100;
 
 			for (ParticipantDto p : participantDtoList) {
-				float divide = (float)p.getParticipant().getRefund() / (float)weekPercent;
+				float divide = (float)p.getParticipant().getPercentSum() / (float)weekPercent;
 				Float percent = Math.round(divide * 1000) / 10.0F;
 
 				result.add(FindParticipantResult.findByParticipant(
@@ -164,8 +162,10 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 		JoinRequest joinRequestInfo = joinRequestDto.getJoinRequest();
 		Room roomInfo = joinRequestDto.getRoom();
 
-		// 현재 진행 중인 방인지 확인 - 종료된 방이면 승인되지 않음.
-		validateDate(roomInfo);
+		if (!command.getAdmin()) {
+			// 현재 진행 중인 방인지 확인 - 종료된 방이면 승인되지 않음.
+			validateDate(roomInfo);
+		}
 		// 방의 인원이 만원인지 확인
 		if (Objects.equals(roomInfo.getMaxUserNum(), roomInfo.getCurrentUserNum())) {
 			throw new GotBetterException(MessageType.CONFLICT_MAX);
@@ -254,8 +254,8 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 			throw new GotBetterException(MessageType.NOT_FOUND);
 		});
 
-		validateDate(room);
-		// total_entry_fee는 어떻게 하지?
+		// validateDate(room);
+		/** TODO  total_entry_fee는 어떻게 하지? */
 		room.decreaseCurrentUserNum();
 		roomRepository.save(room);
 
