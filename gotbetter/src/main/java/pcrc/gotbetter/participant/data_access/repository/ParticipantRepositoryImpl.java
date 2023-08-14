@@ -38,6 +38,15 @@ public class ParticipantRepositoryImpl implements ParticipantQueryRepository {
 	}
 
 	@Override
+	public Participant findLeaderByRoomId(Long roomId) {
+		return queryFactory
+			.selectFrom(participant)
+			.where(participantEqRoomId(roomId),
+				participant.authority.eq(true))
+			.fetchFirst();
+	}
+
+	@Override
 	public Participant findByUserIdAndRoomId(Long userId, Long roomId) {
 		return queryFactory
 			.selectFrom(participant)

@@ -96,16 +96,13 @@ public class Room extends BaseTimeEntity {
 	}
 
 	public void updateRoomInfo(
-		String title, Integer maxUserNum,
-		Integer week, Integer entryFee, Integer totalEntryFee,
-		String roomCode, String account,
-		String roomCategory, String rule) {
+		String title,
+		String account,
+		Integer maxUserNum,
+		String roomCategory,
+		String rule) {
 		this.title = title;
 		this.maxUserNum = maxUserNum;
-		this.week = week;
-		this.entryFee = entryFee;
-		this.totalEntryFee = totalEntryFee;
-		this.roomCode = roomCode;
 		this.account = account;
 		this.roomCategory = roomCategory;
 		this.rule = rule;

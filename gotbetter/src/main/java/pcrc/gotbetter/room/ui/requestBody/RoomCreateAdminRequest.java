@@ -9,29 +9,25 @@ import lombok.ToString;
 @Getter
 @ToString
 @NoArgsConstructor
-public class RoomUpdateRequest {
+public class RoomCreateAdminRequest {
 	@NotBlank
 	private String title;
-	@NotBlank
-	private String account;
 	@NotNull
 	private Integer max_user_num;
+	@NotBlank
+	private String start_date;
+	@NotNull
+	private Integer week;
+	@NotNull
+	private Integer entry_fee;
+	@NotBlank
+	private String account;
 	@NotBlank
 	private String room_category_code;
 	@NotBlank
 	private String rule_code;
 	@NotNull
-	private Long leader_id;
-
-	// @NotBlank
-	// private String room_code;
-	// @NotNull
-	// private Integer entry_fee;
-	// @NotNull
-	// private Integer week;
-	// private Integer total_entry_fee;
-	// private Integer current_week;
-	// private String start_date;
-	// private Integer current_user_num;
-
+	private Long user_id;
+	@NotNull
+	private String description;
 }

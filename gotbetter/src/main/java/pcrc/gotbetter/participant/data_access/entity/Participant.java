@@ -65,4 +65,8 @@ public class Participant extends BaseTimeEntity {
 		this.updateCreatedById(userId);
 		this.updateUpdatedById(userId);
 	}
+
+	public void updateAuthority(Boolean authority) {
+		this.authority = authority;
+	}
 }
