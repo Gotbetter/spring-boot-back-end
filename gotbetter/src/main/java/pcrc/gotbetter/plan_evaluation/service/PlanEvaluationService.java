@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,6 +28,7 @@ import pcrc.gotbetter.plan_evaluation.data_access.entity.PlanEvaluation;
 import pcrc.gotbetter.plan_evaluation.data_access.entity.PlanEvaluationId;
 import pcrc.gotbetter.plan_evaluation.data_access.repository.PlanEvaluationRepository;
 import pcrc.gotbetter.room.data_access.entity.Room;
+import pcrc.gotbetter.setting.common.TaskResult;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 import pcrc.gotbetter.user.data_access.entity.User;
@@ -46,16 +46,18 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase, Pl
 	private final DetailPlanRepository detailPlanRepository;
 	private final ParticipantRepository participantRepository;
 	private final UserRepository userRepository;
+	private final TaskResult taskResult;
 
 	@Autowired
 	public PlanEvaluationService(PlanEvaluationRepository planEvaluationRepository, PlanRepository planRepository,
 		DetailPlanRepository detailPlanRepository, ParticipantRepository participantRepository,
-		UserRepository userRepository) {
+		UserRepository userRepository, TaskResult taskResult) {
 		this.planEvaluationRepository = planEvaluationRepository;
 		this.planRepository = planRepository;
 		this.detailPlanRepository = detailPlanRepository;
 		this.participantRepository = participantRepository;
 		this.userRepository = userRepository;
+		this.taskResult = taskResult;
 	}
 
 	@Override
@@ -123,7 +125,8 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase, Pl
 			planEvaluationRepository.deleteByPlanEvaluationIdPlanId(planInfo.getPlanId());
 			// 기존 세부계획들 삭제
 			detailPlanRepository.deleteByPlanId(planInfo.getPlanId());
-			updateScore(planInfo.getPlanId());
+			taskResult.updateScore(planInfo.getPlanId());
+			taskResult.updateRefund(planInfo.getParticipantInfo().getRoomId());
 		} else {
 			// 계획 평가 생성
 			PlanEvaluation planEvaluation = PlanEvaluation.builder()
@@ -340,39 +343,5 @@ public class PlanEvaluationService implements PlanEvaluationOperationUseCase, Pl
 			bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
 		}
 		return bytes;
-	}
-
-	private void updateScore(Long planId) {
-		Plan plan = planRepository.findByPlanId(planId).orElseThrow(() -> {
-			throw new GotBetterException(MessageType.NOT_FOUND);
-		});
-		LocalDate now = LocalDate.now();
-
-		if (!now.isAfter(plan.getTargetDate())) {
-			return;
-		}
-		Participant participant = participantRepository.findByParticipantId(
-			plan.getParticipantInfo().getParticipantId());
-
-		if (participant == null) {
-			throw new GotBetterException(MessageType.NOT_FOUND);
-		}
-
-		HashMap<String, Long> map = detailPlanRepository.countCompleteTrue(plan.getPlanId());
-		Long size = map.get("size");
-		Long completeCount = map.get("completeCount");
-
-		float divide = size != 0 ? (float)completeCount / (float)size : 0;
-		float percent = Math.round(divide * 1000) / 10.0F;
-		Float prevScore = plan.getScore();
-
-		plan.updateScore(percent);
-		planRepository.save(plan);
-
-		participant.updatePercentSum(-prevScore + percent);
-		participantRepository.save(participant);
-
-		System.out.println(plan.getScore());
-		System.out.println(participant.getPercentSum());
 	}
 }

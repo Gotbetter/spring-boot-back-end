@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -31,6 +30,7 @@ import pcrc.gotbetter.plan.data_access.dto.PlanDto;
 import pcrc.gotbetter.plan.data_access.entity.Plan;
 import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
 import pcrc.gotbetter.room.data_access.entity.Room;
+import pcrc.gotbetter.setting.common.TaskResult;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 import pcrc.gotbetter.user.data_access.entity.User;
@@ -49,6 +49,7 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase, De
 	private final ParticipantRepository participantRepository;
 	private final DetailPlanRecordRepository detailPlanRecordRepository;
 	private final UserRepository userRepository;
+	private final TaskResult taskResult;
 
 	@Autowired
 	public DetailPlanEvalService(
@@ -57,13 +58,16 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase, De
 		PlanRepository planRepository,
 		ParticipantRepository participantRepository,
 		DetailPlanRecordRepository detailPlanRecordRepository,
-		UserRepository userRepository) {
+		UserRepository userRepository,
+		TaskResult taskResult
+	) {
 		this.detailPlanEvalRepository = detailPlanEvalRepository;
 		this.detailPlanRepository = detailPlanRepository;
 		this.planRepository = planRepository;
 		this.participantRepository = participantRepository;
 		this.detailPlanRecordRepository = detailPlanRecordRepository;
 		this.userRepository = userRepository;
+		this.taskResult = taskResult;
 	}
 
 	@Override
@@ -90,7 +94,8 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase, De
 			detailPlanRecordRepository.deleteByDetailPlanIdDetailPlanId(detailPlan.getDetailPlanId());
 			detailPlanEvalRepository.deleteByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());
 			if (command.getAdmin()) {
-				updateScore(detailPlan.getPlanId());
+				taskResult.updateScore(detailPlan.getPlanId());
+				taskResult.updateRefund(detailPlan.getParticipantInfo().getRoomId());
 			}
 			detailPlanEvalSize = 0;
 		} else {
@@ -299,37 +304,5 @@ public class DetailPlanEvalService implements DetailPlanEvalOperationUseCase, De
 			bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
 		}
 		return bytes;
-	}
-
-	private void updateScore(Long planId) {
-		Plan plan = planRepository.findByPlanId(planId).orElseThrow(() -> {
-			throw new GotBetterException(MessageType.NOT_FOUND);
-		});
-		LocalDate now = LocalDate.now();
-
-		if (!now.isAfter(plan.getTargetDate())) {
-			return;
-		}
-		Participant participant = participantRepository.findByParticipantId(
-			plan.getParticipantInfo().getParticipantId());
-
-		if (participant == null) {
-			throw new GotBetterException(MessageType.NOT_FOUND);
-		}
-
-		HashMap<String, Long> map = detailPlanRepository.countCompleteTrue(plan.getPlanId());
-		Long size = map.get("size");
-		Long completeCount = map.get("completeCount");
-
-		float divide = size != 0 ? (float)completeCount / (float)size : 0;
-		float percent = Math.round(divide * 1000) / 10.0F;
-		Float prevScore = plan.getScore();
-
-		plan.updateScore(percent);
-		planRepository.save(plan);
-
-		participant.updatePercentSum(-prevScore + percent);
-		participantRepository.save(participant);
-
 	}
 }
