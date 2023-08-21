@@ -4,7 +4,6 @@ import static pcrc.gotbetter.setting.security.SecurityUtil.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -16,7 +15,6 @@ import pcrc.gotbetter.detail_plan.data_access.entity.DetailPlan;
 import pcrc.gotbetter.detail_plan.data_access.repository.DetailPlanRepository;
 import pcrc.gotbetter.detail_plan_evaluation.data_access.entity.DetailPlanEval;
 import pcrc.gotbetter.detail_plan_evaluation.data_access.repository.DetailPlanEvalRepository;
-import pcrc.gotbetter.participant.data_access.entity.Participant;
 import pcrc.gotbetter.participant.data_access.entity.ParticipantInfo;
 import pcrc.gotbetter.participant.data_access.repository.ParticipantRepository;
 import pcrc.gotbetter.plan.data_access.dto.PlanDto;
@@ -24,6 +22,7 @@ import pcrc.gotbetter.plan.data_access.entity.Plan;
 import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
 import pcrc.gotbetter.plan_evaluation.data_access.repository.PlanEvaluationRepository;
 import pcrc.gotbetter.room.data_access.entity.Room;
+import pcrc.gotbetter.setting.common.TaskResult;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 import pcrc.gotbetter.user.data_access.entity.User;
@@ -38,6 +37,7 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 	private final ParticipantRepository participantRepository;
 	private final UserRepository userRepository;
 	private final PlanEvaluationRepository planEvaluationRepository;
+	private final TaskResult taskResult;
 
 	public DetailPlanService(
 		DetailPlanRepository detailPlanRepository,
@@ -45,13 +45,14 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 		DetailPlanEvalRepository detailPlanEvalRepository,
 		ParticipantRepository participantRepository,
 		UserRepository userRepository,
-		PlanEvaluationRepository planEvaluationRepository) {
+		PlanEvaluationRepository planEvaluationRepository, TaskResult taskResult) {
 		this.detailPlanRepository = detailPlanRepository;
 		this.planRepository = planRepository;
 		this.detailPlanEvalRepository = detailPlanEvalRepository;
 		this.participantRepository = participantRepository;
 		this.userRepository = userRepository;
 		this.planEvaluationRepository = planEvaluationRepository;
+		this.taskResult = taskResult;
 	}
 
 	@Override
@@ -88,7 +89,8 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 		detailPlanRepository.save(detailPlan);
 
 		if (command.getAdmin()) {
-			updateScore(detailPlan.getPlanId());
+			taskResult.updateScore(detailPlan.getPlanId());
+			taskResult.updateRefund(detailPlan.getParticipantInfo().getRoomId());
 		}
 		Integer detailPlanEvalSize = detailPlanEvalRepository.countByDetailPlanEvalIdDetailPlanId(
 			detailPlan.getDetailPlanId());
@@ -191,7 +193,8 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 		}
 		detailPlanRepository.deleteByDetailPlanId(detailPlan.getDetailPlanId());
 		if (command.getAdmin()) {
-			updateScore(detailPlan.getPlanId());
+			taskResult.updateScore(detailPlan.getPlanId());
+			taskResult.updateRefund(detailPlan.getParticipantInfo().getRoomId());
 		}
 	}
 
@@ -261,36 +264,5 @@ public class DetailPlanService implements DetailPlanOperationUseCase, DetailPlan
 			return;
 		}
 		throw new GotBetterException(MessageType.FORBIDDEN_ADMIN);
-	}
-
-	private void updateScore(Long planId) {
-		Plan plan = planRepository.findByPlanId(planId).orElseThrow(() -> {
-			throw new GotBetterException(MessageType.NOT_FOUND);
-		});
-		LocalDate now = LocalDate.now();
-
-		if (!now.isAfter(plan.getTargetDate())) {
-			return;
-		}
-		Participant participant = participantRepository.findByParticipantId(
-			plan.getParticipantInfo().getParticipantId());
-
-		if (participant == null) {
-			throw new GotBetterException(MessageType.NOT_FOUND);
-		}
-
-		HashMap<String, Long> map = detailPlanRepository.countCompleteTrue(plan.getPlanId());
-		Long size = map.get("size");
-		Long completeCount = map.get("completeCount");
-
-		float divide = size != 0 ? (float)completeCount / (float)size : 0;
-		float percent = Math.round(divide * 1000) / 10.0F;
-		Float prevScore = plan.getScore();
-
-		plan.updateScore(percent);
-		planRepository.save(plan);
-
-		participant.updatePercentSum(-prevScore + percent);
-		participantRepository.save(participant);
 	}
 }
