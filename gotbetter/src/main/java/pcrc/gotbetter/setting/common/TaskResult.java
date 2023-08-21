@@ -107,12 +107,6 @@ public class TaskResult {
 						refund *= 2;
 					}
 				}
-				//                if (key == 0F) {
-				//                    rank = participantDtoList.size();
-				//                    refund = 0;
-				//                } else {
-				//
-				//                }
 				participant.updateRefund(refund);
 				participant.updateById(RoleType.SERVER.getCode());
 			}
