@@ -2,7 +2,7 @@ package pcrc.gotbetter.setting.batch;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -187,18 +187,15 @@ public class BatchPlan {
 		for (ParticipantDto participantDto : participantDtoList) {
 			Participant participant = participantDto.getParticipant();
 			Float key = participant.getPercentSum();
-			List<Participant> participantList = new ArrayList<>();
+			List<Participant> participantList = (percentMap.containsKey(key)) ? percentMap.get(key) : new ArrayList<>();
 
-			if (percentMap.containsKey(key)) {
-				participantList = percentMap.get(key);
-			}
 			participantList.add(participant);
 			percentMap.put(key, participantList);
 		}
 
 		List<Float> keySet = new ArrayList<>(percentMap.keySet());
 
-		Collections.reverse(keySet);
+		keySet.sort(Comparator.reverseOrder());
 
 		int rank = 1;
 
@@ -208,13 +205,10 @@ public class BatchPlan {
 			for (Participant participant : participants) {
 				int refund = room.getEntryFee();
 
-				if (key == 0F) {
-					rank = participantDtoList.size();
+				if (rank == 1) {
+					refund *= 2;
+				} else if (rank + percentMap.get(key).size() == room.getCurrentUserNum() + 1) {
 					refund = 0;
-				} else {
-					if (rank == 1) {
-						refund *= 2;
-					}
 				}
 				participant.updateRefund(refund);
 				participant.updateById(RoleType.SERVER.getCode());
