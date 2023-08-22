@@ -59,6 +59,7 @@ public class JoinRequestRepositoryImpl implements JoinRequestQueryRepository {
 			.where(eqUserId(userId),
 				eqRoomId(roomId),
 				eqAccepted(accepted))
+			.orderBy(user.username.asc())
 			.fetch();
 	}
 

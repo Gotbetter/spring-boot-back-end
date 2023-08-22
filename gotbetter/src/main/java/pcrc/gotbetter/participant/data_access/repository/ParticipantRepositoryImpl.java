@@ -75,6 +75,7 @@ public class ParticipantRepositoryImpl implements ParticipantQueryRepository {
 			.leftJoin(user).on(participant.userId.eq(user.userId)).fetchJoin()
 			.leftJoin(userSet).on(participant.userId.eq(userSet.userId)).fetchJoin()
 			.where(participantEqRoomId(roomId))
+			.orderBy(user.username.asc())
 			.fetch();
 	}
 
@@ -114,6 +115,7 @@ public class ParticipantRepositoryImpl implements ParticipantQueryRepository {
 			.leftJoin(room).on(participant.roomId.eq(room.roomId)).fetchJoin()
 			.leftJoin(user).on(participant.userId.eq(user.userId)).fetchJoin()
 			.where(participantEqRoomId(roomId))
+			.orderBy(user.username.asc())
 			.fetch();
 	}
 
