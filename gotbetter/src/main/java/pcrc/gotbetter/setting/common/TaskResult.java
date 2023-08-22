@@ -106,6 +106,8 @@ public class TaskResult {
 					} else {
 						refund *= 2;
 					}
+				} else if (rank + percentMap.get(key).size() == room.getCurrentUserNum() + 1) {
+					refund = 0;
 				}
 				participant.updateRefund(refund);
 				participant.updateById(RoleType.SERVER.getCode());

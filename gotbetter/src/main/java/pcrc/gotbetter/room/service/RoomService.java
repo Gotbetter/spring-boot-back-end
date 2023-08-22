@@ -329,12 +329,10 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 			User user = participantDto.getUser();
 			Participant participant = participantDto.getParticipant();
 			Float key = participant.getPercentSum();
-			List<HashMap<String, String>> userInfoList = new ArrayList<>();
+			List<HashMap<String, String>> userInfoList =
+				(percentMap.containsKey(key)) ? percentMap.get(key) : new ArrayList<>();
 			HashMap<String, String> userInfo = new HashMap<>();
 
-			if (percentMap.containsKey(key)) {
-				userInfoList = percentMap.get(key);
-			}
 			userInfo.put("profile", getProfileBytes(user));
 			userInfo.put("username", user.getUsername());
 			userInfoList.add(userInfo);
@@ -355,7 +353,13 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 				int refund = room.getEntryFee();
 
 				if (rank == 1) {
-					refund *= 2;
+					if (room.getCurrentWeek() == 1) {
+						refund = 0;
+					} else {
+						refund *= 2;
+					}
+				} else if (rank + percentMap.get(key).size() == room.getCurrentUserNum() + 1) {
+					refund = 0;
 				}
 				findRankResultList.add(FindRankResult
 					.findByRank(rankId++, rank, userInfo, refund));
