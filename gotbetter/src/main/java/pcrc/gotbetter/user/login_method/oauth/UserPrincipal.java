@@ -17,7 +17,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import pcrc.gotbetter.user.data_access.entity.User;
-import pcrc.gotbetter.user.data_access.entity.UserSet;
 import pcrc.gotbetter.user.login_method.login_type.RoleType;
 
 @Getter
@@ -87,10 +86,10 @@ public class UserPrincipal implements OAuth2User, UserDetails, OidcUser {
 		return null;
 	}
 
-	public static UserPrincipal create(User user, UserSet userSet) {
+	public static UserPrincipal create(User user) {
 		return new UserPrincipal(
 			user.getUserId().toString(),
-			userSet.getPassword(),
+			"",
 			// user.getProviderType(),
 			RoleType.USER,
 			Collections.singleton(new SimpleGrantedAuthority(RoleType.USER.getCode()))
