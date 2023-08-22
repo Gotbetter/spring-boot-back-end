@@ -9,10 +9,11 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,10 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 	String PROFILE_LOCAL_DEFAULT_IMG;
 	@Value("${server.default.profile.image}")
 	String PROFILE_SERVER_DEFAULT_IMG;
+	@Value("${local.default.my.profile.image}")
+	String PROFILE_LOCAL_DEFAULT_MY_IMG;
+	@Value("${server.default.my.profile.image}")
+	String PROFILE_SERVER_DEFAULT_MY_IMG;
 	private final RoomRepository roomRepository;
 	private final JoinRequestRepository joinRequestRepository;
 	private final ParticipantRepository participantRepository;
@@ -330,7 +335,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 			if (percentMap.containsKey(key)) {
 				userInfoList = percentMap.get(key);
 			}
-			userInfo.put("profile", getProfileBytes(user.getProfile()));
+			userInfo.put("profile", getProfileBytes(user));
 			userInfo.put("username", user.getUsername());
 			userInfoList.add(userInfo);
 			percentMap.put(key, userInfoList);
@@ -338,7 +343,7 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 
 		List<Float> keySet = new ArrayList<>(percentMap.keySet());
 
-		Collections.reverse(keySet);
+		keySet.sort(Comparator.reverseOrder());
 
 		int rank = 1;
 		int rankId = 0;
@@ -349,13 +354,8 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 			for (HashMap<String, String> userInfo : userInfoList) {
 				int refund = room.getEntryFee();
 
-				if (key == 0F) {
-					rank = participantDtoList.size();
-					refund = 0;
-				} else {
-					if (rank == 1) {
-						refund *= 2;
-					}
+				if (rank == 1) {
+					refund *= 2;
 				}
 				findRankResultList.add(FindRankResult
 					.findByRank(rankId++, rank, userInfo, refund));
@@ -471,26 +471,41 @@ public class RoomService implements RoomOperationUseCase, RoomReadUseCase {
 		return ruleInfo;
 	}
 
-	private String getProfileBytes(String path) throws IOException {
+	private String getProfileBytes(User user) throws IOException {
 		String bytes;
+		String dir;
+		String os = System.getProperty("os.name").toLowerCase();
 
+		if ((Objects.equals(user.getProfile(), PROFILE_SERVER_DEFAULT_IMG) || Objects.equals(user.getProfile(),
+			PROFILE_LOCAL_DEFAULT_IMG))) {
+			if (Objects.equals(user.getUserId(), getCurrentUserId())) {
+				dir = os.contains("win") ? PROFILE_LOCAL_DEFAULT_MY_IMG : PROFILE_SERVER_DEFAULT_MY_IMG;
+			} else {
+				dir = os.contains("win") ? PROFILE_LOCAL_DEFAULT_IMG : PROFILE_SERVER_DEFAULT_IMG;
+			}
+		} else {
+			dir = user.getProfile();
+		}
 		try {
-			bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(path)));
+			bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
 		} catch (Exception e) {
-			String os = System.getProperty("os.name").toLowerCase();
-			String dir = os.contains("win") ? PROFILE_LOCAL_DEFAULT_IMG : PROFILE_SERVER_DEFAULT_IMG;
+			if (Objects.equals(user.getUserId(), getCurrentUserId())) {
+				dir = os.contains("win") ? PROFILE_LOCAL_DEFAULT_MY_IMG : PROFILE_SERVER_DEFAULT_MY_IMG;
+			} else {
+				dir = os.contains("win") ? PROFILE_LOCAL_DEFAULT_IMG : PROFILE_SERVER_DEFAULT_IMG;
+			}
 			bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
 		}
 		return bytes;
 	}
 
-	private User validateIsAdmin() {
+	private void validateIsAdmin() {
 		User requestUser = userRepository.findByUserId(getCurrentUserId()).orElseThrow(() -> {
 			throw new GotBetterException(MessageType.NOT_FOUND);
 		});
 
 		if (requestUser.getRoleType() == RoleType.ADMIN || requestUser.getRoleType() == RoleType.MAIN_ADMIN) {
-			return requestUser;
+			return;
 		}
 		throw new GotBetterException(MessageType.FORBIDDEN_ADMIN);
 	}

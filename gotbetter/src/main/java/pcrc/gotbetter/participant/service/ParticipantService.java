@@ -39,6 +39,10 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 	String PROFILE_LOCAL_DEFAULT_IMG;
 	@Value("${server.default.profile.image}")
 	String PROFILE_SERVER_DEFAULT_IMG;
+	@Value("${local.default.my.profile.image}")
+	String PROFILE_LOCAL_DEFAULT_MY_IMG;
+	@Value("${server.default.my.profile.image}")
+	String PROFILE_SERVER_DEFAULT_MY_IMG;
 	private final ParticipantRepository participantRepository;
 	private final JoinRequestRepository joinRequestRepository;
 	private final RoomRepository roomRepository;
@@ -101,33 +105,35 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 	@Override
 	public List<FindParticipantResult> getMemberListInARoom(ParticipantsFindQuery query) throws IOException {
 		List<FindParticipantResult> result = new ArrayList<>();
+		Room room = roomRepository.findByRoomId(query.getRoomId()).orElseThrow(() -> {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		});
 
 		if (query.getAccepted()) { // (방장 포함 일반 멤버) 방에 속한 멤버들 조회
 			if (query.getAdmin()) {
 				validateIsAdmin();
-				roomRepository.findByRoomId(query.getRoomId()).orElseThrow(() -> {
-					throw new GotBetterException(MessageType.NOT_FOUND);
-				});
 			} else {
 				validateUserInRoom(query.getRoomId(), false); // 방에 속한 멤버인지 검증
 			}
 
-			List<ParticipantDto> participantDtoList = participantRepository.findUserInfoList(query.getRoomId());
-			int weekPercent = roomRepository.findWeek(query.getRoomId()) * 100;
+			List<ParticipantDto> participantDtoList = getRoomMemberList(query);
+			int currentWeek = room.getCurrentWeek();
+			LocalDate now = LocalDate.now();
+			LocalDate afterOneDayOfLastDay = room.getStartDate().plusDays(7L * room.getCurrentWeek());
 
+			if (now.isBefore(afterOneDayOfLastDay)) {
+				currentWeek -= 1;
+			}
 			for (ParticipantDto p : participantDtoList) {
-				float divide = (float)p.getParticipant().getPercentSum() / (float)weekPercent;
+				float divide = p.getParticipant().getPercentSum() / (float)(currentWeek * 100);
 				Float percent = Math.round(divide * 1000) / 10.0F;
 
 				result.add(FindParticipantResult.findByParticipant(
-					p, getProfileBytes(p.getUser().getProfile()), percent, query.getAdmin()));
+					p, getProfileBytes(p.getUser()), percent, query.getAdmin()));
 			}
 		} else { // (방장만) 승인 대기 중인 사용자 조회
 			if (query.getAdmin()) {
 				validateIsAdmin();
-				roomRepository.findByRoomId(query.getRoomId()).orElseThrow(() -> {
-					throw new GotBetterException(MessageType.NOT_FOUND);
-				});
 			} else {
 				validateUserInRoom(query.getRoomId(), true); // 방장인지 검증
 			}
@@ -135,7 +141,7 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 				query.getRoomId(), false);
 			for (JoinRequestDto joinRequest : joinRequestList) {
 				result.add(FindParticipantResult.findByParticipant(joinRequest,
-					-1L, false, getProfileBytes(joinRequest.getUser().getProfile()), query.getAdmin()));
+					-1L, false, getProfileBytes(joinRequest.getUser()), query.getAdmin()));
 			}
 		}
 		return result;
@@ -186,7 +192,7 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 		roomRepository.save(roomInfo);
 		// 프로필 수정 추가해야함.
 		return FindParticipantResult.findByParticipant(joinRequestDto,
-			participant.getParticipantId(), null, getProfileBytes(joinRequestDto.getUser().getProfile()), false);
+			participant.getParticipantId(), null, getProfileBytes(joinRequestDto.getUser()), false);
 	}
 
 	@Override
@@ -321,14 +327,29 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 		}
 	}
 
-	private String getProfileBytes(String path) throws IOException {
+	private String getProfileBytes(User user) throws IOException {
 		String bytes;
+		String dir;
+		String os = System.getProperty("os.name").toLowerCase();
 
+		if ((Objects.equals(user.getProfile(), PROFILE_SERVER_DEFAULT_IMG) || Objects.equals(user.getProfile(),
+			PROFILE_LOCAL_DEFAULT_IMG))) {
+			if (Objects.equals(user.getUserId(), getCurrentUserId())) {
+				dir = os.contains("win") ? PROFILE_LOCAL_DEFAULT_MY_IMG : PROFILE_SERVER_DEFAULT_MY_IMG;
+			} else {
+				dir = os.contains("win") ? PROFILE_LOCAL_DEFAULT_IMG : PROFILE_SERVER_DEFAULT_IMG;
+			}
+		} else {
+			dir = user.getProfile();
+		}
 		try {
-			bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(path)));
+			bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
 		} catch (Exception e) {
-			String os = System.getProperty("os.name").toLowerCase();
-			String dir = os.contains("win") ? PROFILE_LOCAL_DEFAULT_IMG : PROFILE_SERVER_DEFAULT_IMG;
+			if (Objects.equals(user.getUserId(), getCurrentUserId())) {
+				dir = os.contains("win") ? PROFILE_LOCAL_DEFAULT_MY_IMG : PROFILE_SERVER_DEFAULT_MY_IMG;
+			} else {
+				dir = os.contains("win") ? PROFILE_LOCAL_DEFAULT_IMG : PROFILE_SERVER_DEFAULT_IMG;
+			}
 			bytes = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(dir)));
 		}
 		return bytes;
@@ -343,5 +364,23 @@ public class ParticipantService implements ParticipantOperationUseCase, Particip
 			return;
 		}
 		throw new GotBetterException(MessageType.FORBIDDEN_ADMIN);
+	}
+
+	private List<ParticipantDto> getRoomMemberList(ParticipantsFindQuery query) {
+		List<ParticipantDto> participantDtoList = participantRepository.findUserInfoList(query.getRoomId());
+		int targetIndex;
+
+		if (!query.getAdmin()) {
+			for (targetIndex = 0; targetIndex < participantDtoList.size(); targetIndex++) {
+				long target = participantDtoList.get(targetIndex).getUser().getUserId();
+
+				if (target == getCurrentUserId()) {
+					break;
+				}
+			}
+			participantDtoList.add(0, participantDtoList.get(targetIndex));
+			participantDtoList.remove(targetIndex + 1);
+		}
+		return participantDtoList;
 	}
 }
