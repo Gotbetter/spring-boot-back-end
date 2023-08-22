@@ -2,32 +2,38 @@ package pcrc.gotbetter.user.service;
 
 import java.util.Objects;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 import pcrc.gotbetter.user.data_access.entity.SocialAccount;
 import pcrc.gotbetter.user.data_access.entity.User;
+import pcrc.gotbetter.user.data_access.entity.UserSet;
 import pcrc.gotbetter.user.data_access.repository.SocialAccountRepository;
 import pcrc.gotbetter.user.data_access.repository.UserRepository;
+import pcrc.gotbetter.user.data_access.repository.UserSetRepository;
 import pcrc.gotbetter.user.login_method.jwt.config.JwtProvider;
 import pcrc.gotbetter.user.login_method.jwt.config.TokenInfo;
 import pcrc.gotbetter.user.login_method.login_type.ProviderType;
+import pcrc.gotbetter.user.login_method.login_type.RoleType;
 
 @Service
 public class OAuthService implements OAuthOperationUseCase {
 	private final JwtProvider jwtProvider;
 	private final UserRepository userRepository;
 	private final SocialAccountRepository socialAccountRepository;
+	private final UserSetRepository userSetRepository;
 
 	public OAuthService(
 		UserRepository userRepository,
 		SocialAccountRepository socialAccountRepository,
-		JwtProvider jwtProvider
-	) {
+		JwtProvider jwtProvider,
+		UserSetRepository userSetRepository) {
 		this.userRepository = userRepository;
 		this.socialAccountRepository = socialAccountRepository;
 		this.jwtProvider = jwtProvider;
+		this.userSetRepository = userSetRepository;
 	}
 
 	@Override
@@ -43,10 +49,23 @@ public class OAuthService implements OAuthOperationUseCase {
 				findUser = User.builder()
 					.username(command.getName())
 					.email(command.getEmail())
+					.roleType(RoleType.USER)
 					// .profile()
 					.build();
 				findUser.updateById("-1");
 				userRepository.save(findUser);
+				boolean useLetters = true;
+				boolean useNumbers = true;
+				int randomStrLen = 20;
+				String roomCode = RandomStringUtils.random(randomStrLen, useLetters, useNumbers);
+
+				UserSet userSet = UserSet.builder()
+					.userId(findUser.getUserId())
+					.authId(command.getEmail())
+					.password(roomCode)
+					.build();
+				userSet.updateById(findUser.getUserId().toString());
+				userSetRepository.save(userSet);
 			}
 			SocialAccount saveSocialAccount = SocialAccount.builder()
 				.userId(findUser.getUserId())

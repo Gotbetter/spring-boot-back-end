@@ -32,6 +32,8 @@ public class OAuthController {
 		@RequestParam(name = "provider") String provider,
 		@Valid @RequestBody OAuthRequest request
 	) {
+
+		log.info("\"OAUTH LOGIN\"");
 		provider = provider.toUpperCase();
 
 		if (!ProviderType.contains(provider)) {
