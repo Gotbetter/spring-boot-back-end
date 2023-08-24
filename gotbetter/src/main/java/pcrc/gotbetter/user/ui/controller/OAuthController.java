@@ -1,5 +1,7 @@
 package pcrc.gotbetter.user.ui.controller;
 
+import java.io.IOException;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,7 +33,7 @@ public class OAuthController {
 	public ResponseEntity<OAuthView> oAuthLogin(
 		@RequestParam(name = "provider") String provider,
 		@Valid @RequestBody OAuthRequest request
-	) {
+	) throws IOException {
 
 		log.info("\"OAUTH LOGIN\"");
 		provider = provider.toUpperCase();

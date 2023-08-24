@@ -88,4 +88,8 @@ public class User extends BaseTimeEntity {
 	public void updateRoleType(RoleType roleType) {
 		this.roleType = roleType;
 	}
+
+	public void updateProfile(String profile) {
+		this.profile = profile;
+	}
 }

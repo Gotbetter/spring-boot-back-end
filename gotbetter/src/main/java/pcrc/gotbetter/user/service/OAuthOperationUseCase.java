@@ -1,5 +1,7 @@
 package pcrc.gotbetter.user.service;
 
+import java.io.IOException;
+
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -7,7 +9,7 @@ import lombok.ToString;
 import pcrc.gotbetter.user.login_method.jwt.config.TokenInfo;
 
 public interface OAuthOperationUseCase {
-	TokenInfo oAuthLogin(OAuthLoginCommand command);
+	TokenInfo oAuthLogin(OAuthLoginCommand command) throws IOException;
 
 	@EqualsAndHashCode(callSuper = false)
 	@Builder

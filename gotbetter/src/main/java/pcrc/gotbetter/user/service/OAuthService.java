@@ -1,10 +1,18 @@
 package pcrc.gotbetter.user.service;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.Objects;
 
+import javax.imageio.ImageIO;
+
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import lombok.extern.slf4j.Slf4j;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
 import pcrc.gotbetter.user.data_access.entity.SocialAccount;
@@ -18,8 +26,13 @@ import pcrc.gotbetter.user.login_method.jwt.config.TokenInfo;
 import pcrc.gotbetter.user.login_method.login_type.ProviderType;
 import pcrc.gotbetter.user.login_method.login_type.RoleType;
 
+@Slf4j
 @Service
 public class OAuthService implements OAuthOperationUseCase {
+	@Value("${server.default.profile.image}")
+	String PROFILE_SERVER_DEFAULT_IMG;
+	@Value("${server.default.base.profile.path}")
+	String PROFILE_SERVER_BASE_PATH;
 	private final JwtProvider jwtProvider;
 	private final UserRepository userRepository;
 	private final SocialAccountRepository socialAccountRepository;
@@ -37,7 +50,7 @@ public class OAuthService implements OAuthOperationUseCase {
 	}
 
 	@Override
-	public TokenInfo oAuthLogin(OAuthLoginCommand command) {
+	public TokenInfo oAuthLogin(OAuthLoginCommand command) throws IOException {
 		User findUser = userRepository.findByEmail(command.getEmail());
 		SocialAccount findSocialAccount = socialAccountRepository.findByTypeAndId(ProviderType.GOOGLE, command.getId());
 
@@ -83,7 +96,16 @@ public class OAuthService implements OAuthOperationUseCase {
 			// 문제있음
 			throw new GotBetterException(MessageType.BAD_REQUEST);
 		}
-
+		if (Objects.equals(findUser.getProfile(), PROFILE_SERVER_DEFAULT_IMG)) {
+			URL url = new URL(command.getPicture());
+			BufferedImage img = ImageIO.read(url);
+			String storePath = PROFILE_SERVER_BASE_PATH + findUser.getUserId() + ".png";
+			File file = deleteImages(storePath);
+			ImageIO.write(img, "png", file); // 파일 저장
+			findUser.updateProfile(storePath);
+			userRepository.save(findUser);
+		}
+		
 		// 토큰 만들기
 		TokenInfo tokenInfo = jwtProvider.generateToken(findUser.getUserId().toString(), findUser.getRoleType());
 
@@ -92,5 +114,18 @@ public class OAuthService implements OAuthOperationUseCase {
 		userRepository.save(findUser);
 
 		return tokenInfo;
+	}
+
+	private File deleteImages(String storePath) {
+		File storeFile = new File(storePath);
+
+		if (!storeFile.exists()) {
+			try {
+				storeFile.mkdirs();
+			} catch (Exception e) {
+				e.getStackTrace();
+			}
+		}
+		return storeFile;
 	}
 }

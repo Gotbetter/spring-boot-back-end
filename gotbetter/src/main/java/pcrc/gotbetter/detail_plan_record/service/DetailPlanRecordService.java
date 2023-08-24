@@ -307,7 +307,7 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 		return bytes;
 	}
 
-	void deleteImages(String photoDir, Long recordId, Boolean forDelete) {
+	private void deleteImages(String photoDir, Long recordId, Boolean forDelete) {
 		// 저장소에 사진 저장
 		File storeDir = new File(photoDir);
 
@@ -319,6 +319,10 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 			}
 		} else {
 			String[] files = storeDir.list();
+
+			if (files == null) {
+				return;
+			}
 			for (String file : files) {
 				if (file.startsWith(recordId + ".")) {
 					File image = new File(photoDir + "/" + file);

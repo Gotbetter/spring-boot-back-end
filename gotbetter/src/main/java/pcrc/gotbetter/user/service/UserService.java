@@ -72,6 +72,7 @@ public class UserService implements UserOperationUseCase, UserReadUseCase {
 				.username(command.getUsername())
 				.email(command.getEmail())
 				.roleType(RoleType.USER)
+				.profile(PROFILE_SERVER_DEFAULT_IMG)
 				.build();
 			saveUser.updateById("-1");
 			userRepository.save(saveUser);
