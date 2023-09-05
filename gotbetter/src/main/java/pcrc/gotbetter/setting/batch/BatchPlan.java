@@ -102,7 +102,7 @@ public class BatchPlan {
 
 					if (afterOneDayOfLastDay.isEqual(now)) { // 좀 더 고민
 						updatePercentSum(room.getRoomId(), room.getCurrentWeek());
-						update_refund(room.getRoomId());
+						updateRefund(room.getRoomId());
 					}
 				}
 				return RepeatStatus.FINISHED;
@@ -125,6 +125,7 @@ public class BatchPlan {
 					if (lastDay.isBefore(now)) {
 						int nextWeek = room.getCurrentWeek() + 1;
 
+						log.info("(start to change score and percent sum |" + " roomId=" + room.getRoomId());
 						updatePercentSum(room.getRoomId(), room.getCurrentWeek());
 						room.updateCurrentWeekToNext();
 						room.updateById(RoleType.SERVER.getCode());
@@ -142,39 +143,43 @@ public class BatchPlan {
 
 	private void updatePercentSum(Long roomId, Integer passedWeek) {
 		List<PlanDto> planDtoList = planRepository.findPlanJoinParticipant(roomId, passedWeek);
+		List<Plan> resultPlans = new ArrayList<>();
+		List<Participant> resultParticipants = new ArrayList<>();
 
 		for (PlanDto planDto : planDtoList) {
 			Plan plan = planDto.getPlan();
 			Participant participant = planDto.getParticipant();
 
 			if (!plan.getRejected()) {
-				// log.info("1. room_id: " + plan.getParticipantInfo().getRoomId()
-				// 	+ ", plan_id = " + plan.getPlanId() + ", current_week = " + plan.getWeek());
 				HashMap<String, Long> map = detailPlanRepository.countCompleteTrue(plan.getPlanId());
 				Long size = map.get("size");
 				Long completeCount = map.get("completeCount");
-				// log.info("2. detail_size = " + size + ", complete_count = " + completeCount);
 
 				float divide = size != 0 ? (float)completeCount / (float)size : 0;
 				float percent = Math.round(divide * 1000) / 10.0F;
 
-				// log.info("3. divide = " + divide + ", percent = " + percent);
 				plan.updateScore(percent);
 				plan.updateById(RoleType.SERVER.getCode());
-				planRepository.save(plan);
 				participant.updatePercentSum(percent);
 				participant.updateById(RoleType.SERVER.getCode());
-				participantRepository.save(participant);
+				resultPlans.add(plan);
+				resultParticipants.add(participant);
 				log.info("(change the percent | participantId=" + plan.getParticipantInfo().getParticipantId() +
 					") newPercent=" + percent);
 			} else {
 				log.info("(changing the percent is rejected | participantId=" +
 					plan.getParticipantInfo().getParticipantId() + ")");
 			}
+			if (resultPlans.size() != 0) {
+				planRepository.saveAll(resultPlans);
+			}
+			if (resultParticipants.size() != 0) {
+				participantRepository.saveAll(resultParticipants);
+			}
 		}
 	}
 
-	private void update_refund(Long roomId) {
+	private void updateRefund(Long roomId) {
 		List<ParticipantDto> participantDtoList = participantRepository.findParticipantRoomByRoomId(roomId);
 
 		if (participantDtoList.size() == 0) {
@@ -198,6 +203,8 @@ public class BatchPlan {
 		keySet.sort(Comparator.reverseOrder());
 
 		int rank = 1;
+		int leftRefund =
+			keySet.size() == 1 ? 0 : room.getEntryFee() * percentMap.get(keySet.get(keySet.size() - 1)).size();
 
 		for (Float key : keySet) {
 			List<Participant> participants = percentMap.get(key);
@@ -206,7 +213,7 @@ public class BatchPlan {
 				int refund = room.getEntryFee();
 
 				if (rank == 1) {
-					refund *= 2;
+					refund += (Math.floor(leftRefund) / participants.size());
 				} else if (rank + percentMap.get(key).size() == room.getCurrentUserNum() + 1) {
 					refund = 0;
 				}

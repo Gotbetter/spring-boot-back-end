@@ -93,6 +93,8 @@ public class TaskResult {
 		keySet.sort(Comparator.reverseOrder());
 
 		int rank = 1;
+		int leftRefund =
+			keySet.size() == 1 ? 0 : room.getEntryFee() * percentMap.get(keySet.get(keySet.size() - 1)).size();
 
 		for (Float key : keySet) {
 			List<Participant> participants = percentMap.get(key);
@@ -104,7 +106,7 @@ public class TaskResult {
 					if (room.getCurrentWeek() == 1) {
 						refund = 0;
 					} else {
-						refund *= 2;
+						refund += (Math.floor(leftRefund) / participants.size());
 					}
 				} else if (rank + percentMap.get(key).size() == room.getCurrentUserNum() + 1) {
 					refund = 0;
