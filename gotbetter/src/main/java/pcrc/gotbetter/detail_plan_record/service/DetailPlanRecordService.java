@@ -57,10 +57,12 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 	private final TaskResult taskResult;
 
 	@Autowired
-	public DetailPlanRecordService(DetailPlanRecordRepository detailPlanRecordRepository,
+	public DetailPlanRecordService(
+		DetailPlanRecordRepository detailPlanRecordRepository,
 		DetailPlanRepository detailPlanRepository, PlanRepository planRepository,
 		ParticipantRepository participantRepository, UserRepository userRepository,
-		DetailPlanEvalRepository detailPlanEvalRepository, TaskResult taskResult) {
+		DetailPlanEvalRepository detailPlanEvalRepository, TaskResult taskResult
+	) {
 		this.detailPlanRecordRepository = detailPlanRecordRepository;
 		this.detailPlanRepository = detailPlanRepository;
 		this.planRepository = planRepository;
@@ -152,6 +154,7 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 		if (command.getAdmin()) {
 			validateIsAdmin();
 		}
+
 		DetailPlanRecord detailPlanRecord = validateRecord(command.getRecordId(), command.getDetailPlanId(),
 			command.getAdmin());
 
@@ -164,33 +167,29 @@ public class DetailPlanRecordService implements DetailPlanRecordOperationUseCase
 
 				deleteImages(photoDir, detailPlanRecord.getRecordId(), true);
 			}
-
-			List<DetailPlanRecord> detailPlanRecords = detailPlanRecordRepository.findByDetailPlanIdDetailPlanId(
-				detailPlanRecord.getDetailPlanId().getDetailPlanId());
-			DetailPlan detailPlan = detailPlanRepository.findByDetailPlanId(
-				detailPlanRecord.getDetailPlanId().getDetailPlanId());
-
-			if (detailPlan == null) {
-				throw new GotBetterException(MessageType.NOT_FOUND);
-			}
-			/** TODO  detail eval 데이터 지워야하나?*/
-			if (detailPlanRecords.size() == 1) {
-				detailPlanEvalRepository.deleteByDetailPlanEvalIdDetailPlanId(
-					detailPlanRecord.getDetailPlanId().getDetailPlanId());
-
-				/** TODO */
-				detailPlan.updateDetailPlanUndo(false);
-				detailPlanRepository.save(detailPlan);
-			}
-			detailPlanRecordRepository.deleteById(detailPlanRecord.getRecordId());
-			if (command.getAdmin()) {
-				taskResult.updateScore(detailPlan.getPlanId());
-				taskResult.updateRefund(detailPlan.getParticipantInfo().getRoomId());
-			}
 		} catch (Exception e) {
 			throw new GotBetterException(MessageType.BAD_REQUEST);
 		}
 
+		DetailPlan detailPlan = detailPlanRepository.findByDetailPlanId(
+			detailPlanRecord.getDetailPlanId().getDetailPlanId());
+
+		if (detailPlan == null) {
+			throw new GotBetterException(MessageType.NOT_FOUND);
+		}
+		detailPlanRecordRepository.deleteById(detailPlanRecord.getRecordId());
+		if (command.getAdmin()) {
+			List<DetailPlanRecord> detailPlanRecords = detailPlanRecordRepository.findByDetailPlanIdDetailPlanId(
+				detailPlan.getDetailPlanId());
+
+			if (detailPlanRecords.size() == 0) {
+				detailPlanEvalRepository.deleteByDetailPlanEvalIdDetailPlanId(detailPlan.getDetailPlanId());
+				detailPlan.updateDetailPlanUndo(false);
+				detailPlanRepository.save(detailPlan);
+			}
+			taskResult.updateScore(detailPlan.getPlanId());
+			taskResult.updateRefund(detailPlan.getParticipantInfo().getRoomId());
+		}
 	}
 
 	/**
