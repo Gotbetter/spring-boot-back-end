@@ -19,20 +19,20 @@ import pcrc.gotbetter.plan.data_access.repository.PlanRepository;
 import pcrc.gotbetter.room.data_access.entity.Room;
 import pcrc.gotbetter.setting.http_api.GotBetterException;
 import pcrc.gotbetter.setting.http_api.MessageType;
-import pcrc.gotbetter.user.login_method.login_type.RoleType;
 
 @Component
 public class TaskResult {
 
 	private final ParticipantRepository participantRepository;
-
 	private final PlanRepository planRepository;
-
 	private final DetailPlanRepository detailPlanRepository;
 
 	@Autowired
-	public TaskResult(ParticipantRepository participantRepository, PlanRepository planRepository,
-		DetailPlanRepository detailPlanRepository) {
+	public TaskResult(
+		ParticipantRepository participantRepository,
+		PlanRepository planRepository,
+		DetailPlanRepository detailPlanRepository
+	) {
 		this.participantRepository = participantRepository;
 		this.planRepository = planRepository;
 		this.detailPlanRepository = detailPlanRepository;
@@ -112,7 +112,6 @@ public class TaskResult {
 					refund = 0;
 				}
 				participant.updateRefund(refund);
-				participant.updateById(RoleType.SERVER.getCode());
 			}
 			participantRepository.saveAll(participants);
 			rank += percentMap.get(key).size();

@@ -10,7 +10,6 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
 import pcrc.gotbetter.detail_plan.data_access.dto.DetailPlanDto;
 import pcrc.gotbetter.detail_plan.data_access.entity.DetailPlan;
 
@@ -35,14 +34,18 @@ public class DetailPlanRepositoryImpl implements DetailPlanQueryRepository {
 
 	@Override
 	public HashMap<String, Long> countCompleteTrue(Long planId) {
-		Query query = em.createQuery(
-			"SELECT count(*) as size, count(if(p.complete=true, p.complete, null))" +
-				" FROM DetailPlan p WHERE p.planId = " + planId);
-		Object[] object = (Object[])query.getResultList().get(0);
+		Long size = (long)queryFactory.selectFrom(detailPlan)
+			.where(detailPlan.planId.eq(planId))
+			.fetch().size();
+
+		Long completeCount = (long)queryFactory.selectFrom(detailPlan)
+			.where(detailPlan.planId.eq(planId).and(detailPlan.complete.isTrue()))
+			.fetch().size();
+
 		HashMap<String, Long> result = new HashMap<>();
-		result.put("size", (Long)object[0]);
-		result.put("completeCount", (Long)object[1]);
-		em.clear();
+
+		result.put("size", size);
+		result.put("completeCount", completeCount);
 		return result;
 	}
 
